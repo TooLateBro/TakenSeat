@@ -10,6 +10,8 @@ import com.taken_seat.payment_service.domain.enums.PaymentStatus;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -36,9 +38,14 @@ public class Payment {
 	private UUID id;
 
 	@Column(nullable = false)
-	private Integer price;
+	private UUID booking_id;
 
 	@Column(nullable = false)
+	private Integer price;
+
+
+	@Column(nullable = false)
+	@Enumerated(EnumType.STRING)
 	private PaymentStatus payment_status;
 
 	private LocalDateTime approved_at;
