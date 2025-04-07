@@ -1,0 +1,12 @@
+rootProject.name = 'taken-seat'
+
+include("com.taken_seat.eureka-service")
+include("com.taken_seat.gateway-service")
+include("com.taken_seat.auth-service")
+include("com.taken_seat.coupon-service")
+include("com.taken_seat.queue-service")
+include("com.taken_seat.booking-service")
+include("com.taken_seat.performance-service")
+include("com.taken_seat.payment-service")
+include("com.taken_seat.review-service")
+include("com.taken_seat.common-service")
