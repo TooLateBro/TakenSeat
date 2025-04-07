@@ -3,6 +3,7 @@ package com.taken_seat.payment_service.presentation.controller;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -18,10 +19,10 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/payment")
 public class PaymentController {
 
-	private PaymentService paymentService;
+	private final PaymentService paymentService;
 
 	@PostMapping
-	public ResponseEntity<?> registerPayment(@Valid PaymentCreateReqDto paymentCreateReqDto){
+	public ResponseEntity<?> registerPayment(@Valid @RequestBody PaymentCreateReqDto paymentCreateReqDto){
 
 		return ResponseEntity.status(HttpStatus.OK)
 			.body(paymentService.registerPayment(paymentCreateReqDto));
