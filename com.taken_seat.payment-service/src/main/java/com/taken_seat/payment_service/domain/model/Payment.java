@@ -38,7 +38,7 @@ public class Payment {
 	private UUID id;
 
 	@Column(nullable = false)
-	private UUID booking_id;
+	private UUID bookingId;
 
 	@Column(nullable = false)
 	private Integer price;
@@ -46,46 +46,46 @@ public class Payment {
 
 	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
-	private PaymentStatus payment_status;
+	private PaymentStatus paymentStatus;
 
-	private LocalDateTime approved_at;
+	private LocalDateTime approvedAt;
 
-	private Integer refund_amount;
+	private Integer refundAmount;
 
-	private LocalDateTime refund_requested_at;
+	private LocalDateTime refundRequestedAt;
 
 	@CreatedDate
 	@Column(updatable = false, nullable = false)
 	@Temporal(TemporalType.TIMESTAMP)
-	private LocalDateTime created_at;
+	private LocalDateTime createdAt;
 
 	@Column(updatable = false, nullable = false)
-	private UUID created_by;
+	private UUID createdBy;
 
 	@LastModifiedDate
 	@Column(nullable = false)
 	@Temporal(TemporalType.TIMESTAMP)
-	private LocalDateTime updated_at;
+	private LocalDateTime updatedAt;
 
 	@Column
-	private UUID updated_by;
+	private UUID updatedBy;
 
 	@Column
-	private LocalDateTime deleted_at;
+	private LocalDateTime deletedAt;
 
 	@Column
-	private UUID deleted_by;
+	private UUID deletedBy;
 
 	@PrePersist
 	protected void onCreate() {
 		LocalDateTime time = LocalDateTime.now();
-		this.created_at = time;
-		this.updated_at = time;
+		this.createdAt = time;
+		this.updatedAt = time;
 	}
 
 	@PreUpdate
 	protected void onUpdate() {
-		this.updated_at = LocalDateTime.now();
+		this.updatedAt = LocalDateTime.now();
 	}
 
 }
