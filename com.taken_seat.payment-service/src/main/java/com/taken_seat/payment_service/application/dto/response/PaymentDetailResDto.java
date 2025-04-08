@@ -1,5 +1,6 @@
 package com.taken_seat.payment_service.application.dto.response;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -15,7 +16,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PaymentDetailResDto {
+public class PaymentDetailResDto implements Serializable {
 
 	private UUID paymentId;
 

@@ -3,17 +3,20 @@ package com.taken_seat.payment_service.application.service;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.taken_seat.payment_service.application.dto.exception.PaymentNotFoundException;
 import com.taken_seat.payment_service.application.dto.request.PaymentRegisterReqDto;
+import com.taken_seat.payment_service.application.dto.response.PagePaymentResponseDto;
 import com.taken_seat.payment_service.application.dto.response.PaymentDetailResDto;
 import com.taken_seat.payment_service.application.dto.response.PaymentRegisterResDto;
 import com.taken_seat.payment_service.domain.enums.PaymentStatus;
 import com.taken_seat.payment_service.domain.model.Payment;
 import com.taken_seat.payment_service.domain.model.PaymentHistory;
 import com.taken_seat.payment_service.domain.repository.PaymentHistoryRepository;
+import com.taken_seat.payment_service.domain.repository.PaymentQuerydslRepository;
 import com.taken_seat.payment_service.domain.repository.PaymentRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -26,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 public class PaymentService {
 
 	private final PaymentRepository paymentRepository;
+	private final PaymentQuerydslRepository paymentQuerydslRepository;
 	private final PaymentHistoryRepository paymentHistoryRepository;
 
 	/**
@@ -80,5 +84,16 @@ public class PaymentService {
 			.orElseThrow(() -> new PaymentNotFoundException("해당 ID 에 대한 결제 정보를 찾을 수 없습니다 : " + id));
 
 		return PaymentDetailResDto.toResponse(payment);
+	}
+
+	@Transactional(readOnly = true)
+	public PagePaymentResponseDto searchPayment(String q, String category, int page, int size, String sort,
+		String order) {
+
+		Page<Payment> paymentPages = paymentQuerydslRepository.findAll(q, category, page, size, sort, order);
+
+		Page<PaymentDetailResDto> paymentDetailResDtoPages = paymentPages.map(PaymentDetailResDto::toResponse);
+
+		return PagePaymentResponseDto.toResponse(paymentDetailResDtoPages);
 	}
 }

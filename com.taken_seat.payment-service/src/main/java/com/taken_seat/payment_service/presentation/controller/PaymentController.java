@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.taken_seat.payment_service.application.dto.request.PaymentRegisterReqDto;
@@ -45,6 +46,17 @@ public class PaymentController {
 	public ResponseEntity<?> getPaymentDetail(@PathVariable("id") UUID id) {
 		return ResponseEntity.status(HttpStatus.OK)
 			.body(paymentService.getPaymentDetail(id));
+	}
+
+	@GetMapping("/search")
+	public ResponseEntity<?> searchPayment(@RequestParam(required = false) String q,
+		@RequestParam(required = false) String category,
+		@RequestParam(defaultValue = "0") int page,
+		@RequestParam(defaultValue = "10") int size,
+		@RequestParam(defaultValue = "createdAt") String sort,
+		@RequestParam(defaultValue = "desc") String order) {
+		return ResponseEntity.status(HttpStatus.OK)
+			.body(paymentService.searchPayment(q, category, page, size, sort, order));
 	}
 
 	private List<Map<String, String>> convertBindingErrors(BindingResult bindingResult) {
