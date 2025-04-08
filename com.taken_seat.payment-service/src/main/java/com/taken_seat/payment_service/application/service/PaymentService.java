@@ -28,6 +28,10 @@ public class PaymentService {
 	public PaymentCreateResDto registerPayment(PaymentCreateReqDto paymentCreateReqDto) {
 		// MASTER 계정이 직접 등록하는 API - 결제 API 호출 없이 수동 등록
 
+		if (paymentCreateReqDto.getPrice() <= 0){
+			throw new IllegalArgumentException("결제 금액은 1원 미만일 수 없습니다. 요청 금액 : " + paymentCreateReqDto.getPrice());
+		}
+
 		LocalDateTime now = LocalDateTime.now();
 
 		Payment payment = Payment.builder()
