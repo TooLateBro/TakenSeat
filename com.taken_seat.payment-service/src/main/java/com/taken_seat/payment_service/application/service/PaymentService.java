@@ -112,4 +112,12 @@ public class PaymentService {
 
 		return PaymentUpdateResDto.toResponse(payment);
 	}
+
+	public void deletePayment(UUID id) {
+		Payment payment = paymentRepository.findByIdAndDeletedAtIsNull(id)
+			.orElseThrow(() -> new PaymentNotFoundException("해당 ID 에 대한 결제 정보를 찾을 수 없습니다 : " + id));
+
+		UUID deletedBy = UUID.randomUUID();
+		payment.softDelete(deletedBy);
+	}
 }

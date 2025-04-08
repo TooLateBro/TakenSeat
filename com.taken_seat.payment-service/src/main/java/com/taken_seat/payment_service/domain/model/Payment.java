@@ -92,4 +92,9 @@ public class Payment {
 		this.price = price;
 		this.paymentStatus = status;
 	}
+
+	public void softDelete(UUID deletedBy) {
+		this.deletedAt = LocalDateTime.now();
+		this.deletedBy = deletedBy;
+	}
 }
