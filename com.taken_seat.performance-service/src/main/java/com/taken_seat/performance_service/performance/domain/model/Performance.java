@@ -61,6 +61,7 @@ public class Performance {
 	private String discountInfo;
 
 	@OneToMany(mappedBy = "performance", cascade = CascadeType.ALL, orphanRemoval = true)
+	@Builder.Default
 	private List<PerformanceSchedule> schedules = new ArrayList<>();
 
 	public static Performance create(CreateRequestDto request) {
