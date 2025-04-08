@@ -88,4 +88,8 @@ public class Payment {
 		this.updatedAt = LocalDateTime.now();
 	}
 
+	public void update(Integer price, PaymentStatus status) {
+		this.price = price;
+		this.paymentStatus = status;
+	}
 }

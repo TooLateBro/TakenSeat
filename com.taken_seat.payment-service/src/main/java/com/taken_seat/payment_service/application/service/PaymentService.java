@@ -7,11 +7,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.taken_seat.payment_service.application.dto.exception.PaymentNotFoundException;
 import com.taken_seat.payment_service.application.dto.request.PaymentRegisterReqDto;
+import com.taken_seat.payment_service.application.dto.request.PaymentUpdateReqDto;
 import com.taken_seat.payment_service.application.dto.response.PagePaymentResponseDto;
 import com.taken_seat.payment_service.application.dto.response.PaymentDetailResDto;
 import com.taken_seat.payment_service.application.dto.response.PaymentRegisterResDto;
+import com.taken_seat.payment_service.application.dto.response.PaymentUpdateResDto;
+import com.taken_seat.payment_service.application.exception.PaymentNotFoundException;
 import com.taken_seat.payment_service.domain.enums.PaymentStatus;
 import com.taken_seat.payment_service.domain.model.Payment;
 import com.taken_seat.payment_service.domain.model.PaymentHistory;
@@ -95,5 +97,19 @@ public class PaymentService {
 		Page<PaymentDetailResDto> paymentDetailResDtoPages = paymentPages.map(PaymentDetailResDto::toResponse);
 
 		return PagePaymentResponseDto.toResponse(paymentDetailResDtoPages);
+	}
+
+	public PaymentUpdateResDto updatePayment(UUID id, PaymentUpdateReqDto paymentUpdateReqDto) {
+
+		if (paymentUpdateReqDto.getPrice() <= 0) {
+			throw new IllegalArgumentException("결제 금액은 1원 미만일 수 없습니다. 요청 금액 : " + paymentUpdateReqDto.getPrice());
+		}
+
+		Payment payment = paymentRepository.findByIdAndDeletedAtIsNull(id)
+			.orElseThrow(() -> new PaymentNotFoundException("해당 ID 에 대한 결제 정보를 찾을 수 없습니다 : " + id));
+
+		payment.update(paymentUpdateReqDto.getPrice(), paymentUpdateReqDto.getPaymentStatus());
+
+		return PaymentUpdateResDto.toResponse(payment);
 	}
 }

@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,7 +13,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-@Builder
+@Builder(access = AccessLevel.PRIVATE)
 @AllArgsConstructor
 public class PagePaymentResponseDto implements Serializable {
 	private List<PaymentDetailResDto> content;
