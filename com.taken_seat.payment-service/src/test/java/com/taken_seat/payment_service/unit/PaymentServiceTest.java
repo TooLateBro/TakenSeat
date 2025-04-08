@@ -21,9 +21,11 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
 import com.taken_seat.payment_service.application.dto.request.PaymentRegisterReqDto;
+import com.taken_seat.payment_service.application.dto.request.PaymentUpdateReqDto;
 import com.taken_seat.payment_service.application.dto.response.PagePaymentResponseDto;
 import com.taken_seat.payment_service.application.dto.response.PaymentDetailResDto;
 import com.taken_seat.payment_service.application.dto.response.PaymentRegisterResDto;
+import com.taken_seat.payment_service.application.dto.response.PaymentUpdateResDto;
 import com.taken_seat.payment_service.application.exception.PaymentNotFoundException;
 import com.taken_seat.payment_service.application.service.PaymentService;
 import com.taken_seat.payment_service.domain.enums.PaymentStatus;
@@ -199,5 +201,54 @@ public class PaymentServiceTest {
 
 		assertEquals(0, result.getTotalElements());
 		assertTrue(result.getContent().isEmpty());
+	}
+
+	@Test
+	@DisplayName("결제 정보 수정 - SUCCESS")
+	void updatePayment_success() {
+		// Given
+		PaymentUpdateReqDto paymentUpdateReqDto = new PaymentUpdateReqDto(3000, PaymentStatus.FAILED);
+
+		when(paymentRepository.findByIdAndDeletedAtIsNull(testPaymentId)).thenReturn(Optional.of(testPayment));
+
+		// When
+		PaymentUpdateResDto result = paymentService.updatePayment(testPaymentId, paymentUpdateReqDto);
+
+		// Then
+		assertNotNull(result);
+		assertEquals(3000, result.getPrice());
+		assertEquals(PaymentStatus.FAILED, result.getPaymentStatus());
+
+	}
+
+	@Test
+	@DisplayName("결제 정보 수정 실패 - 결제 금액이 0원 이하 - FAIL")
+	void updatePayment_fail_zeroOrNegativePrice() {
+		// Given
+		PaymentUpdateReqDto reqDto = new PaymentUpdateReqDto(0, PaymentStatus.FAILED);
+
+		// When & Then
+		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+			paymentService.updatePayment(testPaymentId, reqDto);
+		});
+
+		assertEquals("결제 금액은 1원 미만일 수 없습니다. 요청 금액 : 0", exception.getMessage());
+	}
+
+	@Test
+	@DisplayName("결제 정보 수정 실패 - 존재하지 않는 결제 ID - FAIL")
+	void updatePayment_fail_paymentNotFound() {
+		// Given
+		UUID notExistId = UUID.randomUUID();
+		PaymentUpdateReqDto reqDto = new PaymentUpdateReqDto(3000, PaymentStatus.FAILED);
+
+		when(paymentRepository.findByIdAndDeletedAtIsNull(notExistId)).thenReturn(Optional.empty());
+
+		// When & Then
+		PaymentNotFoundException exception = assertThrows(PaymentNotFoundException.class, () -> {
+			paymentService.updatePayment(notExistId, reqDto);
+		});
+
+		assertEquals("해당 ID 에 대한 결제 정보를 찾을 수 없습니다 : " + notExistId, exception.getMessage());
 	}
 }
