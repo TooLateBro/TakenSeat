@@ -50,7 +50,7 @@ public class JwtUtil {
     }
 
     public String createToken(User userinfo){
-        return BEARER_PREFIX + Jwts.builder()
+        return Jwts.builder()
                 .setSubject(String.valueOf(userinfo.getId()))
                 .claim("email", userinfo.getEmail())
                 .claim("role", userinfo.getRole())
@@ -63,7 +63,7 @@ public class JwtUtil {
 
 
     public String createRefreshToken(UUID userId){
-        return BEARER_PREFIX + Jwts.builder()
+        return Jwts.builder()
                 .claim("userId", userId.toString())
                 .setExpiration(new Date(System.currentTimeMillis()+refreshExpiration))
                 .setIssuedAt(new Date(System.currentTimeMillis()))
