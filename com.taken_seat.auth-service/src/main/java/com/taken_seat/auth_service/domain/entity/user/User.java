@@ -75,6 +75,11 @@ public class User {
         this.updatedAt = LocalDateTime.now();
     }
 
+    public void del(UUID deletedBy) {
+        this.deletedAt = LocalDateTime.now();
+        this.deletedBy = deletedBy;
+    }
+
 // ======================================= 테이블 연관 관게 =======================================
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
