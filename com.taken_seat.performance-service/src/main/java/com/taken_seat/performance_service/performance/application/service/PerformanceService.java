@@ -21,7 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 public class PerformanceService {
 
 	private final PerformanceRepository performanceRepository;
-	
+
 	@Transactional
 	public CreateResponseDto create(CreateRequestDto request) {
 
@@ -37,7 +37,7 @@ public class PerformanceService {
 	public void delete(UUID id, UUID deletedBy) {
 
 		if (id == null) {
-			throw new IllegalArgumentException("삭제할 수 없는 아이디입니다");
+			throw new IllegalArgumentException("공연 ID는 null일 수 없습니다.");
 		}
 
 		performanceRepository.deleteById(id, deletedBy);
