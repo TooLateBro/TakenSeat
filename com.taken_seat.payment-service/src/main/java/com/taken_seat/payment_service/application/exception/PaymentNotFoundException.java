@@ -1,4 +1,4 @@
-package com.taken_seat.payment_service.application.dto.exception;
+package com.taken_seat.payment_service.application.exception;
 
 public class PaymentNotFoundException extends RuntimeException {
 	public PaymentNotFoundException(String message) {
