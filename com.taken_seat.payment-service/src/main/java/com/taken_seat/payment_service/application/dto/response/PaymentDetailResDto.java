@@ -34,6 +34,7 @@ public class PaymentDetailResDto {
 	public static PaymentDetailResDto toResponse(Payment payment) {
 		return PaymentDetailResDto.builder()
 			.paymentId(payment.getId())
+			.price(payment.getPrice())
 			.bookingId(payment.getBookingId())
 			.paymentStatus(payment.getPaymentStatus())
 			.approvedAt(payment.getApprovedAt())
