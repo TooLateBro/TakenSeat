@@ -5,7 +5,6 @@ import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.taken_seat.auth_service.domain.entity.mileage.QMileage;
 import com.taken_seat.auth_service.domain.entity.user.QUser;
-import com.taken_seat.auth_service.domain.entity.user.QUserCoupon;
 import com.taken_seat.auth_service.domain.entity.user.User;
 import com.taken_seat.auth_service.domain.repository.user.UserQueryRepository;
 import com.taken_seat.auth_service.domain.vo.Role;
@@ -28,7 +27,6 @@ public class UserQueryRepositoryImpl implements UserQueryRepository {
     public Page<User> findAllByDeletedAtIsNull(String q, String role, Pageable pageable) {
         QUser user = QUser.user;
         QMileage mileage = QMileage.mileage;
-        QUserCoupon userCoupon = QUserCoupon.userCoupon;
 
         // 컨텐츠 조회
         List<User> content = jpaQueryFactory
@@ -67,7 +65,7 @@ public class UserQueryRepositoryImpl implements UserQueryRepository {
     // 검색어 조건
     private BooleanExpression searchCondition(String q, QUser user) {
         return StringUtils.hasText(q) ?
-                user.username.containsIgnoreCase(q).or(user.email.containsIgnoreCase(q)) : null;
+                user.username.containsIgnoreCase(q) : null;
     }
 
     // 역할 조건
