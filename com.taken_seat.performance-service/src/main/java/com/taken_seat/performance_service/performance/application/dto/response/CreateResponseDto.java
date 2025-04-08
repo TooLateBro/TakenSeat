@@ -27,5 +27,5 @@ public class CreateResponseDto {
 	private String ageLimit;
 	private Integer maxTicketCount;
 	private String discountInfo;
-	private List<CreatePerformanceScheduleResponseDto> schedules;
+	private List<PerformanceScheduleResponseDto> schedules;
 }
