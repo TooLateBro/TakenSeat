@@ -35,6 +35,7 @@ public class Payment {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
+	@Column(columnDefinition = "BINARY(16)", updatable = false, nullable = false)
 	private UUID id;
 
 	@Column(nullable = false)
@@ -42,7 +43,6 @@ public class Payment {
 
 	@Column(nullable = false)
 	private Integer price;
-
 
 	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
