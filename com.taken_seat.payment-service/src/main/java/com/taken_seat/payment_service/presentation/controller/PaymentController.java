@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.taken_seat.payment_service.application.dto.request.PaymentRegisterReqDto;
+import com.taken_seat.payment_service.application.dto.request.PaymentUpdateReqDto;
 import com.taken_seat.payment_service.application.service.PaymentService;
 
 import jakarta.validation.Valid;
@@ -57,6 +59,21 @@ public class PaymentController {
 		@RequestParam(defaultValue = "desc") String order) {
 		return ResponseEntity.status(HttpStatus.OK)
 			.body(paymentService.searchPayment(q, category, page, size, sort, order));
+	}
+
+	@PatchMapping("/{id}")
+	public ResponseEntity<?> updatePayment(@PathVariable("id") UUID id,
+		@Valid @RequestBody PaymentUpdateReqDto paymentUpdateReqDto,
+		BindingResult bindingResult) {
+
+		if (bindingResult.hasErrors()) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+				.body(convertBindingErrors(bindingResult));
+		}
+
+		return ResponseEntity.status(HttpStatus.OK)
+			.body(paymentService.updatePayment(id, paymentUpdateReqDto));
+
 	}
 
 	private List<Map<String, String>> convertBindingErrors(BindingResult bindingResult) {
