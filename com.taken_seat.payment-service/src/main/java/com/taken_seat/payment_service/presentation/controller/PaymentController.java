@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.taken_seat.payment_service.application.dto.request.PaymentCreateReqDto;
+import com.taken_seat.payment_service.application.dto.request.PaymentRegisterReqDto;
 import com.taken_seat.payment_service.application.service.PaymentService;
 
 import jakarta.validation.Valid;
@@ -26,7 +26,7 @@ public class PaymentController {
 	private final PaymentService paymentService;
 
 	@PostMapping
-	public ResponseEntity<?> registerPayment(@Valid @RequestBody PaymentCreateReqDto paymentCreateReqDto,
+	public ResponseEntity<?> registerPayment(@Valid @RequestBody PaymentRegisterReqDto paymentRegisterReqDto,
 		BindingResult bindingResult) {
 
 		if (bindingResult.hasErrors()) {
@@ -35,7 +35,7 @@ public class PaymentController {
 		}
 
 		return ResponseEntity.status(HttpStatus.OK)
-			.body(paymentService.registerPayment(paymentCreateReqDto));
+			.body(paymentService.registerPayment(paymentRegisterReqDto));
 	}
 
 	private List<Map<String, String>> convertBindingErrors(BindingResult bindingResult) {

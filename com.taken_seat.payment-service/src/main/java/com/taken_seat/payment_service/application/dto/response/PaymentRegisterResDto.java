@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PaymentCreateResDto {
+public class PaymentRegisterResDto {
 
 	private UUID paymentId;
 
@@ -27,8 +27,8 @@ public class PaymentCreateResDto {
 
 	private LocalDateTime approvedAt;
 
-	public static PaymentCreateResDto toResponse(Payment payment){
-		return PaymentCreateResDto.builder()
+	public static PaymentRegisterResDto toResponse(Payment payment) {
+		return PaymentRegisterResDto.builder()
 			.paymentId(payment.getId())
 			.bookingId(payment.getBookingId())
 			.price(payment.getPrice())

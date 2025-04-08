@@ -2,7 +2,6 @@ package com.taken_seat.payment_service.application.dto.request;
 
 import java.util.UUID;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PaymentCreateReqDto {
+public class PaymentRegisterReqDto {
 
 	@NotNull(message = "예매 ID는 필수입니다.")
 	private UUID bookingId;

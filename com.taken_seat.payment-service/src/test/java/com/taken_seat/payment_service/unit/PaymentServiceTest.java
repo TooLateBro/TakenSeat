@@ -15,8 +15,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.taken_seat.payment_service.application.dto.request.PaymentCreateReqDto;
-import com.taken_seat.payment_service.application.dto.response.PaymentCreateResDto;
+import com.taken_seat.payment_service.application.dto.request.PaymentRegisterReqDto;
+import com.taken_seat.payment_service.application.dto.response.PaymentRegisterResDto;
 import com.taken_seat.payment_service.application.service.PaymentService;
 import com.taken_seat.payment_service.domain.enums.PaymentStatus;
 import com.taken_seat.payment_service.domain.model.Payment;
@@ -43,7 +43,7 @@ public class PaymentServiceTest {
 	private PaymentHistory testPaymentHistory;
 
 	@BeforeEach
-	void setUp(){
+	void setUp() {
 		testBookingId = UUID.randomUUID();
 
 		testPayment = Payment.builder()
@@ -63,37 +63,36 @@ public class PaymentServiceTest {
 			.build();
 	}
 
-
 	@Test
 	@DisplayName("결제 수동 등록 - SUCCESS")
-	void registerPayment_success(){
+	void registerPayment_success() {
 		// Given
-		PaymentCreateReqDto paymentCreateReqDto = new PaymentCreateReqDto(testBookingId,1000);
+		PaymentRegisterReqDto paymentRegisterReqDto = new PaymentRegisterReqDto(testBookingId, 1000);
 
 		when(paymentRepository.save(any(Payment.class))).thenReturn(testPayment);
 		when(paymentHistoryRepository.save(any(PaymentHistory.class))).thenReturn(testPaymentHistory);
 
 		// When
-		PaymentCreateResDto result = paymentService.registerPayment(paymentCreateReqDto);
+		PaymentRegisterResDto result = paymentService.registerPayment(paymentRegisterReqDto);
 
 		// Then
 		assertNotNull(result);
-		assertEquals(testBookingId,result.getBookingId());
-		assertEquals(1000,result.getPrice());
+		assertEquals(testBookingId, result.getBookingId());
+		assertEquals(1000, result.getPrice());
 	}
 
 	@Test
 	@DisplayName("결제 수동 등록 - 결제 금액이 1원 이하  - Fail ")
-	void registerPayment_fail_zeroOrNegativePrice(){
+	void registerPayment_fail_zeroOrNegativePrice() {
 		// Given
-		PaymentCreateReqDto paymentCreateReqDto = new PaymentCreateReqDto(testBookingId,0);
+		PaymentRegisterReqDto paymentRegisterReqDto = new PaymentRegisterReqDto(testBookingId, 0);
 
 		// When & Then
-		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, ()->{
-			paymentService.registerPayment(paymentCreateReqDto);
+		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+			paymentService.registerPayment(paymentRegisterReqDto);
 		});
 
-		assertEquals("결제 금액은 1원 미만일 수 없습니다. 요청 금액 : 0" ,exception.getMessage());
+		assertEquals("결제 금액은 1원 미만일 수 없습니다. 요청 금액 : 0", exception.getMessage());
 	}
 
 }
