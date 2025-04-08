@@ -44,6 +44,12 @@ public class PerformanceSchedule {
 	private UUID performanceHallId;
 
 	@Column(nullable = false)
+	private LocalDateTime startAt;
+
+	@Column(nullable = false)
+	private LocalDateTime endAt;
+
+	@Column(nullable = false)
 	private LocalDateTime saleStartAt;
 
 	private LocalDateTime saleEndAt;
