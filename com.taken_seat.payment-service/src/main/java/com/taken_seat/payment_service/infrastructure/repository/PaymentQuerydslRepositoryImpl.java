@@ -1,6 +1,7 @@
 package com.taken_seat.payment_service.infrastructure.repository;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -25,7 +26,7 @@ public interface PaymentQuerydslRepositoryImpl extends JpaRepository<Payment, UU
 
 	// 정렬 가능한 필드 리스트
 	List<String> VALID_SORT_BY = Arrays.asList("createdAt", "updatedAt", "deletedAt");
-	
+
 	default Page<Payment> findAll(String query, String category, int page, int size, String sortBy,
 		String order) {
 
@@ -64,7 +65,7 @@ public interface PaymentQuerydslRepositoryImpl extends JpaRepository<Payment, UU
 						PaymentStatus status = PaymentStatus.valueOf(query.toUpperCase());
 						builder.and(qPayment.paymentStatus.eq(status));
 					} catch (IllegalArgumentException e) {
-						// 잘못된 값이면 무시
+						throw new IllegalArgumentException("잘못된 결제 상태 값입니다 : " + query);
 					}
 					break;
 				case "approvedAt":
@@ -73,8 +74,8 @@ public interface PaymentQuerydslRepositoryImpl extends JpaRepository<Payment, UU
 						LocalDateTime start = LocalDateTime.parse(query + "T00:00:00");
 						LocalDateTime end = LocalDateTime.parse(query + "T23:59:59.999999999");
 						builder.and(qPayment.approvedAt.between(start, end));
-					} catch (Exception e) {
-						// 날짜 형식이 잘못되면 무시
+					} catch (DateTimeParseException e) {
+						throw new IllegalArgumentException("잘못된 날짜 형식입니다 yyyy-mm-dd 형식으로 입력해주세요. : " + query);
 					}
 					break;
 				case "refundRequestedAt":
@@ -82,8 +83,8 @@ public interface PaymentQuerydslRepositoryImpl extends JpaRepository<Payment, UU
 						LocalDateTime start = LocalDateTime.parse(query + "T00:00:00");
 						LocalDateTime end = LocalDateTime.parse(query + "T23:59:59.999999999");
 						builder.and(qPayment.refundRequestedAt.between(start, end));
-					} catch (Exception e) {
-						// 날짜 형식이 잘못되면 무시
+					} catch (DateTimeParseException e) {
+						throw new IllegalArgumentException("잘못된 날짜 형식입니다 yyyy-mm-dd 형식으로 입력해주세요. : " + query);
 					}
 					break;
 				default:
