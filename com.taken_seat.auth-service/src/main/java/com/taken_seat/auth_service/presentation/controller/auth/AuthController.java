@@ -37,6 +37,7 @@ public class AuthController {
         AuthLoginResponseDto userinfo = authService.login(requestDto.toDto());
 
         return ResponseEntity.ok()
+                .header("Authorization", userinfo.getAccessToken())
                 .body(userinfo);
     }
 }

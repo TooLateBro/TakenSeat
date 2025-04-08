@@ -28,10 +28,10 @@ public class JwtUtil {
 
     public String extractToken(ServerWebExchange exchange) {
         String header = exchange.getRequest().getHeaders().getFirst("Authorization");
-        if (header != null || header.startsWith("Bearer ")) {
-            return header.substring(7);
+        if (header == null || !header.startsWith("Bearer ")) {
+            return null;
         }
-        return null;
+        return header.substring(7);
     }
 
     public boolean validateToken(String token) {
