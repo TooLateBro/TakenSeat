@@ -42,5 +42,6 @@ public class PerformanceHall {
 	private String description;
 
 	@OneToMany(mappedBy = "performanceHall", cascade = CascadeType.ALL, orphanRemoval = true)
+	@Builder.Default
 	private List<Seat> seats = new ArrayList<>();
 }
