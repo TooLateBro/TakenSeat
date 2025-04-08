@@ -1,7 +1,9 @@
 package com.taken_seat.auth_service.presentation.controller.auth;
 
+import com.taken_seat.auth_service.application.dto.auth.AuthLoginResponseDto;
 import com.taken_seat.auth_service.application.dto.auth.AuthSignUpResponseDto;
 import com.taken_seat.auth_service.application.service.auth.AuthService;
+import com.taken_seat.auth_service.presentation.dto.auth.AuthLoginRequestDto;
 import com.taken_seat.auth_service.presentation.dto.auth.AuthSignUpRequestDto;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -26,6 +28,15 @@ public class AuthController {
         AuthSignUpResponseDto userinfo = authService.signUp(requestDto.toDto());
 
         return ResponseEntity.status(HttpStatus.CREATED)
+                .body(userinfo);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<AuthLoginResponseDto> login(@Valid @RequestBody AuthLoginRequestDto requestDto){
+
+        AuthLoginResponseDto userinfo = authService.login(requestDto.toDto());
+
+        return ResponseEntity.ok()
                 .body(userinfo);
     }
 }
