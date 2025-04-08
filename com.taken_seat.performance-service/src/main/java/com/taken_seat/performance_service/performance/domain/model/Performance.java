@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import com.taken_seat.performance_service.performance.application.dto.request.CreateRequestDto;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -60,4 +62,51 @@ public class Performance {
 
 	@OneToMany(mappedBy = "performance", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<PerformanceSchedule> schedules = new ArrayList<>();
+
+	public static Performance create(CreateRequestDto request) {
+
+		Performance performance = Performance.builder()
+			.title(request.getTitle())
+			.description(request.getDescription())
+			.startAt(request.getStartAt())
+			.endAt(request.getEndAt())
+			.status(PerformanceStatus.status(request.getStartAt(), request.getEndAt()))
+			.posterUrl(request.getPosterUrl())
+			.ageLimit(request.getAgeLimit())
+			.maxTicketCount(request.getMaxTicketCount())
+			.discountInfo(request.getDiscountInfo())
+			.build();
+
+		List<PerformanceSchedule> schedules = request.getSchedules().stream()
+			.map(createPerformanceScheduleDto -> {
+				PerformanceSchedule schedule = PerformanceSchedule.builder()
+					.performance(performance)
+					.performanceHallId(createPerformanceScheduleDto.getPerformanceHallId())
+					.startAt(createPerformanceScheduleDto.getStartAt())
+					.endAt(createPerformanceScheduleDto.getEndAt())
+					.saleStartAt(createPerformanceScheduleDto.getSaleStartAt())
+					.saleEndAt(createPerformanceScheduleDto.getSaleEndAt())
+					.status(PerformanceScheduleStatus.status(
+						createPerformanceScheduleDto.getSaleStartAt(),
+						createPerformanceScheduleDto.getSaleEndAt(),
+						false
+					))
+					.build();
+
+				List<PerformanceSeatPrice> seatPrices = createPerformanceScheduleDto.getSeatPrices().stream()
+					.map(CreateSeatPriceDto -> PerformanceSeatPrice.builder()
+						.performanceSchedule(schedule)
+						.seatType(CreateSeatPriceDto.getSeatType())
+						.price(CreateSeatPriceDto.getPrice())
+						.build())
+					.toList();
+
+				schedule.getSeatPrices().addAll(seatPrices);
+				return schedule;
+			})
+			.toList();
+
+		performance.getSchedules().addAll(schedules);
+		return performance;
+	}
 }
