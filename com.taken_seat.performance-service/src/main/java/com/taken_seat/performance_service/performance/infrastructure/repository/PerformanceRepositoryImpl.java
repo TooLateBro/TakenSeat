@@ -1,5 +1,6 @@
 package com.taken_seat.performance_service.performance.infrastructure.repository;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Repository;
@@ -18,6 +19,11 @@ public class PerformanceRepositoryImpl implements PerformanceRepository {
 	@Override
 	public Performance save(Performance performance) {
 		return performanceJpaRepository.save(performance);
+	}
+
+	@Override
+	public Optional<Performance> findById(UUID id) {
+		return performanceJpaRepository.findByIdAndDeletedAtIsNull(id);
 	}
 
 	@Override
