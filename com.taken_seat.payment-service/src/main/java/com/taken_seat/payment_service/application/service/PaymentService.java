@@ -87,7 +87,8 @@ public class PaymentService {
 	}
 
 	@Transactional(readOnly = true)
-	public Object searchPayment(String q, String category, int page, int size, String sort, String order) {
+	public PagePaymentResponseDto searchPayment(String q, String category, int page, int size, String sort,
+		String order) {
 
 		Page<Payment> paymentPages = paymentQuerydslRepository.findAll(q, category, page, size, sort, order);
 

@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -15,9 +16,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import com.taken_seat.payment_service.application.dto.exception.PaymentNotFoundException;
 import com.taken_seat.payment_service.application.dto.request.PaymentRegisterReqDto;
+import com.taken_seat.payment_service.application.dto.response.PagePaymentResponseDto;
 import com.taken_seat.payment_service.application.dto.response.PaymentDetailResDto;
 import com.taken_seat.payment_service.application.dto.response.PaymentRegisterResDto;
 import com.taken_seat.payment_service.application.service.PaymentService;
@@ -25,6 +30,7 @@ import com.taken_seat.payment_service.domain.enums.PaymentStatus;
 import com.taken_seat.payment_service.domain.model.Payment;
 import com.taken_seat.payment_service.domain.model.PaymentHistory;
 import com.taken_seat.payment_service.domain.repository.PaymentHistoryRepository;
+import com.taken_seat.payment_service.domain.repository.PaymentQuerydslRepository;
 import com.taken_seat.payment_service.domain.repository.PaymentRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -35,6 +41,9 @@ public class PaymentServiceTest {
 
 	@Mock
 	private PaymentHistoryRepository paymentHistoryRepository;
+
+	@Mock
+	private PaymentQuerydslRepository paymentQuerydslRepository;
 
 	@InjectMocks
 	private PaymentService paymentService;
@@ -143,5 +152,52 @@ public class PaymentServiceTest {
 		});
 
 		assertEquals("해당 ID 에 대한 결제 정보를 찾을 수 없습니다 : " + registerTestPaymentId, exception.getMessage());
+	}
+
+	@Test
+	@DisplayName("결제 리스트 검색 - 상태(status) 필터 적용 - SUCCESS")
+	void searchPayment_success_withStatusFilter() {
+		// Given
+		String query = "COMPLETED";
+		String category = "status";
+		int page = 0;
+		int size = 10;
+		String sort = "createdAt";
+		String order = "desc";
+
+		Page<Payment> mockPage = new PageImpl<>(Collections.singletonList(testPayment), PageRequest.of(page, size), 1);
+
+		when(paymentQuerydslRepository.findAll(query, category, page, size, sort, order)).thenReturn(mockPage);
+
+		// When
+		PagePaymentResponseDto result = paymentService.searchPayment(query, category, page, size, sort, order);
+
+		// Then
+		assertNotNull(result);
+		assertEquals(1, result.getTotalElements());
+		assertEquals(1, result.getContent().size());
+
+		PaymentDetailResDto detail = result.getContent().get(0);
+		assertEquals(testPayment.getPrice(), detail.getPrice());
+		assertEquals(testPayment.getPaymentStatus(), detail.getPaymentStatus());
+	}
+
+	@Test
+	@DisplayName("결제 리스트 검색 - 비어있는 결과 - SUCCESS")
+	void searchPayment_success_emptyResult() {
+		// Given
+		when(paymentQuerydslRepository.findAll(anyString(), anyString(), anyInt(), anyInt(), anyString(), anyString()))
+			.thenReturn(Page.empty());
+
+		// When
+		PagePaymentResponseDto result = paymentService.searchPayment("REFUNDED", "status", 0, 10, "createdAt", "desc");
+
+		// Then
+		assertNotNull(result);
+		assertEquals(0, result.getTotalElements());
+		assertEquals(0, result.getContent().size());
+
+		assertEquals(0, result.getTotalElements());
+		assertTrue(result.getContent().isEmpty());
 	}
 }
