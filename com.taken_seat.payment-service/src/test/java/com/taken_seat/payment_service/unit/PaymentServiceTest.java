@@ -158,7 +158,7 @@ public class PaymentServiceTest {
 
 	@Test
 	@DisplayName("결제 리스트 검색 - 상태(status) 필터 적용 - SUCCESS")
-	void searchPayment_success_withStatusFilter() {
+	void testSearchPayment_success_withStatusFilter() {
 		// Given
 		String query = "COMPLETED";
 		String category = "status";
@@ -186,7 +186,7 @@ public class PaymentServiceTest {
 
 	@Test
 	@DisplayName("결제 리스트 검색 - 비어있는 결과 - SUCCESS")
-	void searchPayment_success_emptyResult() {
+	void testSearchPayment_success_emptyResult() {
 		// Given
 		when(paymentQuerydslRepository.findAll(anyString(), anyString(), anyInt(), anyInt(), anyString(), anyString()))
 			.thenReturn(Page.empty());
@@ -205,7 +205,7 @@ public class PaymentServiceTest {
 
 	@Test
 	@DisplayName("결제 정보 수정 - SUCCESS")
-	void updatePayment_success() {
+	void testUpdatePayment_success() {
 		// Given
 		PaymentUpdateReqDto paymentUpdateReqDto = new PaymentUpdateReqDto(3000, PaymentStatus.FAILED);
 
@@ -223,7 +223,7 @@ public class PaymentServiceTest {
 
 	@Test
 	@DisplayName("결제 정보 수정 실패 - 결제 금액이 0원 이하 - FAIL")
-	void updatePayment_fail_zeroOrNegativePrice() {
+	void testUpdatePayment_fail_zeroOrNegativePrice() {
 		// Given
 		PaymentUpdateReqDto reqDto = new PaymentUpdateReqDto(0, PaymentStatus.FAILED);
 
@@ -237,7 +237,7 @@ public class PaymentServiceTest {
 
 	@Test
 	@DisplayName("결제 정보 수정 실패 - 존재하지 않는 결제 ID - FAIL")
-	void updatePayment_fail_paymentNotFound() {
+	void testUpdatePayment_fail_paymentNotFound() {
 		// Given
 		UUID notExistId = UUID.randomUUID();
 		PaymentUpdateReqDto reqDto = new PaymentUpdateReqDto(3000, PaymentStatus.FAILED);
@@ -250,5 +250,29 @@ public class PaymentServiceTest {
 		});
 
 		assertEquals("해당 ID 에 대한 결제 정보를 찾을 수 없습니다 : " + notExistId, exception.getMessage());
+	}
+
+	@Test
+	@DisplayName("결제 논리적 삭제 성공 - SUCCESS")
+	void testDeletePayment_success() {
+		// Given
+		when(paymentRepository.findByIdAndDeletedAtIsNull(testPaymentId)).thenReturn(Optional.of(testPayment));
+
+		// When & Then
+		assertDoesNotThrow(() -> paymentService.deletePayment(testPaymentId));
+	}
+
+	@Test
+	@DisplayName("결제 논리적 삭제 실패 - 존재하지않는 결제 ID - FAIL")
+	void testDeletePayment_fail_paymentNotFound() {
+		// Given
+		UUID testPaymentFailId = UUID.randomUUID();
+
+		when(paymentRepository.findByIdAndDeletedAtIsNull(testPaymentFailId)).thenReturn(Optional.empty());
+
+		PaymentNotFoundException exception = assertThrows(PaymentNotFoundException.class,
+			() -> paymentService.deletePayment(testPaymentFailId));
+		assertEquals("해당 ID 에 대한 결제 정보를 찾을 수 없습니다 : " + testPaymentFailId, exception.getMessage());
+
 	}
 }
