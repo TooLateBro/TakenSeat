@@ -27,6 +27,20 @@ ext {
     set('springCloudVersion', "2024.0.1")
 }
 
+def querydslDir = "$buildDir/generated/sources/annotationProcessor/java/main"
+
+sourceSets {
+    main {
+        java {
+            srcDirs += querydslDir
+        }
+    }
+}
+
+clean.doLast {
+    file(querydslDir).deleteDir()
+}
+
 dependencies {
 
     //queryDSL 의존성
