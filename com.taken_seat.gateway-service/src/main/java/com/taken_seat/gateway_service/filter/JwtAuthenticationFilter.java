@@ -4,7 +4,6 @@ import com.taken_seat.gateway_service.util.JwtUtil;
 import io.jsonwebtoken.Claims;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
@@ -30,12 +29,12 @@ public class JwtAuthenticationFilter implements GlobalFilter {
         }
         // 만약 /api/v1/users/ 로 요청의 헤더값에 token 이 담겨오면 해당 token 을 검사해서 헤더에 데이터를 담아서 반환
         // 요청에서 JWT 토큰을 추출
-        String token = jwtUtil.extractToken(exchange);
+        try {
+            String token = jwtUtil.extractToken(exchange);
 
         // 토큰이 없거나 유효하지 않으면 401 Unauthorized 응답 반환
         if (token == null || !jwtUtil.validateToken(token)) {
-            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-            return exchange.getResponse().setComplete(); // 응답 완료 후 Mono 반환
+            throw new IllegalArgumentException("인증이 올바르지 않습니다.");
         }
 
         // 유효한 토큰에서 페이로드 파싱
@@ -53,8 +52,13 @@ public class JwtAuthenticationFilter implements GlobalFilter {
                                 .header("X-Email", email)
                                 .header("X-Role", role))
                 .build();
-
         // 수정된 요청을 다음 필터 또는 라우트로 전달
-        return chain.filter(mutatedExchange);
+            return chain.filter(mutatedExchange);
+
+        } catch (IllegalArgumentException e) {
+            return Mono.error(e);
+        } catch (Exception e) {
+            return Mono.error(new IllegalArgumentException("인증 정보가 올바르지 않습니다."));
+        }
     }
 }
