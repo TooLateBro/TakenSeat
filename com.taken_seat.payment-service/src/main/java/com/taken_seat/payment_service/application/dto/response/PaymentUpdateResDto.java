@@ -1,6 +1,5 @@
 package com.taken_seat.payment_service.application.dto.response;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -17,7 +16,7 @@ import lombok.NoArgsConstructor;
 @Builder(access = AccessLevel.PRIVATE)
 @NoArgsConstructor
 @AllArgsConstructor
-public class PaymentDetailResDto implements Serializable {
+public class PaymentUpdateResDto {
 
 	private UUID paymentId;
 
@@ -33,8 +32,8 @@ public class PaymentDetailResDto implements Serializable {
 
 	private LocalDateTime refundRequestedAt;
 
-	public static PaymentDetailResDto toResponse(Payment payment) {
-		return PaymentDetailResDto.builder()
+	public static PaymentUpdateResDto toResponse(Payment payment) {
+		return PaymentUpdateResDto.builder()
 			.paymentId(payment.getId())
 			.price(payment.getPrice())
 			.bookingId(payment.getBookingId())
@@ -44,5 +43,4 @@ public class PaymentDetailResDto implements Serializable {
 			.refundRequestedAt(payment.getRefundRequestedAt())
 			.build();
 	}
-
 }
