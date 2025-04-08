@@ -1,5 +1,6 @@
 package com.taken_seat.auth_service.domain.entity.user;
 
+import com.taken_seat.auth_service.domain.entity.mileage.Mileage;
 import com.taken_seat.auth_service.domain.vo.Role;
 import jakarta.persistence.*;
 import lombok.*;
@@ -78,6 +79,9 @@ public class User {
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<UserCoupon> userCoupons = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<Mileage> mileages = new ArrayList<>();
 
     public static User create(String username, String email, String phone, String password, Role role, UUID createdBy) {
         return User.builder()

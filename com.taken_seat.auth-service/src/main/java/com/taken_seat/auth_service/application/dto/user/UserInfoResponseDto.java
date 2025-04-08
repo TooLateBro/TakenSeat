@@ -2,12 +2,14 @@ package com.taken_seat.auth_service.application.dto.user;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.taken_seat.auth_service.application.dto.PageResponseDto;
+import com.taken_seat.auth_service.domain.entity.mileage.Mileage;
 import com.taken_seat.auth_service.domain.entity.user.User;
 import com.taken_seat.auth_service.domain.entity.user.UserCoupon;
 import com.taken_seat.auth_service.domain.vo.Role;
 import lombok.*;
 import org.springframework.data.domain.Page;
 
+import java.util.Comparator;
 import java.util.UUID;
 
 @Getter
@@ -22,6 +24,7 @@ public class UserInfoResponseDto {
     private String email;
     private String phone;
     private Role role;
+    private Integer mileage;
     private PageResponseDto<UUID> userCoupons;
 
     public static UserInfoResponseDto of(User user) {
@@ -42,6 +45,10 @@ public class UserInfoResponseDto {
                 .email(user.getEmail())
                 .phone(user.getPhone())
                 .role(user.getRole())
+                .mileage(user.getMileages().stream()
+                        .max(Comparator.comparing(Mileage::getUpdatedAt))
+                        .map(Mileage::getCount)
+                .orElse(0))
                 .userCoupons(couponsPage)
                 .build();
     }
