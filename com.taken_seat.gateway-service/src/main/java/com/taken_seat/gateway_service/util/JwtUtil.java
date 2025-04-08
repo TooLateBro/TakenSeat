@@ -30,9 +30,8 @@ public class JwtUtil {
         String header = exchange.getRequest().getHeaders().getFirst("Authorization");
         if (header != null || header.startsWith("Bearer ")) {
             return header.substring(7);
-        }else{
-            throw new RuntimeException("Unauthorized");
         }
+        return null;
     }
 
     public boolean validateToken(String token) {
