@@ -1,5 +1,6 @@
 package com.taken_seat.auth_service.domain.entity.user;
 
+import com.taken_seat.auth_service.domain.entity.mileage.Mileage;
 import com.taken_seat.auth_service.domain.vo.Role;
 import jakarta.persistence.*;
 import lombok.*;
@@ -7,6 +8,8 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -73,6 +76,12 @@ public class User {
     }
 
 // ======================================= 테이블 연관 관게 =======================================
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<UserCoupon> userCoupons = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<Mileage> mileages = new ArrayList<>();
 
     public static User create(String username, String email, String phone, String password, Role role, UUID createdBy) {
         return User.builder()
