@@ -2,11 +2,14 @@ package com.taken_seat.payment_service.presentation.controller;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,6 +39,12 @@ public class PaymentController {
 
 		return ResponseEntity.status(HttpStatus.OK)
 			.body(paymentService.registerPayment(paymentRegisterReqDto));
+	}
+
+	@GetMapping("/{id}")
+	public ResponseEntity<?> getPaymentDetail(@PathVariable("id") UUID id) {
+		return ResponseEntity.status(HttpStatus.OK)
+			.body(paymentService.getPaymentDetail(id));
 	}
 
 	private List<Map<String, String>> convertBindingErrors(BindingResult bindingResult) {
