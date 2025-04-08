@@ -4,6 +4,7 @@ import com.taken_seat.auth_service.domain.entity.user.User;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 public interface UserRepository {
@@ -11,4 +12,6 @@ public interface UserRepository {
     Optional<User> findByEmail(String email);
 
     User save(User user);
+
+    Optional<User> findById(UUID userId);
 }
