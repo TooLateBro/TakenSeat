@@ -13,9 +13,9 @@ import lombok.RequiredArgsConstructor;
 @Builder
 @AllArgsConstructor
 @RequiredArgsConstructor
-public class SeatPriceResponseDto {
+public class CreateSeatPriceResponseDto {
 
-	private UUID performanceSeatPriceId;
+	private UUID PerformanceSeatPriceId;
 	private SeatType seatType;
 	private Integer price;
 }
