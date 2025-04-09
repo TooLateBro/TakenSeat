@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CreateUserMileageRequestDto {
+public class UserMileageRequestDto {
 
     private Integer count;
 
