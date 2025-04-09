@@ -2,6 +2,7 @@ package com.taken_seat.performance_service.performance.domain.model;
 
 import java.util.UUID;
 
+import com.taken_seat.performance_service.performance.application.dto.request.UpdateSeatPriceDto;
 import com.taken_seat.performance_service.performancehall.domain.model.SeatType;
 
 import jakarta.persistence.Column;
@@ -43,4 +44,13 @@ public class PerformanceSeatPrice {
 
 	@Column(nullable = false)
 	private Integer price;
+
+	public void update(UpdateSeatPriceDto dto) {
+
+		if (dto.getSeatType() != null)
+			this.seatType = dto.getSeatType();
+		if (dto.getPrice() != null)
+			this.price = dto.getPrice();
+	}
+
 }
