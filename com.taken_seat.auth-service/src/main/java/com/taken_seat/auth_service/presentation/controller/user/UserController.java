@@ -6,6 +6,7 @@ import com.taken_seat.auth_service.application.service.user.UserService;
 import com.taken_seat.auth_service.presentation.dto.user.UserUpdateRequestDto;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,10 +40,15 @@ public class UserController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<PageResponseDto<UserInfoResponseDto>> searchUser(@RequestParam(required = false) String q,
+    public ResponseEntity<PageResponseDto<UserInfoResponseDto>> searchUser(@RequestHeader("X-Role") String userRole,
+                                                               @RequestParam(required = false) String q,
                                                                @RequestParam(required = false) String role,
                                                                @RequestParam(defaultValue = "0") int page,
                                                                @RequestParam(defaultValue = "10") int size){
+
+        if (userRole == null || !(userRole.equals("ADMIN") || userRole.equals("MANAGER"))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         PageResponseDto<UserInfoResponseDto> userInfo = userService.searchUser(q, role, page, size);
 
         return ResponseEntity.ok(userInfo);

@@ -59,6 +59,13 @@ public class Mileage {
         this.updatedAt = LocalDateTime.now();
     }
 
+    public static Mileage create(User user, Integer count){
+        return Mileage.builder()
+                .user(user)
+                .count(count)
+                .build();
+    }
+
     // ======================================= 테이블 연관 관게 =======================================
 
     @ManyToOne(fetch = FetchType.LAZY)
