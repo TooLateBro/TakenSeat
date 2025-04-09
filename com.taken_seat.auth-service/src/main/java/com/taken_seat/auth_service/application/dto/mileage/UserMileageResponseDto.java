@@ -3,6 +3,7 @@ package com.taken_seat.auth_service.application.dto.mileage;
 import com.taken_seat.auth_service.domain.entity.mileage.Mileage;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Getter
@@ -14,12 +15,14 @@ public class UserMileageResponseDto {
     private UUID userId;
     private UUID mileageId;
     private Integer count;
+    private LocalDateTime updatedAt;
 
     public static UserMileageResponseDto of(Mileage mileage) {
         return UserMileageResponseDto.builder()
                 .userId(mileage.getUser().getId())
                 .mileageId(mileage.getId())
                 .count(mileage.getCount())
+                .updatedAt(mileage.getUpdatedAt())
                 .build();
     }
 }
