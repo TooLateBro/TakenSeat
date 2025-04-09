@@ -50,7 +50,7 @@ public class RedisCachingConfig {
 			.serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(
 				new Jackson2JsonRedisSerializer<>(PaymentDetailResDto.class)));
 
-		// OrderSearchCache 설정 (1시간 TTL, OrderSearchResDto 직렬화)
+		// PaymentSearchCache 설정 (1시간 TTL, PagePaymentResponseDto 직렬화)
 		RedisCacheConfiguration orderSearchConfiguration = RedisCacheConfiguration
 			.defaultCacheConfig()
 			.entryTtl(PAYMENT_SEARCH_TTL)
