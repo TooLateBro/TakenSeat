@@ -51,9 +51,19 @@ public class MileageService {
     }
 
     @Transactional(readOnly = true)
+    public PageResponseDto<UserMileageResponseDto> getMileageHistoryUser(UUID userId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "updatedAt"));
+        Page<Mileage> mileage = mileageRepository.findByUserIdAndDeletedAtIsNull(userId, pageable);
+
+        Page<UserMileageResponseDto> mileageInfo = mileage.map(UserMileageResponseDto::of);
+
+        return PageResponseDto.of(mileageInfo);
+    }
+
+    @Transactional(readOnly = true)
     public PageResponseDto<UserMileageResponseDto> searchMileageUser(
             Integer startCount, Integer endCount, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "updatedAt"));
         Page<Mileage> mileageInfo = mileageQueryRepository.findAllByDeletedAtIsNull(startCount, endCount, pageable);
 
         Page<UserMileageResponseDto> userMileages = mileageInfo.map(UserMileageResponseDto::of);
