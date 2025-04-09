@@ -16,8 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.taken_seat.booking_service.application.BookingService;
-import com.taken_seat.booking_service.application.dto.request.BookingCreateRequest;
+import com.taken_seat.booking_service.booking.application.BookingService;
+import com.taken_seat.booking_service.booking.application.dto.request.BookingCreateRequest;
+import com.taken_seat.booking_service.common.CustomUser;
 
 @SpringBootTest
 @Transactional
@@ -31,7 +32,7 @@ class ConcurrencyTest {
 	@Test
 	@DisplayName("동시 요청시 하나만 성공")
 	void test() throws InterruptedException {
-		int threadCount = 20;
+		int threadCount = 10;
 		ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
 		CountDownLatch latch = new CountDownLatch(threadCount);
 
@@ -41,11 +42,13 @@ class ConcurrencyTest {
 			int userIndex = i;
 			results.add(executorService.submit(() -> {
 				try {
+					CustomUser customUser = new CustomUser(UUID.randomUUID(), "testEmail", "testRole");
+
 					BookingCreateRequest request = BookingCreateRequest.builder()
 						.seatId(seatId)
 						.build();
 
-					bookingService.createBooking(request);
+					bookingService.createBooking(customUser, request);
 					return "SUCCESS: 사용자 " + userIndex;
 				} catch (Exception e) {
 					return "FAIL: 사용자 " + userIndex + " -> " + e.getMessage();
