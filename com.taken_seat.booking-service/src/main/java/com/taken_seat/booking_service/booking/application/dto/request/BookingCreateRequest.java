@@ -1,4 +1,4 @@
-package com.taken_seat.booking_service.application.dto.request;
+package com.taken_seat.booking_service.booking.application.dto.request;
 
 import java.util.UUID;
 

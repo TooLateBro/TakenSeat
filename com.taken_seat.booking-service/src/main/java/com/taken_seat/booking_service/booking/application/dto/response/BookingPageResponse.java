@@ -1,11 +1,11 @@
-package com.taken_seat.booking_service.application.dto.response;
+package com.taken_seat.booking_service.booking.application.dto.response;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 
-import com.taken_seat.booking_service.domain.Booking;
+import com.taken_seat.booking_service.booking.domain.Booking;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
