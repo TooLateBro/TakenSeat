@@ -60,12 +60,6 @@ public class Performance {
 
 	private String discountInfo;
 
-	@Column(name = "deleted_by")
-	private UUID deletedBy;
-
-	@Column(name = "deleted_at")
-	private LocalDateTime deletedAt;
-
 	@OneToMany(mappedBy = "performance", cascade = CascadeType.ALL, orphanRemoval = true)
 	@Builder.Default
 	private List<PerformanceSchedule> schedules = new ArrayList<>();
@@ -115,11 +109,5 @@ public class Performance {
 
 		performance.getSchedules().addAll(schedules);
 		return performance;
-	}
-
-	public void softDelete(UUID userId) {
-
-		this.deletedBy = userId;
-		this.deletedAt = LocalDateTime.now();
 	}
 }

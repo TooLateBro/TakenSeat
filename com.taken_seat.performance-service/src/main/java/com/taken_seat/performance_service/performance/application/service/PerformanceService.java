@@ -2,10 +2,7 @@ package com.taken_seat.performance_service.performance.application.service;
 
 import static com.taken_seat.performance_service.performance.application.dto.mapper.ResponseMapper.*;
 
-import java.util.UUID;
-
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.taken_seat.performance_service.performance.application.dto.request.CreateRequestDto;
 import com.taken_seat.performance_service.performance.application.dto.response.CreateResponseDto;
@@ -22,7 +19,6 @@ public class PerformanceService {
 
 	private final PerformanceRepository performanceRepository;
 
-	@Transactional
 	public CreateResponseDto create(CreateRequestDto request) {
 
 		Performance performance = Performance.create(request);
@@ -31,15 +27,5 @@ public class PerformanceService {
 
 		return createToDto(saved);
 
-	}
-
-	@Transactional
-	public void delete(UUID id, UUID deletedBy) {
-
-		if (id == null) {
-			throw new IllegalArgumentException("공연 ID는 null일 수 없습니다.");
-		}
-
-		performanceRepository.deleteById(id, deletedBy);
 	}
 }
