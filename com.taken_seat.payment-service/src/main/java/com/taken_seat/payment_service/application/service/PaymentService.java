@@ -66,20 +66,20 @@ public class PaymentService {
 			.price(paymentRegisterReqDto.getPrice())
 			.paymentStatus(PaymentStatus.COMPLETED)
 			.approvedAt(now)
-			.createdBy(UUID.randomUUID())
 			.build();
 
+		payment.prePersist(UUID.randomUUID());
 		paymentRepository.save(payment);
 
-		paymentHistoryRepository.save(
-			PaymentHistory.builder()
-				.payment(payment)
-				.price(payment.getPrice())
-				.paymentStatus(payment.getPaymentStatus())
-				.approvedAt(now)
-				.createdBy(UUID.randomUUID())
-				.build()
-		);
+		PaymentHistory paymentHistory = PaymentHistory.builder()
+			.payment(payment)
+			.price(payment.getPrice())
+			.paymentStatus(payment.getPaymentStatus())
+			.approvedAt(now)
+			.build();
+
+		paymentHistory.prePersist(UUID.randomUUID());
+		paymentHistoryRepository.save(paymentHistory);
 
 		return PaymentRegisterResDto.toResponse(payment);
 	}
@@ -131,6 +131,6 @@ public class PaymentService {
 			.orElseThrow(() -> new PaymentNotFoundException("해당 ID 에 대한 결제 정보를 찾을 수 없습니다 : " + id));
 
 		UUID deletedBy = UUID.randomUUID();
-		payment.softDelete(deletedBy);
+		payment.delete(UUID.randomUUID());
 	}
 }
