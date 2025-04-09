@@ -1,4 +1,4 @@
-package com.taken_seat.common;
+package com.taken_seat.booking_service.common;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
