@@ -49,7 +49,7 @@ public class BookingServiceImpl implements BookingService {
 	@Transactional(readOnly = true)
 	public BookingReadResponse readBooking(CustomUser customUser, UUID id) {
 
-		Booking booking = bookingRepository.findByIdAndUserId(id, customUser.getUserId())
+		Booking booking = bookingRepository.findByIdAndUserIdAndDeletedAtIsNull(id, customUser.getUserId())
 			.orElseThrow(() -> new RuntimeException("존재하지 않는 예약입니다."));
 
 		return BookingReadResponse.toDto(booking);
@@ -59,7 +59,7 @@ public class BookingServiceImpl implements BookingService {
 	@Transactional(readOnly = true)
 	public BookingPageResponse readBookings(CustomUser customUser, Pageable pageable) {
 
-		Page<Booking> page = bookingRepository.findAllByUserId(pageable, customUser.getUserId());
+		Page<Booking> page = bookingRepository.findAllByUserIdAndDeletedAtIsNull(pageable, customUser.getUserId());
 
 		return BookingPageResponse.toDto(page);
 	}
@@ -68,7 +68,7 @@ public class BookingServiceImpl implements BookingService {
 	@Transactional
 	public void updateBooking(CustomUser customUser, UUID id) {
 
-		Booking booking = bookingRepository.findByIdAndUserId(id, customUser.getUserId())
+		Booking booking = bookingRepository.findByIdAndUserIdAndDeletedAtIsNull(id, customUser.getUserId())
 			.orElseThrow(() -> new RuntimeException("존재하지 않는 예약입니다."));
 
 		if (booking.getCanceledAt() != null) {
@@ -88,7 +88,7 @@ public class BookingServiceImpl implements BookingService {
 	@Transactional
 	public void deleteBooking(CustomUser customUser, UUID id) {
 
-		Booking booking = bookingRepository.findByIdAndUserId(id, customUser.getUserId())
+		Booking booking = bookingRepository.findByIdAndUserIdAndDeletedAtIsNull(id, customUser.getUserId())
 			.orElseThrow(() -> new RuntimeException("존재하지 않는 예약입니다."));
 
 		if (booking.getCanceledAt() == null) {
@@ -116,6 +116,7 @@ public class BookingServiceImpl implements BookingService {
 	@Transactional(readOnly = true)
 	public AdminBookingPageResponse adminReadBookings(CustomUser customUser, Pageable pageable) {
 
+		// TODO: Querydsl 을 적용하여 사용자ID 포함 동적 검색 적용하기
 		String role = customUser.getRole();
 		if (role == null || (!role.equals("MANAGER") && !role.equals("MASTER"))) {
 			throw new RuntimeException("접근 권한이 없습니다.");
