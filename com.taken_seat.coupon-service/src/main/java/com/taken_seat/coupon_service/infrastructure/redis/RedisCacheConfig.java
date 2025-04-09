@@ -28,38 +28,28 @@ public class RedisCacheConfig {
                         // pageable 이 json serializer 와 잘 맞지 않아서 java 로 함
                         RedisSerializationContext.SerializationPair.fromSerializer(RedisSerializer.json()));
 
-        RedisCacheConfiguration searchCoupon = RedisCacheConfiguration
+        RedisCacheConfiguration searchCache = RedisCacheConfiguration
                 .defaultCacheConfig()
                 .disableCachingNullValues()
                 .entryTtl(Duration.ofSeconds(600))
-                .computePrefixWith(cacheName -> "searchCoupon : " + cacheName + "::")
+                .computePrefixWith(cacheName -> "searchCache : " + cacheName + "::")
                 .serializeValuesWith(
                         RedisSerializationContext.SerializationPair.fromSerializer(RedisSerializer.json())
                 );
 
-        RedisCacheConfiguration createCoupon = RedisCacheConfiguration
+        RedisCacheConfiguration couponCache = RedisCacheConfiguration
                 .defaultCacheConfig()
                 .disableCachingNullValues()
                 .entryTtl(Duration.ofSeconds(600))
-                .computePrefixWith(cacheName -> "createCoupon : " + cacheName + "::")
-                .serializeValuesWith(
-                        RedisSerializationContext.SerializationPair.fromSerializer(RedisSerializer.json())
-                );
-
-        RedisCacheConfiguration updateCoupon = RedisCacheConfiguration
-                .defaultCacheConfig()
-                .disableCachingNullValues()
-                .entryTtl(Duration.ofSeconds(600))
-                .computePrefixWith(cacheName -> "updateCoupon : " + cacheName + "::")
+                .computePrefixWith(cacheName -> "couponCache : " + cacheName + "::")
                 .serializeValuesWith(
                         RedisSerializationContext.SerializationPair.fromSerializer(RedisSerializer.json())
                 );
 
         return RedisCacheManager.builder(redisConnectionFactory)
                 .cacheDefaults(defaultConfig)
-                .withCacheConfiguration("searchCoupon", searchCoupon)
-                .withCacheConfiguration("createCoupon", createCoupon)
-                .withCacheConfiguration("updateCoupon", updateCoupon)
+                .withCacheConfiguration("searchCache", searchCache)
+                .withCacheConfiguration("couponCache", couponCache)
                 .build();
     }
 

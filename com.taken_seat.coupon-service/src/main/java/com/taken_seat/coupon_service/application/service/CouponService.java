@@ -32,7 +32,7 @@ public class CouponService {
     }
 
     @Transactional
-    @CachePut(cacheNames = "createCoupon", key = "#dto.name")
+    @CachePut(cacheNames = "couponCache", key = "#result.id")
     public CouponResponseDto createCoupon(CouponDto dto) {
         Coupon coupon = Coupon.create(
                 dto.getName(), dto.getCode(), dto.getQuantity(),
@@ -53,7 +53,7 @@ public class CouponService {
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(cacheNames = "searchCoupon", key = "#name +'-'+ #page + '-' + #size")
+    @Cacheable(cacheNames = "searchCache", key = "#name +'-'+ #page + '-' + #size")
     public PageResponseDto<CouponResponseDto> searchCoupon(String name, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Coupon> coupons = couponQueryRepository.findAllByDeletedAtIsNull(name, pageable);
@@ -64,10 +64,9 @@ public class CouponService {
     }
 
     @Transactional
-    @CachePut(cacheNames = "updateCoupon", key = "#couponId + '-' + #userId+ '-'+#dto.name")
+    @CachePut(cacheNames = "couponCache", key = "#result.id")
     @Caching(evict = {
-            @CacheEvict(cacheNames = "createCoupon", allEntries = true),
-            @CacheEvict(cacheNames = "searchCoupon", allEntries = true)
+            @CacheEvict(cacheNames = "searchCache", allEntries = true)
     })
     public CouponResponseDto updateCoupon(UUID couponId, UUID userId, CouponUpdateDto dto) {
         Coupon coupon = couponRepository.findByIdAndDeletedAtIsNull(couponId)
@@ -84,9 +83,8 @@ public class CouponService {
 
     @Transactional
     @Caching(evict = {
-            @CacheEvict(cacheNames = "createCoupon", allEntries = true),
-            @CacheEvict(cacheNames = "updateCoupon", allEntries = true),
-            @CacheEvict(cacheNames = "searchCoupon", allEntries = true)
+            @CacheEvict(cacheNames = "couponCache", allEntries = true),
+            @CacheEvict(cacheNames = "searchCache", allEntries = true)
     })
     public void deleteCoupon(UUID couponId, UUID userId) {
         Coupon coupon = couponRepository.findByIdAndDeletedAtIsNull(couponId)
