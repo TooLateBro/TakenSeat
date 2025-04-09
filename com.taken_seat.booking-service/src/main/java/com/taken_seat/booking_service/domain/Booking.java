@@ -64,4 +64,8 @@ public class Booking extends BaseEntity {
 	private LocalDateTime bookedAt;
 
 	private LocalDateTime canceledAt;
+
+	public void cancel() {
+		this.canceledAt = LocalDateTime.now();
+	}
 }
