@@ -70,6 +70,27 @@ public class MileageController {
         );
         return ResponseEntity.ok(mileageInfo);
     }
-//    @PatchMapping
-//    @DeleteMapping
+
+    @PatchMapping("/{mileageId}")
+    public ResponseEntity<UserMileageResponseDto> updateMileageUser(@PathVariable UUID mileageId,
+                                                                @RequestHeader("X-Role") String role,
+                                                                @RequestHeader("X-User-Id") UUID userId,
+                                                                @RequestBody UserMileageRequestDto requestDto){
+        if(role == null || !(role.equals("ADMIN") || role.equals("MANAGER"))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        UserMileageResponseDto mileageInfo = mileageService.updateMileageUser(mileageId, userId, requestDto.toDto());
+
+        return ResponseEntity.ok(mileageInfo);
+    }
+    @DeleteMapping("/{mileageId}")
+    public ResponseEntity<Void> deleteMileageUser(@PathVariable UUID mileageId,
+                                                  @RequestHeader("X-Role") String role,
+                                                  @RequestHeader("X-User-Id") UUID userId) {
+        if(role == null || !(role.equals("ADMIN") || role.equals("MANAGER"))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        mileageService.deleteMileageUser(mileageId, userId);
+        return ResponseEntity.noContent().build();
+    }
 }

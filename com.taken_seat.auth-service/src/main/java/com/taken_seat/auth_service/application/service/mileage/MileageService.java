@@ -69,4 +69,22 @@ public class MileageService {
         Page<UserMileageResponseDto> userMileages = mileageInfo.map(UserMileageResponseDto::of);
         return PageResponseDto.of(userMileages);
     }
+
+    @Transactional
+    public UserMileageResponseDto updateMileageUser(UUID mileageId, UUID userId, UserMileageDto dto) {
+        Mileage mileage = mileageRepository.findById(mileageId)
+                .orElseThrow(()-> new IllegalArgumentException("마일리지를 보유한 유저를 찾을 수 없습니다."));
+
+        mileage.update(dto.getCount(), userId);
+
+        return UserMileageResponseDto.of(mileage);
+    }
+
+    @Transactional
+    public void deleteMileageUser(UUID mileageId, UUID userId) {
+        Mileage mileage = mileageRepository.findById(mileageId)
+                .orElseThrow(()-> new IllegalArgumentException("마일리지를 보유한 유저를 찾을 수 없습니다."));
+
+        mileage.del(userId);
+    }
 }
