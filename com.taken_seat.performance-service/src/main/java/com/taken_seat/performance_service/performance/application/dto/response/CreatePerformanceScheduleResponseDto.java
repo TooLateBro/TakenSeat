@@ -15,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 @Builder
 @AllArgsConstructor
 @RequiredArgsConstructor
-public class PerformanceScheduleResponseDto {
+public class CreatePerformanceScheduleResponseDto {
 
 	private UUID performanceScheduleId;
 	private UUID performanceHallId;
@@ -24,6 +24,6 @@ public class PerformanceScheduleResponseDto {
 	private LocalDateTime saleStartAt;
 	private LocalDateTime saleEndAt;
 	private PerformanceScheduleStatus status;
-	private List<SeatPriceResponseDto> seatPrices;
+	private List<CreateSeatPriceResponseDto> seatPrices;
 }
 
