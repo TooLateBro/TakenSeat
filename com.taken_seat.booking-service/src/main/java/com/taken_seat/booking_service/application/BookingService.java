@@ -17,4 +17,6 @@ public interface BookingService {
 	BookingPageResponse readBookings(Pageable pageable, UUID userId);
 
 	void updateBooking(UUID id);
+
+	void deleteBooking(UUID id);
 }
