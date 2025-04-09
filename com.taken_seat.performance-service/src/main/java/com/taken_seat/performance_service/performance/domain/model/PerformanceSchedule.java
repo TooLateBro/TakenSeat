@@ -59,5 +59,6 @@ public class PerformanceSchedule {
 	private PerformanceScheduleStatus status;
 
 	@OneToMany(mappedBy = "performanceSchedule", cascade = CascadeType.ALL, orphanRemoval = true)
+	@Builder.Default
 	private List<PerformanceSeatPrice> seatPrices = new ArrayList<>();
 }

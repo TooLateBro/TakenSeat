@@ -35,7 +35,7 @@ public class Seat {
 	@JoinColumn(name = "performance_hall_id", nullable = false)
 	private PerformanceHall performanceHall;
 
-	@Column(nullable = false, length = 10)
+	@Column(name = "seat_row_number", nullable = false, length = 10)
 	private String rowNumber;
 
 	@Column(nullable = false, length = 10)
