@@ -7,6 +7,7 @@ import com.taken_seat.coupon_service.application.dto.PageResponseDto;
 import com.taken_seat.coupon_service.domain.entity.Coupon;
 import com.taken_seat.coupon_service.domain.repository.CouponQueryRepository;
 import com.taken_seat.coupon_service.domain.repository.CouponRepository;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -48,6 +49,7 @@ public class CouponService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = "searchCoupon", key = "#name +'-'+ #page + '-' + #size")
     public PageResponseDto<CouponResponseDto> searchCoupon(String name, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Coupon> coupons = couponQueryRepository.findAllByDeletedAtIsNull(name, pageable);
