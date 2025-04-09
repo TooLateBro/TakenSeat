@@ -70,4 +70,12 @@ public class CouponService {
 
         return CouponResponseDto.of(coupon);
     }
+
+    @Transactional
+    public void deleteCoupon(UUID couponId, UUID userId) {
+        Coupon coupon = couponRepository.findByIdAndDeletedAtIsNull(couponId)
+                .orElseThrow(()-> new IllegalArgumentException("쿠폰이 존재하지 않습니다."));
+
+        coupon.del(userId);
+    }
 }
