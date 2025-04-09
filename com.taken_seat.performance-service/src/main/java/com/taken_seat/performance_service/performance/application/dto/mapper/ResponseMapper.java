@@ -106,7 +106,7 @@ public class ResponseMapper {
 		return PageResponseDto.builder()
 			.content(content)
 			.pageSize(pages.getSize())
-			.pageNumber(pages.getNumber())
+			.pageNumber(pages.getNumber() + 1)
 			.totalPages(pages.getTotalPages())
 			.totalElements(pages.getTotalElements())
 			.isLast(pages.isLast())
