@@ -79,4 +79,12 @@ public class UserService {
 
         return UserInfoResponseDto.of(user);
     }
+
+    @Transactional
+    public void deleteUser(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(()-> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        user.del(userId);
+    }
 }
