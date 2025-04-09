@@ -7,7 +7,10 @@ import com.taken_seat.coupon_service.application.dto.PageResponseDto;
 import com.taken_seat.coupon_service.domain.entity.Coupon;
 import com.taken_seat.coupon_service.domain.repository.CouponQueryRepository;
 import com.taken_seat.coupon_service.domain.repository.CouponRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -29,6 +32,7 @@ public class CouponService {
     }
 
     @Transactional
+    @CachePut(cacheNames = "createCoupon", key = "#dto.name")
     public CouponResponseDto createCoupon(CouponDto dto) {
         Coupon coupon = Coupon.create(
                 dto.getName(), dto.getCode(), dto.getQuantity(),
@@ -60,6 +64,11 @@ public class CouponService {
     }
 
     @Transactional
+    @CachePut(cacheNames = "updateCoupon", key = "#couponId + '-' + #userId+ '-'+#dto.name")
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "createCoupon", allEntries = true),
+            @CacheEvict(cacheNames = "searchCoupon", allEntries = true)
+    })
     public CouponResponseDto updateCoupon(UUID couponId, UUID userId, CouponUpdateDto dto) {
         Coupon coupon = couponRepository.findByIdAndDeletedAtIsNull(couponId)
                 .orElseThrow(()-> new IllegalArgumentException("쿠폰이 존재하지 않습니다."));
@@ -74,6 +83,11 @@ public class CouponService {
     }
 
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "createCoupon", allEntries = true),
+            @CacheEvict(cacheNames = "updateCoupon", allEntries = true),
+            @CacheEvict(cacheNames = "searchCoupon", allEntries = true)
+    })
     public void deleteCoupon(UUID couponId, UUID userId) {
         Coupon coupon = couponRepository.findByIdAndDeletedAtIsNull(couponId)
                 .orElseThrow(()-> new IllegalArgumentException("쿠폰이 존재하지 않습니다."));
