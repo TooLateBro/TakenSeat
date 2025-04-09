@@ -9,13 +9,13 @@ import com.taken_seat.performance_service.performance.domain.model.PerformanceSt
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Builder
 @AllArgsConstructor
-@RequiredArgsConstructor
-public class CreateResponseDto {
+@NoArgsConstructor
+public class DetailResponseDto {
 
 	private UUID performanceId;
 	private String title;

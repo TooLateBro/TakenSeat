@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.taken_seat.performance_service.performance.application.dto.request.CreateRequestDto;
 import com.taken_seat.performance_service.performance.application.dto.response.CreateResponseDto;
+import com.taken_seat.performance_service.performance.application.dto.response.DetailResponseDto;
 import com.taken_seat.performance_service.performance.domain.model.Performance;
 import com.taken_seat.performance_service.performance.domain.repository.PerformanceRepository;
 
@@ -30,6 +31,16 @@ public class PerformanceService {
 		Performance saved = performanceRepository.save(performance);
 
 		return createToDto(saved);
+
+	}
+
+	@Transactional(readOnly = true)
+	public DetailResponseDto getDetail(UUID id) {
+
+		Performance performance = performanceRepository.findById(id)
+			.orElseThrow(() -> new IllegalArgumentException("공연 정보를 찾을 수 없습니다"));
+
+		return detailToDto(performance);
 
 	}
 
