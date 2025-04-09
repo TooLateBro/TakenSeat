@@ -4,12 +4,17 @@ import static com.taken_seat.performance_service.performance.application.dto.map
 
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.taken_seat.performance_service.performance.application.dto.mapper.ResponseMapper;
 import com.taken_seat.performance_service.performance.application.dto.request.CreateRequestDto;
+import com.taken_seat.performance_service.performance.application.dto.request.SearchFilterParam;
 import com.taken_seat.performance_service.performance.application.dto.response.CreateResponseDto;
 import com.taken_seat.performance_service.performance.application.dto.response.DetailResponseDto;
+import com.taken_seat.performance_service.performance.application.dto.response.PageResponseDto;
 import com.taken_seat.performance_service.performance.domain.model.Performance;
 import com.taken_seat.performance_service.performance.domain.repository.PerformanceRepository;
 
@@ -22,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 public class PerformanceService {
 
 	private final PerformanceRepository performanceRepository;
+	private final ResponseMapper responseMapper;
 
 	@Transactional
 	public CreateResponseDto create(CreateRequestDto request) {
@@ -35,13 +41,20 @@ public class PerformanceService {
 	}
 
 	@Transactional(readOnly = true)
+	public PageResponseDto search(SearchFilterParam filterParam, Pageable pageable) {
+
+		Page<Performance> pages = performanceRepository.findAll(filterParam, pageable);
+
+		return responseMapper.toPage(pages);
+	}
+
+	@Transactional(readOnly = true)
 	public DetailResponseDto getDetail(UUID id) {
 
 		Performance performance = performanceRepository.findById(id)
 			.orElseThrow(() -> new IllegalArgumentException("공연 정보를 찾을 수 없습니다"));
 
 		return detailToDto(performance);
-
 	}
 
 	@Transactional

@@ -1,10 +1,10 @@
-package com.taken_seat.booking_service.application.dto.response;
+package com.taken_seat.booking_service.booking.application.dto.response;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import com.taken_seat.booking_service.domain.Booking;
-import com.taken_seat.booking_service.domain.BookingStatus;
+import com.taken_seat.booking_service.booking.domain.Booking;
+import com.taken_seat.booking_service.booking.domain.BookingStatus;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

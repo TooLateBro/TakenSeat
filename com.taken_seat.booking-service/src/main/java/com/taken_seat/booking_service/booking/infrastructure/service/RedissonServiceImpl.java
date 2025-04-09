@@ -1,4 +1,4 @@
-package com.taken_seat.booking_service.infrastructure.service;
+package com.taken_seat.booking_service.booking.infrastructure.service;
 
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -7,7 +7,7 @@ import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
 
-import com.taken_seat.booking_service.application.RedissonService;
+import com.taken_seat.booking_service.booking.application.RedissonService;
 
 import lombok.RequiredArgsConstructor;
 
