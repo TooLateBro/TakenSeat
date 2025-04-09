@@ -30,13 +30,15 @@ public class MileageQueryRepositoryImpl implements MileageQueryRepository {
         QUser user = QUser.user;
         QMileage mileage = QMileage.mileage;
 
-        // 서브쿼리: min과 max 조건을 만족하는 user.id 조회
+        // 서브쿼리: count 조건을 만족하는 mileage 레코드의 user.id 조회
         JPAQuery<UUID> subQuery = jpaQueryFactory
                 .select(mileage.user.id)
                 .from(mileage)
-                .where(mileage.deletedAt.isNull())
-                .groupBy(mileage.user.id)
-                .having(mileageCountRange(startCount, endCount, mileage));
+                .where(
+                        mileage.deletedAt.isNull(),
+                        mileageCountBetween(startCount, endCount, mileage)
+                )
+                .groupBy(mileage.user.id);
 
         // 콘텐츠 조회
         List<Mileage> content = jpaQueryFactory
@@ -44,7 +46,8 @@ public class MileageQueryRepositoryImpl implements MileageQueryRepository {
                 .join(mileage.user, user)
                 .where(
                         isNotDeleted(mileage),
-                        mileage.user.id.in(subQuery)
+                        mileage.user.id.in(subQuery),
+                        mileageCountBetween(startCount, endCount, mileage)  // 여기서도 조건 적용
                 )
                 .orderBy(mileage.updatedAt.desc())
                 .offset(pageable.getOffset())
@@ -57,7 +60,8 @@ public class MileageQueryRepositoryImpl implements MileageQueryRepository {
                 .from(mileage)
                 .where(
                         isNotDeleted(mileage),
-                        mileage.user.id.in(subQuery)
+                        mileage.user.id.in(subQuery),
+                        mileageCountBetween(startCount, endCount, mileage)  // 여기서도 조건 적용
                 )
                 .fetchOne();
 
@@ -68,10 +72,17 @@ public class MileageQueryRepositoryImpl implements MileageQueryRepository {
         return mileage.deletedAt.isNull();
     }
 
-    private BooleanExpression mileageCountRange(Integer startCount, Integer endCount, QMileage mileage) {
-        BooleanExpression condition = mileage.count.min().goe(startCount != null ? startCount : 0);
+    private BooleanExpression mileageCountBetween(Integer startCount, Integer endCount, QMileage mileage) {
+        if (startCount == null && endCount == null) {
+            return null;
+        }
+        BooleanExpression condition = null;
+        if (startCount != null) {
+            condition = mileage.count.goe(startCount);
+        }
         if (endCount != null) {
-            condition = condition.and(mileage.count.max().loe(endCount));
+            BooleanExpression endCondition = mileage.count.loe(endCount);
+            condition = condition == null ? endCondition : condition.and(endCondition);
         }
         return condition;
     }
