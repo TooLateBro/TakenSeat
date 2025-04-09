@@ -1,8 +1,6 @@
 package com.taken_seat.booking_service.infrastructure.service;
 
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -63,5 +61,23 @@ public class BookingServiceImpl implements BookingService {
 		Page<Booking> page = bookingRepository.findAllByUserId(pageable, userId);
 
 		return BookingPageResponse.toDto(page);
+	}
+
+	@Override
+	@Transactional
+	public void updateBooking(UUID id) {
+		Booking booking = bookingRepository.findById(id).orElseThrow(() -> new RuntimeException("없는 예약압니다."));
+
+		if (booking.getCanceledAt() != null) {
+			throw new RuntimeException("이미 취소된 예약입니다.");
+		}
+
+		booking.cancel();
+
+		if (booking.getPaymentId() != null) {
+			// TODO: 환불 요청 보내기
+		}
+
+		// TODO: 좌석 선점 해제 요청 보내기
 	}
 }

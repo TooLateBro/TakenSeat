@@ -1,6 +1,5 @@
 package com.taken_seat.booking_service.application;
 
-import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.Pageable;
@@ -16,4 +15,6 @@ public interface BookingService {
 	BookingReadResponse readBooking(UUID id);
 
 	BookingPageResponse readBookings(Pageable pageable, UUID userId);
+
+	void updateBooking(UUID id);
 }

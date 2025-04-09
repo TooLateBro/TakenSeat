@@ -87,4 +87,22 @@ class BookingServiceTest {
 
 		assertEquals(response.getTotalElements(), list.size());
 	}
+
+	@Test
+	@DisplayName("예매 취소 테스트")
+	void test3() throws Exception {
+		Booking booking = Booking.builder()
+			.userId(UUID.randomUUID())
+			.performanceScheduleId(UUID.randomUUID())
+			.seatId(UUID.randomUUID())
+			.build();
+
+		Booking saved = bookingRepository.saveAndFlush(booking);
+
+		mockMvc.perform(patch("/api/v1/bookings/" + saved.getId()))
+			.andExpect(status().isNoContent());
+
+		assertNotNull(saved.getCanceledAt());
+	}
+
 }
