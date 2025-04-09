@@ -3,6 +3,10 @@ package com.taken_seat.payment_service.application.service;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,6 +51,7 @@ public class PaymentService {
 	 * @return PaymentRegisterResDto 등록된 결제의 정보
 	 * @throws IllegalArgumentException 결제 요청 금액이 1원 미만인 경우 예외 발생
 	 */
+	@CachePut(cacheNames = "paymentCache", key = "#result.paymentId")
 	public PaymentRegisterResDto registerPayment(PaymentRegisterReqDto paymentRegisterReqDto) {
 		// MASTER 계정이 직접 등록하는 API - 결제 API 호출 없이 수동 등록
 
@@ -80,6 +85,7 @@ public class PaymentService {
 	}
 
 	@Transactional(readOnly = true)
+	@CachePut(cacheNames = "paymentCache", key = "#id")
 	public PaymentDetailResDto getPaymentDetail(UUID id) {
 
 		Payment payment = paymentRepository.findByIdAndDeletedAtIsNull(id)
@@ -89,6 +95,7 @@ public class PaymentService {
 	}
 
 	@Transactional(readOnly = true)
+	@Cacheable(cacheNames = "paymentSearchCache", key = "#q + '-' + #category + '-' + #page + '-' + #size")
 	public PagePaymentResponseDto searchPayment(String q, String category, int page, int size, String sort,
 		String order) {
 
@@ -99,6 +106,8 @@ public class PaymentService {
 		return PagePaymentResponseDto.toResponse(paymentDetailResDtoPages);
 	}
 
+	@CachePut(cacheNames = "paymentCache", key = "#id")
+	@CacheEvict(cacheNames = "paymentSearchCache", allEntries = true)
 	public PaymentUpdateResDto updatePayment(UUID id, PaymentUpdateReqDto paymentUpdateReqDto) {
 
 		if (paymentUpdateReqDto.getPrice() <= 0) {
@@ -113,6 +122,10 @@ public class PaymentService {
 		return PaymentUpdateResDto.toResponse(payment);
 	}
 
+	@Caching(evict = {
+		@CacheEvict(cacheNames = "paymentCache", key = "#id"),
+		@CacheEvict(cacheNames = "paymentSearchCache", key = "#id")
+	})
 	public void deletePayment(UUID id) {
 		Payment payment = paymentRepository.findByIdAndDeletedAtIsNull(id)
 			.orElseThrow(() -> new PaymentNotFoundException("해당 ID 에 대한 결제 정보를 찾을 수 없습니다 : " + id));
