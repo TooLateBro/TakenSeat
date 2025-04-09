@@ -1,8 +1,5 @@
 package com.taken_seat.common_service.dto;
 
-import lombok.Getter;
-
-@Getter
 public record ApiResponseDate<T>(int status, boolean success, T body) {
 	// 성공 응답 생성
 	public static <T> ApiResponseDate<T> success(int status, T body) {

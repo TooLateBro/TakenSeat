@@ -25,7 +25,6 @@ public abstract class BaseTimeEntity {
 	private UUID createdBy;
 
 	@LastModifiedDate
-	@Column(nullable = false)
 	private LocalDateTime updatedAt;
 
 	@Column
@@ -43,11 +42,8 @@ public abstract class BaseTimeEntity {
 	}
 
 	public void prePersist(UUID createdBy) {
-		if (createdAt == null && createdBy == null) {
-			createdAt = LocalDateTime.now();
-			this.createdBy = createdBy;
-		}
-
+		createdAt = LocalDateTime.now();
+		this.createdBy = createdBy;
 		updatedAt = null;
 		updatedBy = null;
 	}
