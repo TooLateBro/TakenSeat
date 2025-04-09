@@ -83,5 +83,14 @@ public class MileageController {
 
         return ResponseEntity.ok(mileageInfo);
     }
-//    @DeleteMapping
+    @DeleteMapping("/{mileageId}")
+    public ResponseEntity<Void> deleteMileageUser(@PathVariable UUID mileageId,
+                                                  @RequestHeader("X-Role") String role,
+                                                  @RequestHeader("X-User-Id") UUID userId) {
+        if(role == null || !(role.equals("ADMIN") || role.equals("MANAGER"))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        mileageService.deleteMileageUser(mileageId, userId);
+        return ResponseEntity.noContent().build();
+    }
 }

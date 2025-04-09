@@ -79,4 +79,12 @@ public class MileageService {
 
         return UserMileageResponseDto.of(mileage);
     }
+
+    @Transactional
+    public void deleteMileageUser(UUID mileageId, UUID userId) {
+        Mileage mileage = mileageRepository.findById(mileageId)
+                .orElseThrow(()-> new IllegalArgumentException("마일리지를 보유한 유저를 찾을 수 없습니다."));
+
+        mileage.del(userId);
+    }
 }
