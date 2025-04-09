@@ -1,72 +1,108 @@
 package com.taken_seat.booking_service.infrastructure.service;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import java.util.ArrayList;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.transaction.annotation.Transactional;
 
-import com.taken_seat.booking_service.application.BookingService;
-import com.taken_seat.booking_service.application.dto.request.BookingCreateRequest;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.taken_seat.booking_service.application.dto.response.BookingPageResponse;
+import com.taken_seat.booking_service.application.dto.response.BookingReadResponse;
+import com.taken_seat.booking_service.domain.Booking;
+import com.taken_seat.booking_service.domain.repository.BookingRepository;
 
 @SpringBootTest
+@AutoConfigureMockMvc
+@Transactional
 class BookingServiceTest {
 
 	@Autowired
-	private BookingService bookingService;
+	private MockMvc mockMvc;
 
-	private final UUID seatId = UUID.randomUUID();
+	@Autowired
+	private BookingRepository bookingRepository;
+
+	@Autowired
+	private ObjectMapper objectMapper;
 
 	@Test
-	@DisplayName("동시 요청시 하나만 성공")
-	void test() throws InterruptedException {
-		int threadCount = 10;
-		ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
-		CountDownLatch latch = new CountDownLatch(threadCount);
+	@DisplayName("단건 조회 테스트")
+	void test1() throws Exception {
+		Booking booking = Booking.builder()
+			.userId(UUID.randomUUID())
+			.performanceScheduleId(UUID.randomUUID())
+			.seatId(UUID.randomUUID())
+			.build();
 
-		List<Future<String>> results = new ArrayList<>();
+		Booking saved = bookingRepository.saveAndFlush(booking);
 
-		for (int i = 0; i < threadCount; i++) {
-			int userIndex = i;
-			results.add(executorService.submit(() -> {
-				try {
-					BookingCreateRequest request = BookingCreateRequest.builder()
-						.seatId(seatId)
-						.build();
+		MvcResult mvcResult = mockMvc.perform(get("/api/v1/bookings/" + saved.getId()))
+			.andExpect(status().isOk())
+			.andReturn();
 
-					bookingService.createBooking(request);
-					return "SUCCESS: 사용자 " + userIndex;
-				} catch (Exception e) {
-					return "FAIL: 사용자 " + userIndex + " -> " + e.getMessage();
-				} finally {
-					latch.countDown();
-				}
-			}));
-		}
+		String contentAsString = mvcResult.getResponse().getContentAsString(StandardCharsets.UTF_8);
+		BookingReadResponse response = objectMapper.readValue(contentAsString, BookingReadResponse.class);
 
-		latch.await();
-
-		long successCount = results.stream()
-			.map(f -> {
-				try {
-					return f.get();
-				} catch (Exception e) {
-					return "FAIL";
-				}
-			})
-			.peek(System.out::println)
-			.filter(msg -> msg.startsWith("SUCCESS"))
-			.count();
-
-		assertEquals(successCount, 1);
+		assertEquals(response.getId(), saved.getId());
 	}
+
+	@Test
+	@DisplayName("페이지 조회 테스트")
+	void test2() throws Exception {
+		UUID userId = UUID.randomUUID();
+
+		Booking booking1 = Booking.builder()
+			.userId(userId)
+			.performanceScheduleId(UUID.randomUUID())
+			.seatId(UUID.randomUUID())
+			.build();
+
+		Booking booking2 = Booking.builder()
+			.userId(userId)
+			.performanceScheduleId(UUID.randomUUID())
+			.seatId(UUID.randomUUID())
+			.build();
+
+		List<Booking> list = List.of(booking1, booking2);
+		bookingRepository.saveAllAndFlush(list);
+
+		MvcResult mvcResult = mockMvc.perform(get("/api/v1/bookings").param("userId", userId.toString()))
+			.andExpect(status().isOk())
+			.andReturn();
+
+		String contentAsString = mvcResult.getResponse().getContentAsString(StandardCharsets.UTF_8);
+		BookingPageResponse response = objectMapper.readValue(contentAsString, BookingPageResponse.class);
+
+		assertEquals(response.getTotalElements(), list.size());
+	}
+
+	@Test
+	@DisplayName("예매 취소 테스트")
+	void test3() throws Exception {
+		Booking booking = Booking.builder()
+			.userId(UUID.randomUUID())
+			.performanceScheduleId(UUID.randomUUID())
+			.seatId(UUID.randomUUID())
+			.build();
+
+		Booking saved = bookingRepository.saveAndFlush(booking);
+
+		mockMvc.perform(patch("/api/v1/bookings/" + saved.getId()))
+			.andExpect(status().isNoContent());
+
+		assertNotNull(saved.getCanceledAt());
+	}
+
 }
