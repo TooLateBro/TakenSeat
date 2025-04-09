@@ -66,6 +66,11 @@ public class Mileage {
                 .build();
     }
 
+    public void update(Integer count, UUID userId){
+        this.count = count;
+        this.updatedBy = userId;
+    }
+
     // ======================================= 테이블 연관 관게 =======================================
 
     @ManyToOne(fetch = FetchType.LAZY)
