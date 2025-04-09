@@ -3,7 +3,11 @@ package com.taken_seat.performance_service.performance.domain.model;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+
+import com.taken_seat.performance_service.performance.application.dto.request.UpdatePerformanceScheduleDto;
+import com.taken_seat.performance_service.performance.application.dto.request.UpdateSeatPriceDto;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -61,4 +65,39 @@ public class PerformanceSchedule {
 	@OneToMany(mappedBy = "performanceSchedule", cascade = CascadeType.ALL, orphanRemoval = true)
 	@Builder.Default
 	private List<PerformanceSeatPrice> seatPrices = new ArrayList<>();
+
+	public void update(UpdatePerformanceScheduleDto dto) {
+
+		if (dto.getPerformanceHallId() != null)
+			this.performanceHallId = dto.getPerformanceHallId();
+		if (dto.getStartAt() != null)
+			this.startAt = dto.getStartAt();
+		if (dto.getEndAt() != null)
+			this.endAt = dto.getEndAt();
+		if (dto.getSaleStartAt() != null)
+			this.saleStartAt = dto.getSaleStartAt();
+		if (dto.getSaleEndAt() != null)
+			this.saleEndAt = dto.getSaleEndAt();
+		if (dto.getStatus() != null)
+			this.status = dto.getStatus();
+
+		if (dto.getSeatPrices() != null) {
+			for (UpdateSeatPriceDto seatDto : dto.getSeatPrices()) {
+				Optional<PerformanceSeatPrice> match = this.seatPrices.stream()
+					.filter(savedSeatPrices -> savedSeatPrices.getId().equals(seatDto.getPerformanceSeatPriceId()))
+					.findFirst();
+
+				if (match.isPresent()) {
+					match.get().update(seatDto);
+				} else {
+					PerformanceSeatPrice newPrice = PerformanceSeatPrice.builder()
+						.performanceSchedule(this)
+						.seatType(seatDto.getSeatType())
+						.price(seatDto.getPrice())
+						.build();
+					this.seatPrices.add(newPrice);
+				}
+			}
+		}
+	}
 }
