@@ -80,4 +80,17 @@ public class BookingServiceImpl implements BookingService {
 
 		// TODO: 좌석 선점 해제 요청 보내기
 	}
+
+	@Override
+	@Transactional
+	public void deleteBooking(UUID id) {
+		UUID userId = UUID.randomUUID();
+		Booking booking = bookingRepository.findById(id).orElseThrow(() -> new RuntimeException("존재하지 않는 예약입니다."));
+
+		if (booking.getCanceledAt() == null) {
+			throw new RuntimeException("예약 취소 후 삭제할 수 있습니다.");
+		}
+
+		booking.delete(userId);
+	}
 }

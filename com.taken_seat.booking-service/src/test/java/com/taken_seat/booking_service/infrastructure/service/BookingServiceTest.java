@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -103,6 +104,22 @@ class BookingServiceTest {
 			.andExpect(status().isNoContent());
 
 		assertNotNull(saved.getCanceledAt());
+	}
+
+	@Test
+	@DisplayName("예매 삭제 테스트")
+	void test4() throws Exception {
+		Booking booking = Booking.builder()
+			.userId(UUID.randomUUID())
+			.performanceScheduleId(UUID.randomUUID())
+			.seatId(UUID.randomUUID())
+			.canceledAt(LocalDateTime.now())
+			.build();
+
+		Booking saved = bookingRepository.saveAndFlush(booking);
+
+		mockMvc.perform(delete("/api/v1/bookings/" + saved.getId()))
+			.andExpect(status().isNoContent());
 	}
 
 }
