@@ -2,6 +2,7 @@ package com.taken_seat.auth_service.application.service.user;
 
 import com.taken_seat.auth_service.application.dto.PageResponseDto;
 import com.taken_seat.auth_service.application.dto.user.UserInfoResponseDto;
+import com.taken_seat.auth_service.application.dto.user.UserUpdateDto;
 import com.taken_seat.auth_service.domain.entity.user.User;
 import com.taken_seat.auth_service.domain.entity.user.UserCoupon;
 import com.taken_seat.auth_service.domain.repository.user.UserQueryRepository;
@@ -58,5 +59,24 @@ public class UserService {
         });
 
         return PageResponseDto.of(userInfoPage);
+    }
+
+    @Transactional
+    public UserInfoResponseDto updateUser(UUID userId, UserUpdateDto dto) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(()-> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        if(userRepository.findByEmail(String.valueOf(dto.getEmail())).isPresent()){
+            throw new IllegalArgumentException("이미 사용 중인 이메일 입니다.");
+        }
+        user.update(
+                dto.getUsername(),
+                dto.getEmail(),
+                dto.getPhone(),
+                dto.getPassword(),
+                dto.getRole()
+        );
+
+        return UserInfoResponseDto.of(user);
     }
 }

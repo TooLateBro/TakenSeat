@@ -93,4 +93,12 @@ public class User {
                 .createdBy(createdBy)
                 .build();
     }
+
+    public void update(String username, String email, String phone, String password, Role role) {
+        if (username != null) this.username = username;
+        if (email != null) this.email = email;
+        if (phone != null) this.phone = phone;
+        if (password != null) this.password = password;
+        if (role != null) this.role = role;
+    }
 }

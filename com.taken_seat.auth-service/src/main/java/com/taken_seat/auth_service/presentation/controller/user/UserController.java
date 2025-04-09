@@ -3,9 +3,10 @@ package com.taken_seat.auth_service.presentation.controller.user;
 import com.taken_seat.auth_service.application.dto.PageResponseDto;
 import com.taken_seat.auth_service.application.dto.user.UserInfoResponseDto;
 import com.taken_seat.auth_service.application.service.user.UserService;
+import com.taken_seat.auth_service.presentation.dto.user.UserUpdateRequestDto;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -43,6 +44,15 @@ public class UserController {
                                                                @RequestParam(defaultValue = "0") int page,
                                                                @RequestParam(defaultValue = "10") int size){
         PageResponseDto<UserInfoResponseDto> userInfo = userService.searchUser(q, role, page, size);
+
+        return ResponseEntity.ok(userInfo);
+    }
+
+    @PatchMapping("/{userId}")
+    public ResponseEntity<UserInfoResponseDto> updateUser(@PathVariable UUID userId,
+                                                          @Valid @RequestBody UserUpdateRequestDto requestDto){
+
+        UserInfoResponseDto userInfo = userService.updateUser(userId, requestDto.toDto());
 
         return ResponseEntity.ok(userInfo);
     }
