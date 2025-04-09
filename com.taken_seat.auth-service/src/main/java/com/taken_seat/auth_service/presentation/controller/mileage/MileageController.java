@@ -3,7 +3,7 @@ package com.taken_seat.auth_service.presentation.controller.mileage;
 import com.taken_seat.auth_service.application.dto.PageResponseDto;
 import com.taken_seat.auth_service.application.dto.mileage.UserMileageResponseDto;
 import com.taken_seat.auth_service.application.service.mileage.MileageService;
-import com.taken_seat.auth_service.presentation.dto.mileage.CreateUserMileageRequestDto;
+import com.taken_seat.auth_service.presentation.dto.mileage.UserMileageRequestDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +23,7 @@ public class MileageController {
     @PostMapping("/{userId}")
     public ResponseEntity<UserMileageResponseDto> createMileageToUser(@RequestHeader("X-Role") String role,
                                                @PathVariable UUID userId,
-                                               @RequestBody CreateUserMileageRequestDto requestDto) {
+                                               @RequestBody UserMileageRequestDto requestDto) {
 
         if(role == null || !(role.equals("ADMIN") || role.equals("MANAGER"))) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -44,6 +44,17 @@ public class MileageController {
         UserMileageResponseDto mileageInfo = mileageService.getMileageUser(mileageId);
         return ResponseEntity.ok(mileageInfo);
     }
+
+    @GetMapping("/history/{userId}")
+    public ResponseEntity<PageResponseDto<UserMileageResponseDto>> getMileageHistoryUser(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @PathVariable UUID userId) {
+
+        PageResponseDto<UserMileageResponseDto> mileageInfo = mileageService.getMileageHistoryUser(userId, page, size);
+        return ResponseEntity.ok(mileageInfo);
+    }
+
     @GetMapping("/search")
     public ResponseEntity<PageResponseDto<UserMileageResponseDto>> searchMileageUser(
             @RequestHeader("X-Role") String role,
