@@ -12,9 +12,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.taken_seat.performance_service.performance.application.dto.mapper.ResponseMapper;
 import com.taken_seat.performance_service.performance.application.dto.request.CreateRequestDto;
 import com.taken_seat.performance_service.performance.application.dto.request.SearchFilterParam;
+import com.taken_seat.performance_service.performance.application.dto.request.UpdateRequestDto;
 import com.taken_seat.performance_service.performance.application.dto.response.CreateResponseDto;
 import com.taken_seat.performance_service.performance.application.dto.response.DetailResponseDto;
 import com.taken_seat.performance_service.performance.application.dto.response.PageResponseDto;
+import com.taken_seat.performance_service.performance.application.dto.response.UpdateResponseDto;
 import com.taken_seat.performance_service.performance.domain.model.Performance;
 import com.taken_seat.performance_service.performance.domain.repository.PerformanceRepository;
 
@@ -58,10 +60,21 @@ public class PerformanceService {
 	}
 
 	@Transactional
+	public UpdateResponseDto update(UUID id, UpdateRequestDto request) {
+
+		Performance performance = performanceRepository.findById(id)
+			.orElseThrow(() -> new IllegalArgumentException("수정하려는 공연 정보가 존재하지 않습니다"));
+
+		performance.update(request);
+
+		return toUpdate(performance);
+	}
+
+	@Transactional
 	public void delete(UUID id, UUID deletedBy) {
 
 		if (id == null) {
-			throw new IllegalArgumentException("공연 ID는 null일 수 없습니다.");
+			throw new IllegalArgumentException("삭제할 공연 ID는 필수입니다");
 		}
 
 		performanceRepository.deleteById(id, deletedBy);
