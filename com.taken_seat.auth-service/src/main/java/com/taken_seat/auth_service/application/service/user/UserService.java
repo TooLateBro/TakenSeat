@@ -8,6 +8,7 @@ import com.taken_seat.auth_service.domain.entity.user.UserCoupon;
 import com.taken_seat.auth_service.domain.repository.user.UserQueryRepository;
 import com.taken_seat.auth_service.domain.repository.user.UserRepository;
 import com.taken_seat.auth_service.domain.repository.userCoupon.UserCouponRepository;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +38,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = "userDetails", key = "#userId + '-' + #page+'-'+#size")
     public UserInfoResponseDto getUserDetails(UUID userId, int page, int size) {
         User user = userRepository.findById(userId)
                 .orElseThrow(()-> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
@@ -48,6 +50,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = "searchUser", key = "#q + '-' + #role + '-' + #page + '-' + #size")
     public PageResponseDto<UserInfoResponseDto> searchUser(String q, String role, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<User> userInfos = userQueryRepository.findAllByDeletedAtIsNull(q, role, pageable);
