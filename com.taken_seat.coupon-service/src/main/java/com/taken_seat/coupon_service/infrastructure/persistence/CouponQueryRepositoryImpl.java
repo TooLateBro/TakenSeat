@@ -1,5 +1,6 @@
 package com.taken_seat.coupon_service.infrastructure.persistence;
 
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.taken_seat.coupon_service.domain.entity.Coupon;
 import com.taken_seat.coupon_service.domain.entity.QCoupon;
@@ -27,7 +28,7 @@ public class CouponQueryRepositoryImpl implements CouponQueryRepository {
                 .selectFrom(coupon)
                 .where(
                         coupon.deletedAt.isNull(),
-                        coupon.name.contains(name))
+                        searchCondition(name, coupon))
                 .orderBy(coupon.createdAt.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -41,5 +42,9 @@ public class CouponQueryRepositoryImpl implements CouponQueryRepository {
                 .fetchOne();
 
         return new PageImpl<>(content, pageable, total != null ? total : 0);
+    }
+
+    private BooleanExpression searchCondition(String name, QCoupon coupon) {
+        return (name != null) ? coupon.name.contains(name) : null;
     }
 }
