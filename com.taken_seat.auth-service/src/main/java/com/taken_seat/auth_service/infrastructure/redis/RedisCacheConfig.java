@@ -46,10 +46,30 @@ public class RedisCacheConfig {
                         RedisSerializationContext.SerializationPair.fromSerializer(RedisSerializer.json())
                 );
 
+        RedisCacheConfiguration getMileageHistoryUser = RedisCacheConfiguration
+                .defaultCacheConfig()
+                .disableCachingNullValues()
+                .entryTtl(Duration.ofSeconds(10))
+                .computePrefixWith(cacheName -> "getMileageHistoryUser : " + cacheName + "::")
+                .serializeValuesWith(
+                        RedisSerializationContext.SerializationPair.fromSerializer(RedisSerializer.json())
+                );
+
+        RedisCacheConfiguration searchMileageUser = RedisCacheConfiguration
+                .defaultCacheConfig()
+                .disableCachingNullValues()
+                .entryTtl(Duration.ofSeconds(10))
+                .computePrefixWith(cacheName -> "searchMileageUser : " + cacheName + "::")
+                .serializeValuesWith(
+                        RedisSerializationContext.SerializationPair.fromSerializer(RedisSerializer.json())
+                );
+
         return RedisCacheManager.builder(redisConnectionFactory)
                 .cacheDefaults(defaultConfig)
                 .withCacheConfiguration("userDetails", getUserDetails)
                 .withCacheConfiguration("searchUser", searchUser)
+                .withCacheConfiguration("getMileageHistoryUser", getMileageHistoryUser)
+                .withCacheConfiguration("searchMileageUser", searchMileageUser)
                 .build();
     }
 

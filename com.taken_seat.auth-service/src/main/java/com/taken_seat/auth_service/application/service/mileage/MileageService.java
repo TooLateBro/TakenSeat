@@ -8,6 +8,7 @@ import com.taken_seat.auth_service.domain.entity.user.User;
 import com.taken_seat.auth_service.domain.repository.mileage.MileageQueryRepository;
 import com.taken_seat.auth_service.domain.repository.mileage.MileageRepository;
 import com.taken_seat.auth_service.domain.repository.user.UserRepository;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -51,6 +52,7 @@ public class MileageService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = "getMileageHistoryUser", key = "#userId + '-' + #page + '-' + #size")
     public PageResponseDto<UserMileageResponseDto> getMileageHistoryUser(UUID userId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "updatedAt"));
         Page<Mileage> mileage = mileageRepository.findByUserIdAndDeletedAtIsNull(userId, pageable);
@@ -61,6 +63,7 @@ public class MileageService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = "searchMileageUser", key = "#startCount + '-' +#endCount +'-'+ #page + '-' + #size")
     public PageResponseDto<UserMileageResponseDto> searchMileageUser(
             Integer startCount, Integer endCount, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "updatedAt"));
