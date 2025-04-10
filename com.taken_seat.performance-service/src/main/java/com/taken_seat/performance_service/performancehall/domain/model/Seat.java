@@ -47,5 +47,5 @@ public class Seat {
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
-	private SeatStatus seatStatus;
+	private SeatStatus status;
 }

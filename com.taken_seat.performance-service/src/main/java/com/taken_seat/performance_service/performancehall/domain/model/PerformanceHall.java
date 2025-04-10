@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import com.taken_seat.performance_service.performancehall.application.dto.request.CreateRequestDto;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -44,4 +46,28 @@ public class PerformanceHall {
 	@OneToMany(mappedBy = "performanceHall", cascade = CascadeType.ALL, orphanRemoval = true)
 	@Builder.Default
 	private List<Seat> seats = new ArrayList<>();
+
+	public static PerformanceHall create(CreateRequestDto request) {
+
+		PerformanceHall performanceHall = PerformanceHall.builder()
+			.name(request.getName())
+			.address(request.getAddress())
+			.totalSeats(request.getTotalSeats())
+			.description(request.getDescription())
+			.build();
+
+		List<Seat> seats = request.getSeats().stream()
+			.map(createSeatDto -> Seat.builder()
+				.performanceHall(performanceHall)
+				.rowNumber(createSeatDto.getRowNumber())
+				.seatNumber(createSeatDto.getSeatNumber())
+				.seatType(createSeatDto.getSeatType())
+				.status(createSeatDto.getStatus())
+				.build())
+			.toList();
+
+		performanceHall.getSeats().addAll(seats);
+
+		return performanceHall;
+	}
 }
