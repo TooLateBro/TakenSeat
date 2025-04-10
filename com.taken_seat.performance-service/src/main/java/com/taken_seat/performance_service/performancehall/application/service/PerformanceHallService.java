@@ -2,8 +2,6 @@ package com.taken_seat.performance_service.performancehall.application.service;
 
 import static com.taken_seat.performance_service.performancehall.application.dto.mapper.HallResponseMapper.*;
 
-import java.util.Optional;
-
 import org.springframework.stereotype.Service;
 
 import com.taken_seat.performance_service.performancehall.application.dto.request.CreateRequestDto;
@@ -21,10 +19,10 @@ public class PerformanceHallService {
 
 	public CreateResponseDto create(CreateRequestDto request) {
 
-		Optional<PerformanceHall> existing = performanceHallRepository.findByNameAndAddress(
+		boolean exists = performanceHallRepository.existsByNameAndAddress(
 			request.getName(), request.getAddress());
 
-		if (existing.isPresent()) {
+		if (exists) {
 			throw new IllegalArgumentException("이미 존재하는 공연장입니다.");
 		}
 

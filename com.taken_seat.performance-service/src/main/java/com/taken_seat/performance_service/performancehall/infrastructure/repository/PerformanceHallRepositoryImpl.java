@@ -1,7 +1,5 @@
 package com.taken_seat.performance_service.performancehall.infrastructure.repository;
 
-import java.util.Optional;
-
 import org.springframework.stereotype.Repository;
 
 import com.taken_seat.performance_service.performancehall.domain.model.PerformanceHall;
@@ -21,7 +19,7 @@ public class PerformanceHallRepositoryImpl implements PerformanceHallRepository 
 	}
 
 	@Override
-	public Optional<PerformanceHall> findByNameAndAddress(String name, String address) {
-		return performanceHallJpaRepository.findByNameAndAddress(name, address);
+	public boolean existsByNameAndAddress(String name, String address) {
+		return performanceHallJpaRepository.existsByNameAndAddress(name, address);
 	}
 }

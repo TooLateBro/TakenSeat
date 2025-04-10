@@ -1,6 +1,5 @@
 package com.taken_seat.performance_service.performancehall.infrastructure.repository;
 
-import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,5 +10,5 @@ import com.taken_seat.performance_service.performancehall.domain.model.Performan
 public interface PerformanceHallJpaRepository
 	extends JpaRepository<PerformanceHall, UUID>, JpaSpecificationExecutor<PerformanceHall> {
 
-	Optional<PerformanceHall> findByNameAndAddress(String name, String address);
+	boolean existsByNameAndAddress(String name, String address);
 }
