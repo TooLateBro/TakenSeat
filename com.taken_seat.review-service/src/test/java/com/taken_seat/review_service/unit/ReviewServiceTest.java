@@ -10,11 +10,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.common_service.exception.customException.ReviewException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.review_service.application.client.ReviewClient;
@@ -25,8 +25,6 @@ import com.taken_seat.review_service.domain.model.Review;
 import com.taken_seat.review_service.domain.repository.ReviewRepository;
 import com.taken_seat.review_service.infrastructure.client.dto.BookingStatusDto;
 import com.taken_seat.review_service.infrastructure.client.dto.PerformanceEndTimeDto;
-
-import feign.FeignException;
 
 @ExtendWith(MockitoExtension.class)
 public class ReviewServiceTest {
@@ -46,7 +44,11 @@ public class ReviewServiceTest {
 
 	private UUID testAuthorId;
 
+	private String testAuthorEmail;
+
 	private Review testReview;
+
+	private AuthenticatedUser authenticatedUser;
 
 	@BeforeEach
 	void setUp() {
@@ -54,12 +56,13 @@ public class ReviewServiceTest {
 		testPerformanceId = UUID.randomUUID();
 		testReviewId = UUID.randomUUID();
 		testAuthorId = UUID.randomUUID();
+		testAuthorEmail = "test@gmail.com";
 
 		testReview = Review.builder()
 			.id(testReviewId)
 			.performanceId(testPerformanceId)
 			.authorId(testAuthorId)
-			.authorName("testUser")
+			.authorEmail(testAuthorEmail)
 			.title("testReviewTitle")
 			.content("testReviewContent")
 			.likeCount(0)
@@ -67,28 +70,25 @@ public class ReviewServiceTest {
 
 		testReview.prePersist(UUID.randomUUID());
 		reviewRepository.save(testReview);
+
+		authenticatedUser = new AuthenticatedUser(testAuthorId, "홍길동", testAuthorEmail);
 	}
 
 	@Test
 	@DisplayName("리뷰 등록 - SUCCESS")
 	void testRegisterReview_success() {
 		// Given
-		UUID userId = UUID.randomUUID();
-		UUID performanceId = UUID.randomUUID();
-		ReviewRegisterReqDto requestDto = new ReviewRegisterReqDto(performanceId, "testRegister", "testContent");
+		ReviewRegisterReqDto requestDto = new ReviewRegisterReqDto(testPerformanceId, "testRegister", "testContent");
 
-		when(reviewRepository.existsByAuthorIdAndPerformanceId(userId, performanceId)).thenReturn(false);
-		when(reviewClient.getBookingStatus(userId, performanceId)).thenReturn(new BookingStatusDto("COMPLETED"));
-		when(reviewClient.getPerformanceEndTime(performanceId)).thenReturn(
+		when(reviewRepository.existsByAuthorIdAndPerformanceId(testAuthorId, testPerformanceId)).thenReturn(false);
+		when(reviewClient.getBookingStatus(testAuthorId, testPerformanceId)).thenReturn(
+			new BookingStatusDto("COMPLETED"));
+		when(reviewClient.getPerformanceEndTime(testPerformanceId)).thenReturn(
 			new PerformanceEndTimeDto(LocalDateTime.now().minusDays(1)));
-		when(reviewClient.getUserName(userId)).thenReturn(new UserNameDto("홍길동"));
-
-		// Review 생성 부분
-		ArgumentCaptor<Review> reviewCaptor = ArgumentCaptor.forClass(Review.class);
 		when(reviewRepository.save(any(Review.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
 		// When
-		ReviewDetailResDto result = reviewService.registerReview(requestDto, userId);
+		ReviewDetailResDto result = reviewService.registerReview(requestDto, authenticatedUser);
 
 		// Then
 		assertNotNull(result);
@@ -102,15 +102,13 @@ public class ReviewServiceTest {
 	@DisplayName("리뷰 등록 실패 - 해당 공연에 이미 작성된 리뷰가 존재하는 경우")
 	void testRegisterReview_fail_alreadyWritten() {
 		// Given
-		UUID userId = UUID.randomUUID();
-		UUID performanceId = UUID.randomUUID();
-		ReviewRegisterReqDto requestDto = new ReviewRegisterReqDto(performanceId, "중복", "중복내용");
+		ReviewRegisterReqDto requestDto = new ReviewRegisterReqDto(testPerformanceId, "중복", "중복내용");
 
-		when(reviewRepository.existsByAuthorIdAndPerformanceId(userId, performanceId)).thenReturn(true);
+		when(reviewRepository.existsByAuthorIdAndPerformanceId(testAuthorId, testPerformanceId)).thenReturn(true);
 
 		// When & Then
 		ReviewException ex = assertThrows(ReviewException.class, () -> {
-			reviewService.registerReview(requestDto, userId);
+			reviewService.registerReview(requestDto, authenticatedUser);
 		});
 
 		assertEquals(ResponseCode.REVIEW_ALREADY_WRITTEN.getMessage(), ex.getMessage());
@@ -120,16 +118,15 @@ public class ReviewServiceTest {
 	@DisplayName("리뷰 등록 실패 - 예매 상태가 완료되지 않음")
 	void testRegisterReview_fail_bookingNotCompleted() {
 		// Given
-		UUID userId = UUID.randomUUID();
-		UUID performanceId = UUID.randomUUID();
-		ReviewRegisterReqDto requestDto = new ReviewRegisterReqDto(performanceId, "test", "내용");
+		ReviewRegisterReqDto requestDto = new ReviewRegisterReqDto(testPerformanceId, "test", "내용");
 
-		when(reviewRepository.existsByAuthorIdAndPerformanceId(userId, performanceId)).thenReturn(false);
-		when(reviewClient.getBookingStatus(userId, performanceId)).thenReturn(new BookingStatusDto("CANCELED"));
+		when(reviewRepository.existsByAuthorIdAndPerformanceId(testAuthorId, testPerformanceId)).thenReturn(false);
+		when(reviewClient.getBookingStatus(testAuthorId, testPerformanceId)).thenReturn(
+			new BookingStatusDto("CANCELED"));
 
 		// When & Then
 		ReviewException ex = assertThrows(ReviewException.class, () -> {
-			reviewService.registerReview(requestDto, userId);
+			reviewService.registerReview(requestDto, authenticatedUser);
 		});
 
 		assertEquals(ResponseCode.BOOKING_NOT_COMPLETED.getMessage(), ex.getMessage());
@@ -139,42 +136,20 @@ public class ReviewServiceTest {
 	@DisplayName("리뷰 등록 실패 - 종료되지 않은 공연에 리뷰를 작성하려는 경우")
 	void testRegisterReview_fail_earlyReview() {
 		// Given
-		UUID userId = UUID.randomUUID();
-		UUID performanceId = UUID.randomUUID();
-		ReviewRegisterReqDto requestDto = new ReviewRegisterReqDto(performanceId, "early", "내용");
+		ReviewRegisterReqDto requestDto = new ReviewRegisterReqDto(testPerformanceId, "early", "내용");
 
-		when(reviewRepository.existsByAuthorIdAndPerformanceId(userId, performanceId)).thenReturn(false);
-		when(reviewClient.getBookingStatus(userId, performanceId)).thenReturn(new BookingStatusDto("COMPLETED"));
-		when(reviewClient.getPerformanceEndTime(performanceId)).thenReturn(
+		when(reviewRepository.existsByAuthorIdAndPerformanceId(testAuthorId, testPerformanceId)).thenReturn(false);
+		when(reviewClient.getBookingStatus(testAuthorId, testPerformanceId)).thenReturn(
+			new BookingStatusDto("COMPLETED"));
+		when(reviewClient.getPerformanceEndTime(testPerformanceId)).thenReturn(
 			new PerformanceEndTimeDto(LocalDateTime.now().plusDays(1))); // 종료되지 않음
 
 		// When & Then
 		ReviewException ex = assertThrows(ReviewException.class, () -> {
-			reviewService.registerReview(requestDto, userId);
+			reviewService.registerReview(requestDto, authenticatedUser);
 		});
 
 		assertEquals(ResponseCode.EARLY_REVIEW.getMessage(), ex.getMessage());
 	}
 
-	@Test
-	@DisplayName("리뷰 등록 실패 - 유저 정보 없음")
-	void testRegisterReview_fail_userNotFound() {
-		// Given
-		UUID userId = UUID.randomUUID();
-		UUID performanceId = UUID.randomUUID();
-		ReviewRegisterReqDto requestDto = new ReviewRegisterReqDto(performanceId, "test", "내용");
-
-		when(reviewRepository.existsByAuthorIdAndPerformanceId(userId, performanceId)).thenReturn(false);
-		when(reviewClient.getBookingStatus(userId, performanceId)).thenReturn(new BookingStatusDto("COMPLETED"));
-		when(reviewClient.getPerformanceEndTime(performanceId)).thenReturn(
-			new PerformanceEndTimeDto(LocalDateTime.now().minusDays(1)));
-		when(reviewClient.getUserName(userId)).thenThrow(FeignException.NotFound.class);
-
-		// When & Then
-		ReviewException ex = assertThrows(ReviewException.class, () -> {
-			reviewService.registerReview(requestDto, userId);
-		});
-
-		assertEquals(ResponseCode.USER_NOT_FOUND.getMessage(), ex.getMessage());
-	}
 }

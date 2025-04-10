@@ -35,7 +35,7 @@ public class ReviewDetailResDto {
 			.id(review.getId())
 			.performanceId(review.getPerformanceId())
 			.authorId(review.getAuthorId())
-			.authorName(review.getAuthorName())
+			.authorName(review.getAuthorEmail())
 			.title(review.getTitle())
 			.content(review.getContent())
 			.likeCount(review.getLikeCount())
