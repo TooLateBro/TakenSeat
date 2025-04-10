@@ -1,5 +1,8 @@
 package com.taken_seat.performance_service.performancehall.infrastructure.repository;
 
+import java.util.Optional;
+import java.util.UUID;
+
 import org.springframework.stereotype.Repository;
 
 import com.taken_seat.performance_service.performancehall.domain.model.PerformanceHall;
@@ -21,5 +24,10 @@ public class PerformanceHallRepositoryImpl implements PerformanceHallRepository 
 	@Override
 	public boolean existsByNameAndAddress(String name, String address) {
 		return performanceHallJpaRepository.existsByNameAndAddress(name, address);
+	}
+
+	@Override
+	public Optional<PerformanceHall> findById(UUID id) {
+		return performanceHallJpaRepository.findByIdAndDeletedAtIsNull(id);
 	}
 }
