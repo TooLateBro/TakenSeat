@@ -4,6 +4,7 @@ import com.taken_seat.coupon_service.application.dto.CouponResponseDto;
 import com.taken_seat.coupon_service.application.dto.PageResponseDto;
 import com.taken_seat.coupon_service.application.service.CouponService;
 import com.taken_seat.coupon_service.presentation.dto.CreateCouponRequestDto;
+import com.taken_seat.coupon_service.presentation.dto.UpdateCouponRequestDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -58,4 +59,27 @@ public class CouponController {
         return ResponseEntity.ok(couponInfo);
     }
 
+    @PatchMapping("/{couponId}")
+    public ResponseEntity<CouponResponseDto> updateCoupon(@PathVariable UUID couponId,
+                                                          @RequestHeader("X-Role") String role,
+                                                          @RequestHeader("X-User-Id") UUID userId,
+                                                          @RequestBody UpdateCouponRequestDto requestDto){
+        if(role == null || !(role.equals("ADMIN") || role.equals("MANAGER"))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        CouponResponseDto couponInfo = couponService.updateCoupon(couponId, userId, requestDto.toDto());
+
+        return ResponseEntity.ok(couponInfo);
+    }
+
+    @DeleteMapping("/{couponId}")
+    public ResponseEntity<Void> deleteCoupon(@PathVariable UUID couponId,
+                                             @RequestHeader("X-Role") String role,
+                                             @RequestHeader("X-User-Id") UUID userId) {
+        if(role == null || !(role.equals("ADMIN") || role.equals("MANAGER"))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        couponService.deleteCoupon(couponId, userId);
+        return ResponseEntity.noContent().build();
+    }
 }

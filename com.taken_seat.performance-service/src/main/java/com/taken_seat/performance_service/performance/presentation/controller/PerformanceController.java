@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,9 +20,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.taken_seat.performance_service.performance.application.dto.request.CreateRequestDto;
 import com.taken_seat.performance_service.performance.application.dto.request.SearchFilterParam;
+import com.taken_seat.performance_service.performance.application.dto.request.UpdateRequestDto;
 import com.taken_seat.performance_service.performance.application.dto.response.CreateResponseDto;
 import com.taken_seat.performance_service.performance.application.dto.response.DetailResponseDto;
 import com.taken_seat.performance_service.performance.application.dto.response.PageResponseDto;
+import com.taken_seat.performance_service.performance.application.dto.response.UpdateResponseDto;
 import com.taken_seat.performance_service.performance.application.service.PerformanceService;
 
 import jakarta.validation.Valid;
@@ -72,10 +75,21 @@ public class PerformanceController {
 	}
 
 	/**
+	 * 공연 수정 API
+	 * 권한: ADMIN, MANAGER, PRODUCER
+	 */
+
+	@PatchMapping("/{id}")
+	public ResponseEntity<UpdateResponseDto> update(@PathVariable("id") UUID id,
+		@Valid @RequestBody UpdateRequestDto request) {
+
+		UpdateResponseDto response = performanceService.update(id, request);
+		return ResponseEntity.status(HttpStatus.OK).body(response);
+	}
+
+	/**
 	 * 공연 삭제 API
 	 * 권한: ADMIN, MANAGER, PRODUCER
-	 * Security 완성 후
-	 * @RequestParam UUID deletedBy -> @AuthenticationPrincipal CustomUserDetails principal 로 수정 예정
 	 */
 
 	@DeleteMapping("/{id}")

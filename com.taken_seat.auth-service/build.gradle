@@ -43,6 +43,7 @@ clean.doLast {
 
 dependencies {
 
+
     implementation project(':com.taken_seat.common-service')
     annotationProcessor project(':com.taken_seat.common-service')
 

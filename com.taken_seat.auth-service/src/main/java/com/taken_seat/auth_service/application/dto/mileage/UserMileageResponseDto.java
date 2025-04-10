@@ -1,5 +1,9 @@
 package com.taken_seat.auth_service.application.dto.mileage;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.taken_seat.auth_service.domain.entity.mileage.Mileage;
 import lombok.*;
 
@@ -15,6 +19,9 @@ public class UserMileageResponseDto {
     private UUID userId;
     private UUID mileageId;
     private Integer count;
+
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     private LocalDateTime updatedAt;
 
     public static UserMileageResponseDto of(Mileage mileage) {

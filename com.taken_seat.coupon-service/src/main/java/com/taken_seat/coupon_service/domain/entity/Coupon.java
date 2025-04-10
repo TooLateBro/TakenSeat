@@ -85,6 +85,14 @@ public class Coupon {
                 .expiredAt(expiredAt)
                 .build();
     }
+    public void update(String name, String code, Integer quantity, Integer discount, LocalDateTime expiredAt, UUID userId) {
+        this.name = name;
+        this.code = code;
+        this.quantity = quantity;
+        this.discount = discount;
+        this.expiredAt = expiredAt;
+        this.updatedBy = userId;
+    }
 
     public void del(UUID deletedBy) {
         this.deletedAt = LocalDateTime.now();
