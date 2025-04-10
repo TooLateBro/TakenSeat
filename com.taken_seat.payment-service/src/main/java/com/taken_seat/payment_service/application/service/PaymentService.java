@@ -11,13 +11,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.taken_seat.common_service.exception.customException.PaymentNotFoundException;
+import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.payment_service.application.dto.request.PaymentRegisterReqDto;
 import com.taken_seat.payment_service.application.dto.request.PaymentUpdateReqDto;
 import com.taken_seat.payment_service.application.dto.response.PagePaymentResponseDto;
 import com.taken_seat.payment_service.application.dto.response.PaymentDetailResDto;
 import com.taken_seat.payment_service.application.dto.response.PaymentRegisterResDto;
 import com.taken_seat.payment_service.application.dto.response.PaymentUpdateResDto;
-import com.taken_seat.payment_service.application.exception.PaymentNotFoundException;
 import com.taken_seat.payment_service.domain.enums.PaymentStatus;
 import com.taken_seat.payment_service.domain.model.Payment;
 import com.taken_seat.payment_service.domain.model.PaymentHistory;
@@ -66,20 +67,20 @@ public class PaymentService {
 			.price(paymentRegisterReqDto.getPrice())
 			.paymentStatus(PaymentStatus.COMPLETED)
 			.approvedAt(now)
-			.createdBy(UUID.randomUUID())
 			.build();
 
+		payment.prePersist(UUID.randomUUID());
 		paymentRepository.save(payment);
 
-		paymentHistoryRepository.save(
-			PaymentHistory.builder()
-				.payment(payment)
-				.price(payment.getPrice())
-				.paymentStatus(payment.getPaymentStatus())
-				.approvedAt(now)
-				.createdBy(UUID.randomUUID())
-				.build()
-		);
+		PaymentHistory paymentHistory = PaymentHistory.builder()
+			.payment(payment)
+			.price(payment.getPrice())
+			.paymentStatus(payment.getPaymentStatus())
+			.approvedAt(now)
+			.build();
+
+		paymentHistory.prePersist(UUID.randomUUID());
+		paymentHistoryRepository.save(paymentHistory);
 
 		return PaymentRegisterResDto.toResponse(payment);
 	}
@@ -89,7 +90,9 @@ public class PaymentService {
 	public PaymentDetailResDto getPaymentDetail(UUID id) {
 
 		Payment payment = paymentRepository.findByIdAndDeletedAtIsNull(id)
-			.orElseThrow(() -> new PaymentNotFoundException("해당 ID 에 대한 결제 정보를 찾을 수 없습니다 : " + id));
+			.orElseThrow(() ->
+				new PaymentNotFoundException(ResponseCode.PAYMENT_NOT_FOUND_EXCEPTION,
+					"해당 ID 에 대한 결제 정보를 찾을 수 없습니다 : " + id));
 
 		return PaymentDetailResDto.toResponse(payment);
 	}
@@ -115,7 +118,9 @@ public class PaymentService {
 		}
 
 		Payment payment = paymentRepository.findByIdAndDeletedAtIsNull(id)
-			.orElseThrow(() -> new PaymentNotFoundException("해당 ID 에 대한 결제 정보를 찾을 수 없습니다 : " + id));
+			.orElseThrow(() ->
+				new PaymentNotFoundException(ResponseCode.PAYMENT_NOT_FOUND_EXCEPTION,
+					"해당 ID 에 대한 결제 정보를 찾을 수 없습니다 : " + id));
 
 		payment.update(paymentUpdateReqDto.getPrice(), paymentUpdateReqDto.getPaymentStatus());
 
@@ -128,9 +133,11 @@ public class PaymentService {
 	})
 	public void deletePayment(UUID id) {
 		Payment payment = paymentRepository.findByIdAndDeletedAtIsNull(id)
-			.orElseThrow(() -> new PaymentNotFoundException("해당 ID 에 대한 결제 정보를 찾을 수 없습니다 : " + id));
+			.orElseThrow(() ->
+				new PaymentNotFoundException(ResponseCode.PAYMENT_NOT_FOUND_EXCEPTION,
+					"해당 ID 에 대한 결제 정보를 찾을 수 없습니다 : " + id));
 
 		UUID deletedBy = UUID.randomUUID();
-		payment.softDelete(deletedBy);
+		payment.delete(UUID.randomUUID());
 	}
 }

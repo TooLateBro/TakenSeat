@@ -20,13 +20,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
+import com.taken_seat.common_service.exception.customException.PaymentNotFoundException;
 import com.taken_seat.payment_service.application.dto.request.PaymentRegisterReqDto;
 import com.taken_seat.payment_service.application.dto.request.PaymentUpdateReqDto;
 import com.taken_seat.payment_service.application.dto.response.PagePaymentResponseDto;
 import com.taken_seat.payment_service.application.dto.response.PaymentDetailResDto;
 import com.taken_seat.payment_service.application.dto.response.PaymentRegisterResDto;
 import com.taken_seat.payment_service.application.dto.response.PaymentUpdateResDto;
-import com.taken_seat.payment_service.application.exception.PaymentNotFoundException;
 import com.taken_seat.payment_service.application.service.PaymentService;
 import com.taken_seat.payment_service.domain.enums.PaymentStatus;
 import com.taken_seat.payment_service.domain.model.Payment;
@@ -73,9 +73,9 @@ public class PaymentServiceTest {
 			.price(1000)
 			.paymentStatus(PaymentStatus.COMPLETED)
 			.approvedAt(LocalDateTime.now())
-			.createdBy(UUID.randomUUID())
 			.build();
 
+		testPayment.prePersist(UUID.randomUUID());
 		paymentRepository.save(testPayment);
 
 		testPaymentHistory = PaymentHistory.builder()
@@ -84,9 +84,9 @@ public class PaymentServiceTest {
 			.price(testPayment.getPrice())
 			.paymentStatus(testPayment.getPaymentStatus())
 			.approvedAt(LocalDateTime.now())
-			.createdBy(UUID.randomUUID())
 			.build();
 
+		testPaymentHistory.prePersist(UUID.randomUUID());
 		paymentHistoryRepository.save(testPaymentHistory);
 	}
 
