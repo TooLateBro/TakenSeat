@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -71,7 +72,7 @@ public class ReviewServiceTest {
 		testReview.prePersist(UUID.randomUUID());
 		reviewRepository.save(testReview);
 
-		authenticatedUser = new AuthenticatedUser(testAuthorId, "홍길동", testAuthorEmail);
+		authenticatedUser = new AuthenticatedUser(testAuthorId, "test@gmail.com", testAuthorEmail);
 	}
 
 	@Test
@@ -94,12 +95,12 @@ public class ReviewServiceTest {
 		assertNotNull(result);
 		assertEquals("testRegister", result.getTitle());
 		assertEquals("testContent", result.getContent());
-		assertEquals("홍길동", result.getAuthorName());
+		assertEquals("test@gmail.com", result.getAuthorEmail());
 
 	}
 
 	@Test
-	@DisplayName("리뷰 등록 실패 - 해당 공연에 이미 작성된 리뷰가 존재하는 경우")
+	@DisplayName("리뷰 등록 실패 - 해당 공연에 이미 작성된 리뷰가 존재하는 경우 - FAIL")
 	void testRegisterReview_fail_alreadyWritten() {
 		// Given
 		ReviewRegisterReqDto requestDto = new ReviewRegisterReqDto(testPerformanceId, "중복", "중복내용");
@@ -115,7 +116,7 @@ public class ReviewServiceTest {
 	}
 
 	@Test
-	@DisplayName("리뷰 등록 실패 - 예매 상태가 완료되지 않음")
+	@DisplayName("리뷰 등록 실패 - 예매 상태가 완료되지 않음 - FAIL")
 	void testRegisterReview_fail_bookingNotCompleted() {
 		// Given
 		ReviewRegisterReqDto requestDto = new ReviewRegisterReqDto(testPerformanceId, "test", "내용");
@@ -152,4 +153,35 @@ public class ReviewServiceTest {
 		assertEquals(ResponseCode.EARLY_REVIEW.getMessage(), ex.getMessage());
 	}
 
+	@Test
+	@DisplayName("리뷰 단건 조회 - SUCCESS")
+	void testGetReviewDetail_success() {
+		// Given
+		when(reviewRepository.findByIdAndDeletedAtIsNull(testReviewId)).thenReturn(Optional.of(testReview));
+
+		// When
+		ReviewDetailResDto result = reviewService.getReviewDetail(testReviewId);
+
+		// Then
+		assertNotNull(result);
+		assertEquals(testReview.getTitle(), result.getTitle());
+		assertEquals(testReview.getContent(), result.getContent());
+		assertEquals(testReview.getAuthorEmail(), result.getAuthorEmail());
+	}
+
+	@Test
+	@DisplayName("리뷰 단건 조회 실패 - 존재하지않는 UUID로 조회 시도 - FAIL ")
+	void testGetReviewDetail_fail_reviewNotFound() {
+		// Given
+		UUID TestRegisterReviewId = UUID.randomUUID();
+		when(reviewRepository.findByIdAndDeletedAtIsNull(TestRegisterReviewId)).thenReturn(Optional.empty());
+
+		// When & Then
+		ReviewException ex = assertThrows(ReviewException.class, () -> {
+			reviewService.getReviewDetail(TestRegisterReviewId);
+		});
+
+		assertEquals(ResponseCode.REVIEW_NOT_FOUND.getMessage(), ex.getMessage());
+
+	}
 }
