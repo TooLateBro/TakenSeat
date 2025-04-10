@@ -3,10 +3,14 @@ package com.taken_seat.performance_service.performancehall.infrastructure.reposi
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import com.taken_seat.performance_service.performancehall.application.dto.request.SearchFilterParam;
 import com.taken_seat.performance_service.performancehall.domain.model.PerformanceHall;
 import com.taken_seat.performance_service.performancehall.domain.repository.PerformanceHallRepository;
+import com.taken_seat.performance_service.performancehall.domain.repository.spec.PerformanceHallSpecification;
 
 import lombok.RequiredArgsConstructor;
 
@@ -29,5 +33,12 @@ public class PerformanceHallRepositoryImpl implements PerformanceHallRepository 
 	@Override
 	public Optional<PerformanceHall> findById(UUID id) {
 		return performanceHallJpaRepository.findByIdAndDeletedAtIsNull(id);
+	}
+
+	@Override
+	public Page<PerformanceHall> findAll(SearchFilterParam filterParam, Pageable pageable) {
+		return performanceHallJpaRepository.findAll(
+			PerformanceHallSpecification.withFilter(filterParam), pageable
+		);
 	}
 }
