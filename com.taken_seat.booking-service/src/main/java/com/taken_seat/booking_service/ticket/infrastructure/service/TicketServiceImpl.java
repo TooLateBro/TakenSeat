@@ -2,7 +2,7 @@ package com.taken_seat.booking_service.ticket.infrastructure.service;
 
 import org.springframework.stereotype.Service;
 
-import com.taken_seat.booking_service.common.CustomUser;
+import com.taken_seat.common_service.dto.CustomUser;
 import com.taken_seat.booking_service.ticket.application.dto.request.TicketCreateRequest;
 import com.taken_seat.booking_service.ticket.application.dto.response.TicketCreateResponse;
 import com.taken_seat.booking_service.ticket.application.service.TicketService;

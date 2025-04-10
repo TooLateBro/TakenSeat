@@ -1,4 +1,4 @@
-package com.taken_seat.booking_service.common;
+package com.taken_seat.common_service.component;
 
 import java.util.UUID;
 
@@ -8,6 +8,8 @@ import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
+
+import com.taken_seat.common_service.dto.CustomUser;
 
 @Component
 public class CustomUserArgumentResolver implements HandlerMethodArgumentResolver {

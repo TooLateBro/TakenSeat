@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.taken_seat.booking_service.booking.application.BookingService;
 import com.taken_seat.booking_service.booking.application.dto.request.BookingCreateRequest;
-import com.taken_seat.booking_service.common.CustomUser;
+import com.taken_seat.common_service.dto.CustomUser;
 
 @SpringBootTest
 @Transactional

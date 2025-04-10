@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.taken_seat.booking_service.booking.application.BookingService;
 import com.taken_seat.booking_service.booking.application.dto.response.AdminBookingPageResponse;
 import com.taken_seat.booking_service.booking.application.dto.response.AdminBookingReadResponse;
-import com.taken_seat.booking_service.common.CustomUser;
+import com.taken_seat.common_service.dto.CustomUser;
 
 import lombok.RequiredArgsConstructor;
 

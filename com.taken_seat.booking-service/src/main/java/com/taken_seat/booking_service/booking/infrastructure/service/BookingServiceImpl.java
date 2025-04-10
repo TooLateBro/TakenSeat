@@ -17,7 +17,7 @@ import com.taken_seat.booking_service.booking.application.dto.response.BookingPa
 import com.taken_seat.booking_service.booking.application.dto.response.BookingReadResponse;
 import com.taken_seat.booking_service.booking.domain.Booking;
 import com.taken_seat.booking_service.booking.domain.repository.BookingRepository;
-import com.taken_seat.booking_service.common.CustomUser;
+import com.taken_seat.common_service.dto.CustomUser;
 
 import lombok.RequiredArgsConstructor;
 

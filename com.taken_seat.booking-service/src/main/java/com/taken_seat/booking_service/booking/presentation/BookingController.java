@@ -19,7 +19,7 @@ import com.taken_seat.booking_service.booking.application.dto.request.BookingCre
 import com.taken_seat.booking_service.booking.application.dto.response.BookingCreateResponse;
 import com.taken_seat.booking_service.booking.application.dto.response.BookingPageResponse;
 import com.taken_seat.booking_service.booking.application.dto.response.BookingReadResponse;
-import com.taken_seat.booking_service.common.CustomUser;
+import com.taken_seat.common_service.dto.CustomUser;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

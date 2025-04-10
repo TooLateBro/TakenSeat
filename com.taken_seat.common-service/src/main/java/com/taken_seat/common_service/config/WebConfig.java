@@ -1,10 +1,12 @@
-package com.taken_seat.booking_service.common;
+package com.taken_seat.common_service.config;
 
 import java.util.List;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import com.taken_seat.common_service.component.CustomUserArgumentResolver;
 
 import lombok.RequiredArgsConstructor;
 

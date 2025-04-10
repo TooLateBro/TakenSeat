@@ -10,7 +10,7 @@ import com.taken_seat.booking_service.booking.application.dto.response.AdminBook
 import com.taken_seat.booking_service.booking.application.dto.response.BookingCreateResponse;
 import com.taken_seat.booking_service.booking.application.dto.response.BookingPageResponse;
 import com.taken_seat.booking_service.booking.application.dto.response.BookingReadResponse;
-import com.taken_seat.booking_service.common.CustomUser;
+import com.taken_seat.common_service.dto.CustomUser;
 
 public interface BookingService {
 	BookingCreateResponse createBooking(CustomUser customUser, BookingCreateRequest request);

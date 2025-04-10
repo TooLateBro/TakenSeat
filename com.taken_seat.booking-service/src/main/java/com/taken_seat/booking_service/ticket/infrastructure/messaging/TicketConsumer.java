@@ -3,7 +3,7 @@ package com.taken_seat.booking_service.ticket.infrastructure.messaging;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
-import com.taken_seat.booking_service.common.CustomUser;
+import com.taken_seat.common_service.dto.CustomUser;
 import com.taken_seat.booking_service.ticket.application.dto.request.TicketCreateRequest;
 import com.taken_seat.booking_service.ticket.application.service.TicketService;
 
