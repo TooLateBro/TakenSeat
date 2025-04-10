@@ -3,10 +3,9 @@ package com.taken_seat.auth_service.application.service.user;
 import com.taken_seat.auth_service.application.dto.user.KafkaUserInfoMessage;
 import com.taken_seat.auth_service.domain.entity.user.User;
 import com.taken_seat.auth_service.domain.repository.user.UserRepository;
+import com.taken_seat.auth_service.presentation.dto.user.KafkaUserCouponRequestMessage;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
-
-import java.util.UUID;
 
 @Service
 public class KafkaUserService {
@@ -14,7 +13,8 @@ public class KafkaUserService {
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final UserRepository userRepository;
 
-    private static final String REQUEST_TOPIC = "user-to-coupon";
+    private static final String REQUEST_TOPIC = "Issuance-of-coupons";
+    private static final String REQUEST_KEY = "Partitions-of-coupons";
     private static final String RESPONSE_TOPIC = "coupon-to-user";
 
     public KafkaUserService(KafkaTemplate<String, Object> kafkaTemplate, UserRepository userRepository) {
@@ -22,10 +22,10 @@ public class KafkaUserService {
         this.userRepository = userRepository;
     }
 
-    public KafkaUserInfoMessage sendUserCoupon(UUID userId) {
-        User user = userRepository.findByIdAndDeletedAtIsNull(userId)
+    public KafkaUserInfoMessage sendUserCoupon(KafkaUserCouponRequestMessage message) {
+        User user = userRepository.findByIdAndDeletedAtIsNull(message.getUserId())
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-        kafkaTemplate.send(REQUEST_TOPIC, String.valueOf(userId), user.getUserCoupons());
+        kafkaTemplate.send(REQUEST_TOPIC, REQUEST_KEY, message);
         return KafkaUserInfoMessage.of(user);
     }
 }
