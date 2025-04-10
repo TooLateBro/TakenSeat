@@ -13,7 +13,7 @@ public interface MileageRepository {
 
     Mileage save(Mileage mileage);
 
-    Optional<Mileage> findById(UUID mileageId);
-
     Page<Mileage> findByUserIdAndDeletedAtIsNull(UUID userId, Pageable pageable);
+
+    Optional<Mileage> findByIdAndDeletedAtIsNull(UUID mileageId);
 }

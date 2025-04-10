@@ -23,7 +23,7 @@ public class RedisCacheConfig {
         RedisCacheConfiguration defaultConfig = RedisCacheConfiguration
                 .defaultCacheConfig()
                 .disableCachingNullValues() // null 을 캐싱하지 않겠다.
-                .entryTtl(Duration.ofSeconds(10)) // 캐시를 얼마나 유지할 것인가. 10초
+                .entryTtl(Duration.ofSeconds(600)) // 캐시를 얼마나 유지할 것인가. 10초
                 .serializeValuesWith( // 캐시에 저장할 value 를 어떻게 역.직렬화 할 것 인지 설정
                         // pageable 이 json serializer 와 잘 맞지 않아서 java 로 함
                         RedisSerializationContext.SerializationPair.fromSerializer(RedisSerializer.json()));
@@ -31,7 +31,7 @@ public class RedisCacheConfig {
         RedisCacheConfiguration getUserDetails = RedisCacheConfiguration
                 .defaultCacheConfig()
                 .disableCachingNullValues()
-                .entryTtl(Duration.ofSeconds(10))
+                .entryTtl(Duration.ofSeconds(600))
                 .computePrefixWith(cacheName -> "userDetails : " + cacheName + "::")
                 .serializeValuesWith(
                         RedisSerializationContext.SerializationPair.fromSerializer(RedisSerializer.json())
@@ -40,16 +40,36 @@ public class RedisCacheConfig {
         RedisCacheConfiguration searchUser = RedisCacheConfiguration
                 .defaultCacheConfig()
                 .disableCachingNullValues()
-                .entryTtl(Duration.ofSeconds(10))
+                .entryTtl(Duration.ofSeconds(600))
                 .computePrefixWith(cacheName -> "searchUser : " + cacheName + "::")
                 .serializeValuesWith(
                         RedisSerializationContext.SerializationPair.fromSerializer(RedisSerializer.json())
                 );
 
+        RedisCacheConfiguration mileageCache = RedisCacheConfiguration
+                .defaultCacheConfig()
+                .disableCachingNullValues()
+                .entryTtl(Duration.ofSeconds(600))
+                .computePrefixWith(cacheName -> "mileageCache : " + cacheName + "::")
+                .serializeValuesWith(
+                        RedisSerializationContext.SerializationPair.fromSerializer(RedisSerializer.json())
+                );
+
+        RedisCacheConfiguration searchCache = RedisCacheConfiguration
+                .defaultCacheConfig()
+                .disableCachingNullValues()
+                .entryTtl(Duration.ofSeconds(600))
+                .computePrefixWith(cacheName -> "searchCache : " + cacheName + "::")
+                .serializeValuesWith(
+                        RedisSerializationContext.SerializationPair.fromSerializer(RedisSerializer.json())
+                );
+        
         return RedisCacheManager.builder(redisConnectionFactory)
                 .cacheDefaults(defaultConfig)
                 .withCacheConfiguration("userDetails", getUserDetails)
                 .withCacheConfiguration("searchUser", searchUser)
+                .withCacheConfiguration("mileageCache", mileageCache)
+                .withCacheConfiguration("searchCache", searchCache)
                 .build();
     }
 
