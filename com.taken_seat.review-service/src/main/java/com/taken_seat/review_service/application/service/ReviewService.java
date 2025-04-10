@@ -14,7 +14,6 @@ import com.taken_seat.review_service.application.dto.response.ReviewDetailResDto
 import com.taken_seat.review_service.domain.model.Review;
 import com.taken_seat.review_service.domain.repository.ReviewRepository;
 import com.taken_seat.review_service.infrastructure.client.dto.PerformanceEndTimeDto;
-import com.taken_seat.review_service.infrastructure.client.dto.UserNameDto;
 
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
@@ -53,16 +52,8 @@ public class ReviewService {
 			throw new ReviewException(ResponseCode.PERFORMANCE_NOT_FOUND);
 		}
 
-		// 4. 유저 이름 조회
-		UserNameDto userNameDto;
-		try {
-			userNameDto = reviewClient.getUserName(userId);
-		} catch (FeignException.NotFound e) {
-			throw new ReviewException(ResponseCode.USER_NOT_FOUND);
-		}
-
 		// 5. 리뷰 생성 및 저장
-		Review review = Review.create(requestDto, userNameDto, userId);
+		Review review = Review.create(requestDto, "email", userId);
 		reviewRepository.save(review);
 
 		return ReviewDetailResDto.toResponse(review);

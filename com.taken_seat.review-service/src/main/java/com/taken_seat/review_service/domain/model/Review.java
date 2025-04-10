@@ -4,7 +4,6 @@ import java.util.UUID;
 
 import com.taken_seat.common_service.entity.BaseTimeEntity;
 import com.taken_seat.review_service.application.dto.request.ReviewRegisterReqDto;
-import com.taken_seat.review_service.infrastructure.client.dto.UserNameDto;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -37,7 +36,7 @@ public class Review extends BaseTimeEntity {
 	private UUID authorId;
 
 	@Column(nullable = false)
-	private String authorName;
+	private String authorEmail;
 
 	@Column(nullable = false, length = 100)
 	private String title;
@@ -48,12 +47,12 @@ public class Review extends BaseTimeEntity {
 	@Column(nullable = false)
 	private Integer likeCount;
 
-	public static Review create(ReviewRegisterReqDto reviewRegisterReqDto, UserNameDto userNameDto, UUID createdBy) {
+	public static Review create(ReviewRegisterReqDto reviewRegisterReqDto, String authorEmail, UUID createdBy) {
 
 		Review review = Review.builder()
 			.performanceId(reviewRegisterReqDto.getPerformanceId())
 			.authorId(createdBy)
-			.authorName(userNameDto.userName())
+			.authorEmail(authorEmail)
 			.title(reviewRegisterReqDto.getTitle())
 			.content(reviewRegisterReqDto.getContent())
 			.likeCount(0)

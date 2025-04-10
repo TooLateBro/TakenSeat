@@ -25,7 +25,6 @@ import com.taken_seat.review_service.domain.model.Review;
 import com.taken_seat.review_service.domain.repository.ReviewRepository;
 import com.taken_seat.review_service.infrastructure.client.dto.BookingStatusDto;
 import com.taken_seat.review_service.infrastructure.client.dto.PerformanceEndTimeDto;
-import com.taken_seat.review_service.infrastructure.client.dto.UserNameDto;
 
 import feign.FeignException;
 
@@ -54,6 +53,7 @@ public class ReviewServiceTest {
 
 		testPerformanceId = UUID.randomUUID();
 		testReviewId = UUID.randomUUID();
+		testAuthorId = UUID.randomUUID();
 
 		testReview = Review.builder()
 			.id(testReviewId)

@@ -11,7 +11,6 @@ import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.review_service.application.client.ReviewClient;
 import com.taken_seat.review_service.infrastructure.client.dto.BookingStatusDto;
 import com.taken_seat.review_service.infrastructure.client.dto.PerformanceEndTimeDto;
-import com.taken_seat.review_service.infrastructure.client.dto.UserNameDto;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,7 +20,6 @@ public class ReviewClientImpl implements ReviewClient {
 
 	private final BookingClient bookingClient;
 	private final PerformanceClient performanceClient;
-	private final AuthClient authClient;
 
 	@Override
 	public BookingStatusDto getBookingStatus(UUID userId, UUID performanceId) {
@@ -55,21 +53,5 @@ public class ReviewClientImpl implements ReviewClient {
 		}
 
 		return performanceEndTime.getBody().body();
-	}
-
-	@Override
-	public UserNameDto getUserName(UUID userId) {
-
-		if (userId == null) {
-			throw new ReviewException(ResponseCode.USER_NOT_FOUND);
-		}
-
-		ResponseEntity<ApiResponseData<UserNameDto>> userNameDto = authClient.getUserName(userId);
-
-		if (userNameDto.getBody() == null || userNameDto.getBody().body() == null) {
-			throw new ReviewException(ResponseCode.USER_NOT_FOUND);
-		}
-
-		return userNameDto.getBody().body();
 	}
 }
