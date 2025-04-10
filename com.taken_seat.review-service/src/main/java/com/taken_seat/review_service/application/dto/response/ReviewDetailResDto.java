@@ -18,9 +18,11 @@ public class ReviewDetailResDto {
 
 	private UUID id;
 
+	private UUID performanceId;
+
 	private UUID authorId;
 
-	private UUID performanceId;
+	private String authorName;
 
 	private String title;
 
@@ -31,8 +33,9 @@ public class ReviewDetailResDto {
 	public static ReviewDetailResDto toResponse(Review review) {
 		return ReviewDetailResDto.builder()
 			.id(review.getId())
-			.authorId(review.getAuthorId())
 			.performanceId(review.getPerformanceId())
+			.authorId(review.getAuthorId())
+			.authorName(review.getAuthorName())
 			.title(review.getTitle())
 			.content(review.getContent())
 			.likeCount(review.getLikeCount())
