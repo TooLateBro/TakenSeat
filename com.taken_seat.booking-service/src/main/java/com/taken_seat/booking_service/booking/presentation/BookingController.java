@@ -19,7 +19,7 @@ import com.taken_seat.booking_service.booking.application.dto.request.BookingCre
 import com.taken_seat.booking_service.booking.application.dto.response.BookingCreateResponse;
 import com.taken_seat.booking_service.booking.application.dto.response.BookingPageResponse;
 import com.taken_seat.booking_service.booking.application.dto.response.BookingReadResponse;
-import com.taken_seat.booking_service.common.CustomUser;
+import com.taken_seat.common_service.dto.AuthenticatedUser;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -32,37 +32,37 @@ public class BookingController {
 	private final BookingService bookingService;
 
 	@PostMapping
-	public ResponseEntity<BookingCreateResponse> createBooking(CustomUser customUser,
+	public ResponseEntity<BookingCreateResponse> createBooking(AuthenticatedUser authenticatedUser,
 		@RequestBody @Valid BookingCreateRequest request) {
-		BookingCreateResponse response = bookingService.createBooking(customUser, request);
+		BookingCreateResponse response = bookingService.createBooking(authenticatedUser, request);
 
 		return ResponseEntity.ok(response);
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<BookingReadResponse> readBooking(CustomUser customUser, @PathVariable("id") UUID id) {
-		BookingReadResponse response = bookingService.readBooking(customUser, id);
+	public ResponseEntity<BookingReadResponse> readBooking(AuthenticatedUser authenticatedUser, @PathVariable("id") UUID id) {
+		BookingReadResponse response = bookingService.readBooking(authenticatedUser, id);
 
 		return ResponseEntity.ok(response);
 	}
 
 	@GetMapping
-	public ResponseEntity<BookingPageResponse> readBookings(CustomUser customUser, Pageable pageable) {
-		BookingPageResponse response = bookingService.readBookings(customUser, pageable);
+	public ResponseEntity<BookingPageResponse> readBookings(AuthenticatedUser authenticatedUser, Pageable pageable) {
+		BookingPageResponse response = bookingService.readBookings(authenticatedUser, pageable);
 
 		return ResponseEntity.ok(response);
 	}
 
 	@PatchMapping("/{id}")
-	public ResponseEntity<Void> updateBooking(CustomUser customUser, @PathVariable("id") UUID id) {
-		bookingService.updateBooking(customUser, id);
+	public ResponseEntity<Void> updateBooking(AuthenticatedUser authenticatedUser, @PathVariable("id") UUID id) {
+		bookingService.updateBooking(authenticatedUser, id);
 
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 	}
 
 	@DeleteMapping("/{id}")
-	public ResponseEntity<Void> deleteBooking(CustomUser customUser, @PathVariable("id") UUID id) {
-		bookingService.deleteBooking(customUser, id);
+	public ResponseEntity<Void> deleteBooking(AuthenticatedUser authenticatedUser, @PathVariable("id") UUID id) {
+		bookingService.deleteBooking(authenticatedUser, id);
 
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 	}

@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.taken_seat.booking_service.common.CustomUser;
+import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.booking_service.ticket.application.service.TicketService;
 import com.taken_seat.booking_service.ticket.application.dto.request.TicketCreateRequest;
 import com.taken_seat.booking_service.ticket.application.dto.response.TicketCreateResponse;
@@ -22,10 +22,10 @@ public class TicketController {
 	private final TicketService ticketService;
 
 	@PostMapping
-	public ResponseEntity<TicketCreateResponse> createTicket(CustomUser customUser,
+	public ResponseEntity<TicketCreateResponse> createTicket(AuthenticatedUser authenticatedUser,
 		@RequestBody @Valid TicketCreateRequest request) {
 
-		TicketCreateResponse response = ticketService.createTicket(customUser, request);
+		TicketCreateResponse response = ticketService.createTicket(authenticatedUser, request);
 
 		return ResponseEntity.ok(response);
 	}
