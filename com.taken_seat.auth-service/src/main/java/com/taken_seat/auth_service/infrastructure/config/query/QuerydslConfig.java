@@ -1,4 +1,4 @@
-package com.taken_seat.auth_service.infrastructure.config;
+package com.taken_seat.auth_service.infrastructure.config.query;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
