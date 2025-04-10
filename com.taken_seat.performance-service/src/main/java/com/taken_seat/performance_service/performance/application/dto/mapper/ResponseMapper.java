@@ -12,6 +12,7 @@ import com.taken_seat.performance_service.performance.application.dto.response.P
 import com.taken_seat.performance_service.performance.application.dto.response.PerformanceScheduleResponseDto;
 import com.taken_seat.performance_service.performance.application.dto.response.SearchResponseDto;
 import com.taken_seat.performance_service.performance.application.dto.response.SeatPriceResponseDto;
+import com.taken_seat.performance_service.performance.application.dto.response.UpdateResponseDto;
 import com.taken_seat.performance_service.performance.domain.model.Performance;
 import com.taken_seat.performance_service.performance.domain.model.PerformanceSchedule;
 import com.taken_seat.performance_service.performance.domain.model.PerformanceSeatPrice;
@@ -85,7 +86,9 @@ public class ResponseMapper {
 	}
 
 	public SearchResponseDto toSearch(Performance performance) {
+
 		return SearchResponseDto.builder()
+			.performanceId(performance.getId())
 			.title(performance.getTitle())
 			.startAt(performance.getStartAt())
 			.endAt(performance.getEndAt())
@@ -101,8 +104,8 @@ public class ResponseMapper {
 	}
 
 	public PageResponseDto toPage(Page<Performance> pages) {
-		List<SearchResponseDto> content = toSearchList(pages.getContent());
 
+		List<SearchResponseDto> content = toSearchList(pages.getContent());
 		return PageResponseDto.builder()
 			.content(content)
 			.pageSize(pages.getSize())
@@ -110,6 +113,39 @@ public class ResponseMapper {
 			.totalPages(pages.getTotalPages())
 			.totalElements(pages.getTotalElements())
 			.isLast(pages.isLast())
+			.build();
+	}
+
+	public static UpdateResponseDto toUpdate(Performance performance) {
+		return UpdateResponseDto.builder()
+			.performanceId(performance.getId())
+			.title(performance.getTitle())
+			.description(performance.getDescription())
+			.startAt(performance.getStartAt())
+			.endAt(performance.getEndAt())
+			.status(performance.getStatus())
+			.posterUrl(performance.getPosterUrl())
+			.ageLimit(performance.getAgeLimit())
+			.maxTicketCount(performance.getMaxTicketCount())
+			.discountInfo(performance.getDiscountInfo())
+			.schedules(performance.getSchedules().stream()
+				.map(schedule -> PerformanceScheduleResponseDto.builder()
+					.performanceScheduleId(schedule.getId())
+					.performanceHallId(schedule.getPerformanceHallId())
+					.startAt(schedule.getStartAt())
+					.endAt(schedule.getEndAt())
+					.saleStartAt(schedule.getSaleStartAt())
+					.saleEndAt(schedule.getSaleEndAt())
+					.status(schedule.getStatus())
+					.seatPrices(schedule.getSeatPrices().stream()
+						.map(seatPrice -> SeatPriceResponseDto.builder()
+							.performanceSeatPriceId(seatPrice.getId())
+							.seatType(seatPrice.getSeatType())
+							.price(seatPrice.getPrice())
+							.build())
+						.toList())
+					.build())
+				.toList())
 			.build();
 	}
 }
