@@ -49,4 +49,29 @@ public class PaymentHistory extends BaseTimeEntity {
 	private Integer refundAmount;
 
 	private LocalDateTime refundRequestedAt;
+
+	public static PaymentHistory register(Payment payment) {
+		PaymentHistory paymentHistory = PaymentHistory.builder()
+			.payment(payment)
+			.price(payment.getPrice())
+			.paymentStatus(payment.getPaymentStatus())
+			.approvedAt(payment.getApprovedAt())
+			.build();
+
+		paymentHistory.prePersist(payment.getCreatedBy());
+
+		return paymentHistory;
+	}
+
+	public void update(Payment payment) {
+		this.price = payment.getPrice();
+		this.paymentStatus = payment.getPaymentStatus();
+		this.preUpdate(payment.getUpdatedBy());
+	}
+
+	@Override
+	public void delete(UUID deleteBy) {
+		super.delete(deleteBy);
+		this.paymentStatus = PaymentStatus.DELETED;
+	}
 }
