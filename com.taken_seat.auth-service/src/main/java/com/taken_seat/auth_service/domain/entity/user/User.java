@@ -2,12 +2,10 @@ package com.taken_seat.auth_service.domain.entity.user;
 
 import com.taken_seat.auth_service.domain.entity.mileage.Mileage;
 import com.taken_seat.auth_service.domain.vo.Role;
+import com.taken_seat.common_service.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -18,7 +16,7 @@ import java.util.UUID;
 @Builder(access = AccessLevel.PRIVATE)
 @Entity
 @Table(name = "p_user")
-public class User {
+public class User extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -41,45 +39,6 @@ public class User {
     @Column(name = "role", nullable = false)
     private Role role;
 
-    @CreatedDate
-    @Column(updatable = false, nullable = false)
-    @Temporal(TemporalType.TIMESTAMP)
-    private LocalDateTime createdAt;
-
-    @Column(updatable = false, nullable = false)
-    private UUID createdBy;
-
-    @LastModifiedDate
-    @Column(nullable = false)
-    @Temporal(TemporalType.TIMESTAMP)
-    private LocalDateTime updatedAt;
-
-    @Column
-    private UUID updatedBy;
-
-    @Column
-    private LocalDateTime deletedAt;
-
-    @Column
-    private UUID deletedBy;
-
-    @PrePersist
-    protected void onCreate() {
-        LocalDateTime time = LocalDateTime.now();
-        this.createdAt = time;
-        this.updatedAt = time;
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    public void del(UUID deletedBy) {
-        this.deletedAt = LocalDateTime.now();
-        this.deletedBy = deletedBy;
-    }
-
 // ======================================= 테이블 연관 관게 =======================================
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
@@ -88,15 +47,18 @@ public class User {
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<Mileage> mileages = new ArrayList<>();
 
-    public static User create(String username, String email, String phone, String password, Role role, UUID createdBy) {
-        return User.builder()
+    public static User create(String username, String email, String phone, String password, Role role) {
+        User user = User.builder()
                 .username(username)
                 .email(email)
                 .phone(phone)
                 .password(password)
                 .role(role)
-                .createdBy(createdBy)
                 .build();
+
+        user.prePersist(UUID.fromString("00000000-0000-0000-0000-000000000000"));
+
+        return user;
     }
 
     public void update(String username, String email, String phone, String password, Role role) {

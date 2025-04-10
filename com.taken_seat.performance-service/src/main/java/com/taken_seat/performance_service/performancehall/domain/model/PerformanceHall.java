@@ -1,5 +1,6 @@
 package com.taken_seat.performance_service.performancehall.domain.model;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -47,6 +48,12 @@ public class PerformanceHall {
 	@Builder.Default
 	private List<Seat> seats = new ArrayList<>();
 
+	@Column(name = "deleted_by")
+	private UUID deletedBy;
+
+	@Column(name = "deleted_at")
+	private LocalDateTime deletedAt;
+
 	public static PerformanceHall create(CreateRequestDto request) {
 
 		PerformanceHall performanceHall = PerformanceHall.builder()
@@ -69,5 +76,11 @@ public class PerformanceHall {
 		performanceHall.getSeats().addAll(seats);
 
 		return performanceHall;
+	}
+
+	public void softDelete(UUID userId) {
+
+		this.deletedBy = userId;
+		this.deletedAt = LocalDateTime.now();
 	}
 }

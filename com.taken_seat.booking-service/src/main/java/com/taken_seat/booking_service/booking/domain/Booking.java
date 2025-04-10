@@ -40,9 +40,8 @@ public class Booking extends BaseEntity {
 	@GeneratedValue(strategy = GenerationType.UUID)
 	private UUID id;
 
-	@Builder.Default
 	@Column(nullable = false)
-	private UUID userId = UUID.randomUUID();
+	private UUID userId;
 
 	@Column(nullable = false)
 	private UUID performanceScheduleId;

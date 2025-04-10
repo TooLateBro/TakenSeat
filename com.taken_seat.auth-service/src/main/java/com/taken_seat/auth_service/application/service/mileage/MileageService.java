@@ -41,6 +41,11 @@ public class MileageService {
                 .orElseThrow(()-> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         Mileage mileage = Mileage.create(user, dto.getCount());
+        mileage.prePersist(userId);
+
+        if (mileage.getCreatedBy() != null){
+            mileage.preUpdate(userId);
+        }
 
         mileageRepository.save(mileage);
 
@@ -84,7 +89,8 @@ public class MileageService {
         Mileage mileage = mileageRepository.findByIdAndDeletedAtIsNull(mileageId)
                 .orElseThrow(()-> new IllegalArgumentException("마일리지를 찾을 수 없습니다."));
 
-        mileage.update(dto.getCount(), userId);
+        mileage.update(dto.getCount());
+        mileage.preUpdate(userId);
 
         return UserMileageResponseDto.of(mileage);
     }
@@ -98,6 +104,6 @@ public class MileageService {
         Mileage mileage = mileageRepository.findByIdAndDeletedAtIsNull(mileageId)
                 .orElseThrow(()-> new IllegalArgumentException("마일리지를 찾을 수 없습니다."));
 
-        mileage.del(userId);
+        mileage.delete(userId);
     }
 }

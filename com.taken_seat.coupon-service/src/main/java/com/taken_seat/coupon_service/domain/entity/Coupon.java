@@ -1,12 +1,11 @@
 package com.taken_seat.coupon_service.domain.entity;
 
+import com.taken_seat.common_service.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -17,7 +16,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 @Table(name = "p_coupon")
-public class Coupon {
+public class Coupon extends BaseTimeEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(columnDefinition = "BINARY(16)", nullable = false, updatable = false)
@@ -41,40 +40,6 @@ public class Coupon {
     @Column(name = "expired_at", nullable = false)
     private LocalDateTime expiredAt;
 
-    @CreatedDate
-    @Column(updatable = false, nullable = false)
-    @Temporal(TemporalType.TIMESTAMP)
-    private LocalDateTime createdAt;
-
-    @Column(updatable = false)
-    private UUID createdBy;
-
-    @LastModifiedDate
-    @Column(nullable = false)
-    @Temporal(TemporalType.TIMESTAMP)
-    private LocalDateTime updatedAt;
-
-    @Column
-    private UUID updatedBy;
-
-    @Column
-    private LocalDateTime deletedAt;
-
-    @Column
-    private UUID deletedBy;
-
-    @PrePersist
-    protected void onCreate() {
-        LocalDateTime time = LocalDateTime.now();
-        this.createdAt = time;
-        this.updatedAt = time;
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
-
     public static Coupon create(String name, String code, Integer quantity, Integer discount, LocalDateTime expiredAt) {
         return Coupon.builder()
                 .name(name)
@@ -85,17 +50,11 @@ public class Coupon {
                 .expiredAt(expiredAt)
                 .build();
     }
-    public void update(String name, String code, Integer quantity, Integer discount, LocalDateTime expiredAt, UUID userId) {
+    public void update(String name, String code, Integer quantity, Integer discount, LocalDateTime expiredAt) {
         this.name = name;
         this.code = code;
         this.quantity = quantity;
         this.discount = discount;
         this.expiredAt = expiredAt;
-        this.updatedBy = userId;
-    }
-
-    public void del(UUID deletedBy) {
-        this.deletedAt = LocalDateTime.now();
-        this.deletedBy = deletedBy;
     }
 }

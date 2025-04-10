@@ -33,11 +33,12 @@ public class CouponService {
 
     @Transactional
     @CachePut(cacheNames = "couponCache", key = "#result.id")
-    public CouponResponseDto createCoupon(CouponDto dto) {
+    public CouponResponseDto createCoupon(CouponDto dto, UUID userId) {
         Coupon coupon = Coupon.create(
                 dto.getName(), dto.getCode(), dto.getQuantity(),
                 dto.getDiscount(), dto.getExpiredAt()
         );
+        coupon.prePersist(userId);
 
         couponRepository.save(coupon);
 
@@ -75,8 +76,9 @@ public class CouponService {
         coupon.update(
                 dto.getName().orElse(coupon.getName()), dto.getCode().orElse(coupon.getCode()),
                 dto.getQuantity().orElse(coupon.getQuantity()), dto.getDiscount().orElse(coupon.getDiscount()),
-                dto.getExpiredAt().orElse(coupon.getExpiredAt()), userId
+                dto.getExpiredAt().orElse(coupon.getExpiredAt())
         );
+        coupon.preUpdate(userId);
 
         return CouponResponseDto.of(coupon);
     }
@@ -90,6 +92,6 @@ public class CouponService {
         Coupon coupon = couponRepository.findByIdAndDeletedAtIsNull(couponId)
                 .orElseThrow(()-> new IllegalArgumentException("쿠폰이 존재하지 않습니다."));
 
-        coupon.del(userId);
+        coupon.delete(userId);
     }
 }
