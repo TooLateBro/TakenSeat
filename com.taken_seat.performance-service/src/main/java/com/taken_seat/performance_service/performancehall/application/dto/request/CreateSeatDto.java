@@ -3,7 +3,7 @@ package com.taken_seat.performance_service.performancehall.application.dto.reque
 import com.taken_seat.performance_service.performancehall.domain.model.SeatStatus;
 import com.taken_seat.performance_service.performancehall.domain.model.SeatType;
 
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,10 +15,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CreateSeatDto {
 
-	@NotNull(message = "좌석 열 정보는 필수입니다.")
+	@NotBlank(message = "좌석 열 정보는 필수입니다.")
 	private String rowNumber;
 
-	@NotNull(message = "좌석 번호는 필수입니다.")
+	@NotBlank(message = "좌석 번호는 필수입니다.")
 	private String seatNumber;
 
 	private SeatType seatType;
