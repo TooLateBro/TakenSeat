@@ -38,7 +38,7 @@ public class AuthService {
         User user = User.create(
                 dto.getUsername(), dto.getEmail(),
                 dto.getPhone(), bCryptPasswordEncoder.encode(dto.getPassword()),
-                dto.getRole(), UUID.randomUUID()
+                dto.getRole()
         );
         userRepository.save(user);
 
