@@ -59,7 +59,8 @@ public class BookingServiceImpl implements BookingService {
 	@Transactional(readOnly = true)
 	public BookingPageResponse readBookings(AuthenticatedUser authenticatedUser, Pageable pageable) {
 
-		Page<Booking> page = bookingRepository.findAllByUserIdAndDeletedAtIsNull(pageable, authenticatedUser.getUserId());
+		Page<Booking> page = bookingRepository.findAllByUserIdAndDeletedAtIsNull(pageable,
+			authenticatedUser.getUserId());
 
 		return BookingPageResponse.toDto(page);
 	}

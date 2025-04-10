@@ -40,7 +40,8 @@ public class BookingController {
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<BookingReadResponse> readBooking(AuthenticatedUser authenticatedUser, @PathVariable("id") UUID id) {
+	public ResponseEntity<BookingReadResponse> readBooking(AuthenticatedUser authenticatedUser,
+		@PathVariable("id") UUID id) {
 		BookingReadResponse response = bookingService.readBooking(authenticatedUser, id);
 
 		return ResponseEntity.ok(response);

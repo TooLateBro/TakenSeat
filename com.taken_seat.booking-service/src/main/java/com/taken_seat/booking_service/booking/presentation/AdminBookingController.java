@@ -24,7 +24,8 @@ public class AdminBookingController {
 	private final BookingService bookingService;
 
 	@GetMapping("/{id}")
-	public ResponseEntity<AdminBookingReadResponse> readBooking(AuthenticatedUser authenticatedUser, @PathVariable("id") UUID id) {
+	public ResponseEntity<AdminBookingReadResponse> readBooking(AuthenticatedUser authenticatedUser,
+		@PathVariable("id") UUID id) {
 
 		AdminBookingReadResponse response = bookingService.adminReadBooking(authenticatedUser, id);
 
@@ -32,7 +33,8 @@ public class AdminBookingController {
 	}
 
 	@GetMapping
-	public ResponseEntity<AdminBookingPageResponse> readBookings(AuthenticatedUser authenticatedUser, Pageable pageable) {
+	public ResponseEntity<AdminBookingPageResponse> readBookings(AuthenticatedUser authenticatedUser,
+		Pageable pageable) {
 
 		// TODO: Querydsl 을 적용하여 사용자ID 포함 동적 검색 적용하기
 		AdminBookingPageResponse response = bookingService.adminReadBookings(authenticatedUser, pageable);
