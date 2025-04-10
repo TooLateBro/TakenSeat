@@ -10,20 +10,20 @@ import com.taken_seat.booking_service.booking.application.dto.response.AdminBook
 import com.taken_seat.booking_service.booking.application.dto.response.BookingCreateResponse;
 import com.taken_seat.booking_service.booking.application.dto.response.BookingPageResponse;
 import com.taken_seat.booking_service.booking.application.dto.response.BookingReadResponse;
-import com.taken_seat.common_service.dto.CustomUser;
+import com.taken_seat.common_service.dto.AuthenticatedUser;
 
 public interface BookingService {
-	BookingCreateResponse createBooking(CustomUser customUser, BookingCreateRequest request);
+	BookingCreateResponse createBooking(AuthenticatedUser authenticatedUser, BookingCreateRequest request);
 
-	BookingReadResponse readBooking(CustomUser customUser, UUID id);
+	BookingReadResponse readBooking(AuthenticatedUser authenticatedUser, UUID id);
 
-	BookingPageResponse readBookings(CustomUser customUser, Pageable pageable);
+	BookingPageResponse readBookings(AuthenticatedUser authenticatedUser, Pageable pageable);
 
-	void updateBooking(CustomUser customUser, UUID id);
+	void updateBooking(AuthenticatedUser authenticatedUser, UUID id);
 
-	void deleteBooking(CustomUser customUser, UUID id);
+	void deleteBooking(AuthenticatedUser authenticatedUser, UUID id);
 
-	AdminBookingReadResponse adminReadBooking(CustomUser customUser, UUID id);
+	AdminBookingReadResponse adminReadBooking(AuthenticatedUser authenticatedUser, UUID id);
 
-	AdminBookingPageResponse adminReadBookings(CustomUser customUser, Pageable pageable);
+	AdminBookingPageResponse adminReadBookings(AuthenticatedUser authenticatedUser, Pageable pageable);
 }

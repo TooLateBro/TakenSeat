@@ -7,7 +7,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class CustomUser {
+public class AuthenticatedUser {
 	private UUID userId;
 	private String email;
 	private String role;
