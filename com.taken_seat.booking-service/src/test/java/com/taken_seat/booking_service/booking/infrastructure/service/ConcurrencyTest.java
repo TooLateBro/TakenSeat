@@ -1,4 +1,4 @@
-package com.taken_seat.booking_service.infrastructure.service;
+package com.taken_seat.booking_service.booking.infrastructure.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.taken_seat.booking_service.booking.application.BookingService;
 import com.taken_seat.booking_service.booking.application.dto.request.BookingCreateRequest;
-import com.taken_seat.common_service.dto.AuthenticatedUser;
+import com.taken_seat.booking_service.common.CustomUser;
 
 @SpringBootTest
 @Transactional
@@ -42,13 +42,13 @@ class ConcurrencyTest {
 			int userIndex = i;
 			results.add(executorService.submit(() -> {
 				try {
-					AuthenticatedUser authenticatedUser = new AuthenticatedUser(UUID.randomUUID(), "testEmail", "testRole");
+					CustomUser customUser = new CustomUser(UUID.randomUUID(), "testEmail", "testRole");
 
 					BookingCreateRequest request = BookingCreateRequest.builder()
 						.seatId(seatId)
 						.build();
 
-					bookingService.createBooking(authenticatedUser, request);
+					bookingService.createBooking(customUser, request);
 					return "SUCCESS: 사용자 " + userIndex;
 				} catch (Exception e) {
 					return "FAIL: 사용자 " + userIndex + " -> " + e.getMessage();
