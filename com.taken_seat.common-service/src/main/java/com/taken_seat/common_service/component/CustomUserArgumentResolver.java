@@ -1,4 +1,4 @@
-package com.taken_seat.booking_service.common;
+package com.taken_seat.common_service.component;
 
 import java.util.UUID;
 
@@ -9,11 +9,13 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
+import com.taken_seat.common_service.dto.AuthenticatedUser;
+
 @Component
 public class CustomUserArgumentResolver implements HandlerMethodArgumentResolver {
 	@Override
 	public boolean supportsParameter(MethodParameter parameter) {
-		return parameter.getParameterType().equals(CustomUser.class);
+		return parameter.getParameterType().equals(AuthenticatedUser.class);
 	}
 
 	@Override
@@ -23,6 +25,6 @@ public class CustomUserArgumentResolver implements HandlerMethodArgumentResolver
 		String email = webRequest.getHeader("X-Email");
 		String role = webRequest.getHeader("X-Role");
 
-		return new CustomUser(UUID.fromString(userId), email, role);
+		return new AuthenticatedUser(UUID.fromString(userId), email, role);
 	}
 }

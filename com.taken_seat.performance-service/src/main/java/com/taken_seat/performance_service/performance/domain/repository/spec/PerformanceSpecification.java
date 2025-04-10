@@ -34,7 +34,7 @@ public class PerformanceSpecification {
 	 */
 	private static void addTitleCondition(List<Predicate> predicates, Root<Performance> root,
 		CriteriaBuilder cb, SearchFilterParam filterParam) {
-		if (filterParam.getTitle() != null) {
+		if (filterParam.getTitle() != null && !filterParam.getTitle().isBlank()) {
 			predicates.add(cb.like(root.get("title"), "%" + filterParam.getTitle() + "%"));
 		}
 	}

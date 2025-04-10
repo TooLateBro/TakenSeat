@@ -1,4 +1,4 @@
-package com.taken_seat.booking_service.common;
+package com.taken_seat.common_service.dto;
 
 import java.util.UUID;
 
@@ -7,7 +7,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class CustomUser {
+public class AuthenticatedUser {
 	private UUID userId;
 	private String email;
 	private String role;
