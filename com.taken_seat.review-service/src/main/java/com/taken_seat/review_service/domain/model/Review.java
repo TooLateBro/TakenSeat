@@ -2,6 +2,7 @@ package com.taken_seat.review_service.domain.model;
 
 import java.util.UUID;
 
+import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.common_service.entity.BaseTimeEntity;
 import com.taken_seat.review_service.application.dto.request.ReviewRegisterReqDto;
 
@@ -47,18 +48,18 @@ public class Review extends BaseTimeEntity {
 	@Column(nullable = false)
 	private Integer likeCount;
 
-	public static Review create(ReviewRegisterReqDto reviewRegisterReqDto, String authorEmail, UUID createdBy) {
+	public static Review create(ReviewRegisterReqDto reviewRegisterReqDto, AuthenticatedUser authenticatedUser) {
 
 		Review review = Review.builder()
 			.performanceId(reviewRegisterReqDto.getPerformanceId())
-			.authorId(createdBy)
-			.authorEmail(authorEmail)
+			.authorId(authenticatedUser.getUserId())
+			.authorEmail(authenticatedUser.getEmail())
 			.title(reviewRegisterReqDto.getTitle())
 			.content(reviewRegisterReqDto.getContent())
 			.likeCount(0)
 			.build();
 
-		review.prePersist(createdBy);
+		review.prePersist(authenticatedUser.getUserId());
 
 		return review;
 	}
