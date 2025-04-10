@@ -71,4 +71,15 @@ public class CouponController {
 
         return ResponseEntity.ok(couponInfo);
     }
+
+    @DeleteMapping("/{couponId}")
+    public ResponseEntity<Void> deleteCoupon(@PathVariable UUID couponId,
+                                             @RequestHeader("X-Role") String role,
+                                             @RequestHeader("X-User-Id") UUID userId) {
+        if(role == null || !(role.equals("ADMIN") || role.equals("MANAGER"))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        couponService.deleteCoupon(couponId, userId);
+        return ResponseEntity.noContent().build();
+    }
 }
