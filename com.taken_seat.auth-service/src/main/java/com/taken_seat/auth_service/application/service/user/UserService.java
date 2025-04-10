@@ -84,7 +84,7 @@ public class UserService {
                 dto.getPassword(),
                 dto.getRole()
         );
-
+        user.preUpdate(userId);
         return UserInfoResponseDto.of(user);
     }
 
@@ -97,6 +97,6 @@ public class UserService {
         User user = userRepository.findByIdAndDeletedAtIsNull(userId)
                 .orElseThrow(()-> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-        user.del(userId);
+        user.delete(userId);
     }
 }
