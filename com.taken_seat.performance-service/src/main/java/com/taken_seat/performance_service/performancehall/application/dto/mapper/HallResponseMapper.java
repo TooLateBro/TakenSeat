@@ -1,13 +1,20 @@
 package com.taken_seat.performance_service.performancehall.application.dto.mapper;
 
+import java.util.List;
 import java.util.stream.Collectors;
+
+import org.springframework.data.domain.Page;
+import org.springframework.stereotype.Component;
 
 import com.taken_seat.performance_service.performancehall.application.dto.response.CreateResponseDto;
 import com.taken_seat.performance_service.performancehall.application.dto.response.DetailResponseDto;
+import com.taken_seat.performance_service.performancehall.application.dto.response.PageResponseDto;
+import com.taken_seat.performance_service.performancehall.application.dto.response.SearchResponseDto;
 import com.taken_seat.performance_service.performancehall.application.dto.response.SeatDto;
 import com.taken_seat.performance_service.performancehall.domain.model.PerformanceHall;
 import com.taken_seat.performance_service.performancehall.domain.model.Seat;
 
+@Component
 public class HallResponseMapper {
 
 	public static CreateResponseDto createHallToDto(PerformanceHall performanceHall) {
@@ -48,6 +55,32 @@ public class HallResponseMapper {
 					.map(HallResponseMapper::toSeat)
 					.collect(Collectors.toList())
 			)
+			.build();
+	}
+
+	public SearchResponseDto toSearch(PerformanceHall performanceHall) {
+		return SearchResponseDto.builder()
+			.name(performanceHall.getName())
+			.totalSeats(performanceHall.getTotalSeats())
+			.build();
+	}
+
+	public List<SearchResponseDto> toSearchList(List<PerformanceHall> performanceHalls) {
+		return performanceHalls.stream()
+			.map(this::toSearch)
+			.collect(Collectors.toList());
+	}
+
+	public PageResponseDto toPage(Page<PerformanceHall> pages) {
+
+		List<SearchResponseDto> content = toSearchList(pages.getContent());
+		return PageResponseDto.builder()
+			.content(content)
+			.pageSize(pages.getSize())
+			.pageNumber(pages.getNumber() + 1)
+			.totalPages(pages.getTotalPages())
+			.totalElements(pages.getTotalElements())
+			.isLast(pages.isLast())
 			.build();
 	}
 }
