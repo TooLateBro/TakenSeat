@@ -10,6 +10,8 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 import com.taken_seat.common_service.dto.AuthenticatedUser;
+import com.taken_seat.common_service.exception.customException.MissingHeaderException;
+import com.taken_seat.common_service.exception.enums.ResponseCode;
 
 @Component
 public class CustomUserArgumentResolver implements HandlerMethodArgumentResolver {
@@ -24,6 +26,11 @@ public class CustomUserArgumentResolver implements HandlerMethodArgumentResolver
 		String userId = webRequest.getHeader("X-User-Id");
 		String email = webRequest.getHeader("X-Email");
 		String role = webRequest.getHeader("X-Role");
+
+		// 필수 헤더 체크 및 예외 처리
+		if (userId == null || email == null || role == null) {
+			throw new MissingHeaderException(ResponseCode.MISSING_HEADER);
+		}
 
 		return new AuthenticatedUser(UUID.fromString(userId), email, role);
 	}
