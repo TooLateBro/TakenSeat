@@ -8,6 +8,7 @@ import lombok.Getter;
 @Getter
 @Builder
 public class TicketPerformanceClientRequest {
+
 	private final UUID performanceScheduleId;
 	private final UUID seatId;
 }
