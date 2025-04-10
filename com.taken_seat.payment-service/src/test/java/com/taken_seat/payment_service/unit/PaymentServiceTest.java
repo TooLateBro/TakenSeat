@@ -95,14 +95,14 @@ public class PaymentServiceTest {
 	void registerPayment_success() {
 		// Given
 		UUID registerTestPaymentId = UUID.randomUUID();
-
+		UUID createdBy = UUID.randomUUID();
 		PaymentRegisterReqDto paymentRegisterReqDto = new PaymentRegisterReqDto(registerTestPaymentId, 1000);
 
 		when(paymentRepository.save(any(Payment.class))).thenReturn(testPayment);
 		when(paymentHistoryRepository.save(any(PaymentHistory.class))).thenReturn(testPaymentHistory);
 
 		// When
-		PaymentRegisterResDto result = paymentService.registerPayment(paymentRegisterReqDto);
+		PaymentRegisterResDto result = paymentService.registerPayment(paymentRegisterReqDto, createdBy);
 
 		// Then
 		assertNotNull(result);
@@ -115,12 +115,13 @@ public class PaymentServiceTest {
 	void registerPayment_fail_zeroOrNegativePrice() {
 		// Given
 		UUID registerTestPaymentId = UUID.randomUUID();
+		UUID createdBy = UUID.randomUUID();
 
 		PaymentRegisterReqDto paymentRegisterReqDto = new PaymentRegisterReqDto(registerTestPaymentId, 0);
 
 		// When & Then
 		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-			paymentService.registerPayment(paymentRegisterReqDto);
+			paymentService.registerPayment(paymentRegisterReqDto, createdBy);
 		});
 
 		assertEquals("결제 금액은 1원 미만일 수 없습니다. 요청 금액 : 0", exception.getMessage());
@@ -208,11 +209,13 @@ public class PaymentServiceTest {
 	void testUpdatePayment_success() {
 		// Given
 		PaymentUpdateReqDto paymentUpdateReqDto = new PaymentUpdateReqDto(3000, PaymentStatus.FAILED);
+		UUID updatedBy = UUID.randomUUID();
 
 		when(paymentRepository.findByIdAndDeletedAtIsNull(testPaymentId)).thenReturn(Optional.of(testPayment));
+		when(paymentHistoryRepository.findByPayment(testPayment)).thenReturn(Optional.of(testPaymentHistory));
 
 		// When
-		PaymentUpdateResDto result = paymentService.updatePayment(testPaymentId, paymentUpdateReqDto);
+		PaymentUpdateResDto result = paymentService.updatePayment(testPaymentId, paymentUpdateReqDto, updatedBy);
 
 		// Then
 		assertNotNull(result);
@@ -226,10 +229,11 @@ public class PaymentServiceTest {
 	void testUpdatePayment_fail_zeroOrNegativePrice() {
 		// Given
 		PaymentUpdateReqDto reqDto = new PaymentUpdateReqDto(0, PaymentStatus.FAILED);
+		UUID updatedBy = UUID.randomUUID();
 
 		// When & Then
 		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-			paymentService.updatePayment(testPaymentId, reqDto);
+			paymentService.updatePayment(testPaymentId, reqDto, updatedBy);
 		});
 
 		assertEquals("결제 금액은 1원 미만일 수 없습니다. 요청 금액 : 0", exception.getMessage());
@@ -240,39 +244,66 @@ public class PaymentServiceTest {
 	void testUpdatePayment_fail_paymentNotFound() {
 		// Given
 		UUID notExistId = UUID.randomUUID();
+		UUID updatedBy = UUID.randomUUID();
 		PaymentUpdateReqDto reqDto = new PaymentUpdateReqDto(3000, PaymentStatus.FAILED);
 
 		when(paymentRepository.findByIdAndDeletedAtIsNull(notExistId)).thenReturn(Optional.empty());
 
 		// When & Then
 		PaymentNotFoundException exception = assertThrows(PaymentNotFoundException.class, () -> {
-			paymentService.updatePayment(notExistId, reqDto);
+			paymentService.updatePayment(notExistId, reqDto, updatedBy);
 		});
 
 		assertEquals("해당 ID 에 대한 결제 정보를 찾을 수 없습니다 : " + notExistId, exception.getMessage());
 	}
 
 	@Test
+	@DisplayName("결제 정보 수정 - PaymentHistory 없음 - FAIL")
+	void testUpdatePayment_fail_paymentHistoryNotFound() {
+		// Given
+		UUID updatedBy = UUID.randomUUID();
+		PaymentUpdateReqDto updateDto = new PaymentUpdateReqDto(2000, PaymentStatus.COMPLETED);
+
+		when(paymentRepository.findByIdAndDeletedAtIsNull(testPaymentId)).thenReturn(Optional.of(testPayment));
+		when(paymentHistoryRepository.findByPayment(testPayment)).thenReturn(Optional.empty());
+
+		// When & Then
+		RuntimeException exception = assertThrows(RuntimeException.class, () ->
+			paymentService.updatePayment(testPaymentId, updateDto, updatedBy)
+		);
+
+		assertTrue(exception.getMessage().contains("해당 결제의 내역이 존재하지않습니다."));
+	}
+
+	@Test
 	@DisplayName("결제 논리적 삭제 성공 - SUCCESS")
 	void testDeletePayment_success() {
 		// Given
-		when(paymentRepository.findByIdAndDeletedAtIsNull(testPaymentId)).thenReturn(Optional.of(testPayment));
+		UUID deletedBy = UUID.randomUUID();
 
-		// When & Then
-		assertDoesNotThrow(() -> paymentService.deletePayment(testPaymentId));
+		when(paymentRepository.findByIdAndDeletedAtIsNull(testPaymentId)).thenReturn(Optional.of(testPayment));
+		when(paymentHistoryRepository.findByPayment(testPayment)).thenReturn(Optional.of(testPaymentHistory));
+
+		// When
+		assertDoesNotThrow(() -> paymentService.deletePayment(testPaymentId, deletedBy));
+
+		// Then
+		assertNotNull(testPayment.getDeletedAt());
+		assertNotNull(testPaymentHistory.getDeletedAt());
 	}
 
 	@Test
 	@DisplayName("결제 논리적 삭제 실패 - 존재하지않는 결제 ID - FAIL")
 	void testDeletePayment_fail_paymentNotFound() {
 		// Given
-		UUID testPaymentFailId = UUID.randomUUID();
+		when(paymentRepository.findByIdAndDeletedAtIsNull(any(UUID.class))).thenReturn(Optional.empty());
 
-		when(paymentRepository.findByIdAndDeletedAtIsNull(testPaymentFailId)).thenReturn(Optional.empty());
+		// When & Then
+		PaymentNotFoundException exception = assertThrows(PaymentNotFoundException.class, () ->
+			paymentService.deletePayment(UUID.randomUUID(), UUID.randomUUID())
+		);
 
-		PaymentNotFoundException exception = assertThrows(PaymentNotFoundException.class,
-			() -> paymentService.deletePayment(testPaymentFailId));
-		assertEquals("해당 ID 에 대한 결제 정보를 찾을 수 없습니다 : " + testPaymentFailId, exception.getMessage());
+		assertTrue(exception.getMessage().contains("해당 ID 에 대한 결제 정보를 찾을 수 없습니다"));
 
 	}
 }
