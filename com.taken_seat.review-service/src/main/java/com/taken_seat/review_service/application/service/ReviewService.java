@@ -1,6 +1,7 @@
 package com.taken_seat.review_service.application.service;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,6 +58,15 @@ public class ReviewService {
 		// 4. 리뷰 생성 및 저장
 		Review review = Review.create(requestDto, authenticatedUser);
 		reviewRepository.save(review);
+
+		return ReviewDetailResDto.toResponse(review);
+	}
+
+	@Transactional(readOnly = true)
+	public ReviewDetailResDto getReviewDetail(UUID id) {
+
+		Review review = reviewRepository.findByIdAndDeletedAtIsNull(id)
+			.orElseThrow(() -> new ReviewException(ResponseCode.REVIEW_NOT_FOUND));
 
 		return ReviewDetailResDto.toResponse(review);
 	}
