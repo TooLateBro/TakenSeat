@@ -8,7 +8,10 @@ import com.taken_seat.auth_service.domain.entity.user.UserCoupon;
 import com.taken_seat.auth_service.domain.repository.user.UserQueryRepository;
 import com.taken_seat.auth_service.domain.repository.user.UserRepository;
 import com.taken_seat.auth_service.domain.repository.userCoupon.UserCouponRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,16 +34,16 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public UserInfoResponseDto getUser(UUID userId) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findByIdAndDeletedAtIsNull(userId)
                 .orElseThrow(()-> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         return UserInfoResponseDto.of(user);
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(cacheNames = "userDetails", key = "#userId + '-' + #page+'-'+#size")
+    @Cacheable(cacheNames = "searchCache", key = "#userId + '-' + #page+'-'+#size")
     public UserInfoResponseDto getUserDetails(UUID userId, int page, int size) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findByIdAndDeletedAtIsNull(userId)
                 .orElseThrow(()-> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
@@ -50,7 +53,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(cacheNames = "searchUser", key = "#q + '-' + #role + '-' + #page + '-' + #size")
+    @Cacheable(cacheNames = "searchCache", key = "#q + '-' + #role + '-' + #page + '-' + #size")
     public PageResponseDto<UserInfoResponseDto> searchUser(String q, String role, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<User> userInfos = userQueryRepository.findAllByDeletedAtIsNull(q, role, pageable);
@@ -65,8 +68,10 @@ public class UserService {
     }
 
     @Transactional
+    @CachePut(cacheNames = "userCache", key = "#result.userId")
+    @CacheEvict(cacheNames = "searchCache", allEntries = true)
     public UserInfoResponseDto updateUser(UUID userId, UserUpdateDto dto) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findByIdAndDeletedAtIsNull(userId)
                 .orElseThrow(()-> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         if(userRepository.findByEmail(String.valueOf(dto.getEmail())).isPresent()){
@@ -84,8 +89,12 @@ public class UserService {
     }
 
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "userCache", allEntries = true),
+            @CacheEvict(cacheNames = "searchCache", allEntries = true)
+    })
     public void deleteUser(UUID userId) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findByIdAndDeletedAtIsNull(userId)
                 .orElseThrow(()-> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         user.del(userId);

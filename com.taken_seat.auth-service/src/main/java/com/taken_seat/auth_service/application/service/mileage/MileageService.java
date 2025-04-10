@@ -32,7 +32,7 @@ public class MileageService {
 
     @Transactional
     public UserMileageResponseDto createMileageUser(UUID userId, UserMileageDto dto) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findByIdAndDeletedAtIsNull(userId)
                 .orElseThrow(()-> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         Mileage mileage = Mileage.create(user, dto.getCount());
