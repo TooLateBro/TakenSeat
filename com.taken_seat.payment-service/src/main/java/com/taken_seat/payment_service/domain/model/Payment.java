@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import com.taken_seat.common_service.entity.BaseTimeEntity;
+import com.taken_seat.payment_service.application.dto.request.PaymentRegisterReqDto;
 import com.taken_seat.payment_service.domain.enums.PaymentStatus;
 
 import jakarta.persistence.Column;
@@ -48,8 +49,27 @@ public class Payment extends BaseTimeEntity {
 
 	private LocalDateTime refundRequestedAt;
 
-	public void update(Integer price, PaymentStatus status) {
+	public static Payment register(PaymentRegisterReqDto paymentRegisterReqDto, UUID createdBy) {
+		Payment payment = Payment.builder()
+			.bookingId(paymentRegisterReqDto.getBookingId())
+			.price(paymentRegisterReqDto.getPrice())
+			.paymentStatus(PaymentStatus.COMPLETED)
+			.approvedAt(LocalDateTime.now())
+			.build();
+		payment.prePersist(createdBy);
+
+		return payment;
+	}
+
+	public void update(Integer price, PaymentStatus status, UUID updatedBy) {
 		this.price = price;
 		this.paymentStatus = status;
+		this.preUpdate(updatedBy);
+	}
+
+	@Override
+	public void delete(UUID deleteBy) {
+		super.delete(deleteBy);
+		this.paymentStatus = PaymentStatus.DELETED;
 	}
 }

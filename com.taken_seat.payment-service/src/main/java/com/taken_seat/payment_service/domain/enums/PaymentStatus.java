@@ -4,7 +4,8 @@ public enum PaymentStatus {
 
 	COMPLETED("COMPLETED"),
 	FAILED("FAILED"),
-	REFUNDED("REFUNDED");
+	REFUNDED("REFUNDED"),
+	DELETED("DELETED");
 
 	private final String description;
 

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -35,11 +36,12 @@ public class PaymentController {
 
 	@PostMapping
 	public ResponseEntity<ApiResponseData<PaymentRegisterResDto>> registerPayment(
-		@Valid @RequestBody PaymentRegisterReqDto paymentRegisterReqDto) {
+		@Valid @RequestBody PaymentRegisterReqDto paymentRegisterReqDto,
+		@RequestHeader("X-User-Id") UUID userId) {
 
 		return ResponseEntity.status(HttpStatus.OK)
 			.body(
-				ApiResponseData.success(paymentService.registerPayment(paymentRegisterReqDto)));
+				ApiResponseData.success(paymentService.registerPayment(paymentRegisterReqDto, userId)));
 	}
 
 	@GetMapping("/{id}")
@@ -64,17 +66,19 @@ public class PaymentController {
 
 	@PatchMapping("/{id}")
 	public ResponseEntity<ApiResponseData<PaymentUpdateResDto>> updatePayment(@PathVariable("id") UUID id,
-		@Valid @RequestBody PaymentUpdateReqDto paymentUpdateReqDto) {
+		@Valid @RequestBody PaymentUpdateReqDto paymentUpdateReqDto,
+		@RequestHeader("X-User-Id") UUID userId) {
 
 		return ResponseEntity.status(HttpStatus.OK)
 			.body(
-				ApiResponseData.success(paymentService.updatePayment(id, paymentUpdateReqDto)));
+				ApiResponseData.success(paymentService.updatePayment(id, paymentUpdateReqDto, userId)));
 
 	}
 
 	@DeleteMapping("/{id}")
-	public ResponseEntity<ApiResponseData<String>> deletePayment(@PathVariable("id") UUID id) {
-		paymentService.deletePayment(id);
+	public ResponseEntity<ApiResponseData<String>> deletePayment(@PathVariable("id") UUID id,
+		@RequestHeader("X-User-Id") UUID userId) {
+		paymentService.deletePayment(id, userId);
 		return ResponseEntity.status(HttpStatus.OK)
 			.body(
 				ApiResponseData.success("Delete Success"));

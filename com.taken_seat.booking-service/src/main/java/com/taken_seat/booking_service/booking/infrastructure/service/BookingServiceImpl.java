@@ -17,7 +17,7 @@ import com.taken_seat.booking_service.booking.application.dto.response.BookingPa
 import com.taken_seat.booking_service.booking.application.dto.response.BookingReadResponse;
 import com.taken_seat.booking_service.booking.domain.Booking;
 import com.taken_seat.booking_service.booking.domain.repository.BookingRepository;
-import com.taken_seat.booking_service.common.CustomUser;
+import com.taken_seat.common_service.dto.AuthenticatedUser;
 
 import lombok.RequiredArgsConstructor;
 
@@ -30,15 +30,15 @@ public class BookingServiceImpl implements BookingService {
 
 	@Override
 	@Transactional
-	public BookingCreateResponse createBooking(CustomUser customUser, BookingCreateRequest request) {
+	public BookingCreateResponse createBooking(AuthenticatedUser authenticatedUser, BookingCreateRequest request) {
 
 		Booking booking = Booking.builder()
-			.userId(customUser.getUserId())
+			.userId(authenticatedUser.getUserId())
 			.performanceScheduleId(request.getPerformanceScheduleId())
 			.seatId(request.getSeatId())
 			.build();
 
-		redissonService.tryHoldSeat(customUser.getUserId(), request.getSeatId());
+		redissonService.tryHoldSeat(authenticatedUser.getUserId(), request.getSeatId());
 
 		Booking saved = bookingRepository.save(booking);
 
@@ -47,9 +47,9 @@ public class BookingServiceImpl implements BookingService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public BookingReadResponse readBooking(CustomUser customUser, UUID id) {
+	public BookingReadResponse readBooking(AuthenticatedUser authenticatedUser, UUID id) {
 
-		Booking booking = bookingRepository.findByIdAndUserIdAndDeletedAtIsNull(id, customUser.getUserId())
+		Booking booking = bookingRepository.findByIdAndUserIdAndDeletedAtIsNull(id, authenticatedUser.getUserId())
 			.orElseThrow(() -> new RuntimeException("존재하지 않는 예약입니다."));
 
 		return BookingReadResponse.toDto(booking);
@@ -57,18 +57,18 @@ public class BookingServiceImpl implements BookingService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public BookingPageResponse readBookings(CustomUser customUser, Pageable pageable) {
+	public BookingPageResponse readBookings(AuthenticatedUser authenticatedUser, Pageable pageable) {
 
-		Page<Booking> page = bookingRepository.findAllByUserIdAndDeletedAtIsNull(pageable, customUser.getUserId());
+		Page<Booking> page = bookingRepository.findAllByUserIdAndDeletedAtIsNull(pageable, authenticatedUser.getUserId());
 
 		return BookingPageResponse.toDto(page);
 	}
 
 	@Override
 	@Transactional
-	public void updateBooking(CustomUser customUser, UUID id) {
+	public void updateBooking(AuthenticatedUser authenticatedUser, UUID id) {
 
-		Booking booking = bookingRepository.findByIdAndUserIdAndDeletedAtIsNull(id, customUser.getUserId())
+		Booking booking = bookingRepository.findByIdAndUserIdAndDeletedAtIsNull(id, authenticatedUser.getUserId())
 			.orElseThrow(() -> new RuntimeException("존재하지 않는 예약입니다."));
 
 		if (booking.getCanceledAt() != null) {
@@ -86,23 +86,23 @@ public class BookingServiceImpl implements BookingService {
 
 	@Override
 	@Transactional
-	public void deleteBooking(CustomUser customUser, UUID id) {
+	public void deleteBooking(AuthenticatedUser authenticatedUser, UUID id) {
 
-		Booking booking = bookingRepository.findByIdAndUserIdAndDeletedAtIsNull(id, customUser.getUserId())
+		Booking booking = bookingRepository.findByIdAndUserIdAndDeletedAtIsNull(id, authenticatedUser.getUserId())
 			.orElseThrow(() -> new RuntimeException("존재하지 않는 예약입니다."));
 
 		if (booking.getCanceledAt() == null) {
 			throw new RuntimeException("예약 취소 후 삭제할 수 있습니다.");
 		}
 
-		booking.delete(customUser.getUserId());
+		booking.delete(authenticatedUser.getUserId());
 	}
 
 	@Override
 	@Transactional(readOnly = true)
-	public AdminBookingReadResponse adminReadBooking(CustomUser customUser, UUID id) {
+	public AdminBookingReadResponse adminReadBooking(AuthenticatedUser authenticatedUser, UUID id) {
 
-		String role = customUser.getRole();
+		String role = authenticatedUser.getRole();
 		if (role == null || (!role.equals("MANAGER") && !role.equals("MASTER"))) {
 			throw new RuntimeException("접근 권한이 없습니다.");
 		}
@@ -114,10 +114,10 @@ public class BookingServiceImpl implements BookingService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public AdminBookingPageResponse adminReadBookings(CustomUser customUser, Pageable pageable) {
+	public AdminBookingPageResponse adminReadBookings(AuthenticatedUser authenticatedUser, Pageable pageable) {
 
 		// TODO: Querydsl 을 적용하여 사용자ID 포함 동적 검색 적용하기
-		String role = customUser.getRole();
+		String role = authenticatedUser.getRole();
 		if (role == null || (!role.equals("MANAGER") && !role.equals("MASTER"))) {
 			throw new RuntimeException("접근 권한이 없습니다.");
 		}
