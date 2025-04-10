@@ -1,12 +1,10 @@
 package com.taken_seat.auth_service.domain.entity.mileage;
 
 import com.taken_seat.auth_service.domain.entity.user.User;
+import com.taken_seat.common_service.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Getter
@@ -15,7 +13,7 @@ import java.util.UUID;
 @Builder(access = AccessLevel.PRIVATE)
 @Entity
 @Table(name = "p_mileage")
-public class Mileage {
+public class Mileage extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -25,40 +23,6 @@ public class Mileage {
     @Column(name = "count", nullable = false)
     private Integer count = 0;
 
-    @CreatedDate
-    @Column(updatable = false, nullable = false)
-    @Temporal(TemporalType.TIMESTAMP)
-    private LocalDateTime createdAt;
-
-    @Column(updatable = false)
-    private UUID createdBy;
-
-    @LastModifiedDate
-    @Column(nullable = false)
-    @Temporal(TemporalType.TIMESTAMP)
-    private LocalDateTime updatedAt;
-
-    @Column
-    private UUID updatedBy;
-
-    @Column
-    private LocalDateTime deletedAt;
-
-    @Column
-    private UUID deletedBy;
-
-    @PrePersist
-    protected void onCreate() {
-        LocalDateTime time = LocalDateTime.now();
-        this.createdAt = time;
-        this.updatedAt = time;
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
-
     public static Mileage create(User user, Integer count){
         return Mileage.builder()
                 .user(user)
@@ -66,14 +30,8 @@ public class Mileage {
                 .build();
     }
 
-    public void update(Integer count, UUID userId){
+    public void update(Integer count) {
         this.count = count;
-        this.updatedBy = userId;
-    }
-
-    public void del(UUID deletedBy) {
-        this.deletedAt = LocalDateTime.now();
-        this.deletedBy = deletedBy;
     }
 
     // ======================================= 테이블 연관 관게 =======================================
@@ -81,4 +39,5 @@ public class Mileage {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", columnDefinition = "BINARY(16)")
     private User user;
+
 }
