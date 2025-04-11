@@ -101,7 +101,7 @@ public class ReviewService {
 		return ReviewDetailResDto.toResponse(review);
 	}
 
-	public void delete(UUID id, AuthenticatedUser authenticatedUser) {
+	public void deleteReview(UUID id, AuthenticatedUser authenticatedUser) {
 
 		Review review = reviewRepository.findByIdAndDeletedAtIsNull(id)
 			.orElseThrow(() -> new ReviewException(ResponseCode.REVIEW_NOT_FOUND));

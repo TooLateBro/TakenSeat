@@ -72,7 +72,7 @@ public class ReviewController {
 	@DeleteMapping("/{id}")
 	public ResponseEntity<ApiResponseData<Void>> deleteReview(@PathVariable("id") UUID id,
 		AuthenticatedUser authenticatedUser) {
-		reviewService.delete(id, authenticatedUser);
+		reviewService.deleteReview(id, authenticatedUser);
 		return ResponseEntity.status(HttpStatus.OK)
 			.body(ApiResponseData.success());
 	}
