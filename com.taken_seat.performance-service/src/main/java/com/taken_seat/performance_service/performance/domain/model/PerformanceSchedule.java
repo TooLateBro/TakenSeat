@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.taken_seat.common_service.entity.BaseTimeEntity;
 import com.taken_seat.performance_service.performance.application.dto.request.UpdatePerformanceScheduleDto;
 import com.taken_seat.performance_service.performance.application.dto.request.UpdateSeatPriceDto;
 
@@ -33,7 +34,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Table(name = "p_performance_schedules")
 @Entity
-public class PerformanceSchedule {
+public class PerformanceSchedule extends BaseTimeEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
