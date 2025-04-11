@@ -83,4 +83,11 @@ public class PerformanceHall {
 		this.deletedBy = userId;
 		this.deletedAt = LocalDateTime.now();
 	}
+
+	public Seat getSeatById(UUID seatId) {
+		return this.getSeats().stream()
+			.filter(seat -> seat.getId().equals(seatId))
+			.findFirst()
+			.orElseThrow(() -> new IllegalArgumentException("해당 좌석이 존재하지 않습니다"));
+	}
 }
