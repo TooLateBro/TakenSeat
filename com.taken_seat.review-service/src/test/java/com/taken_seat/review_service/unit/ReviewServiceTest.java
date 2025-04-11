@@ -24,6 +24,7 @@ import com.taken_seat.common_service.exception.customException.ReviewException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.review_service.application.client.ReviewClient;
 import com.taken_seat.review_service.application.dto.request.ReviewRegisterReqDto;
+import com.taken_seat.review_service.application.dto.request.ReviewUpdateReqDto;
 import com.taken_seat.review_service.application.dto.response.PageReviewResponseDto;
 import com.taken_seat.review_service.application.dto.response.ReviewDetailResDto;
 import com.taken_seat.review_service.application.service.ReviewService;
@@ -247,5 +248,40 @@ public class ReviewServiceTest {
 		assertEquals(0, result.getTotalElements());
 		assertEquals(0, result.getContent().size());
 		assertTrue(result.getContent().isEmpty());
+	}
+
+	@Test
+	@DisplayName("리뷰 수정 - SUCCESS")
+	void testUpdateReview_success() {
+		// Given
+		ReviewUpdateReqDto reqDto = new ReviewUpdateReqDto("updateTitle", "updateContent");
+
+		when(reviewRepository.findByIdAndDeletedAtIsNull(testReviewId)).thenReturn(Optional.of(testReview));
+
+		// When
+		ReviewDetailResDto result = reviewService.updateReview(testReviewId, reqDto, authenticatedUser);
+
+		// Then
+		assertNotNull(result);
+		assertEquals("updateTitle", result.getTitle());
+		assertEquals("updateContent", result.getContent());
+
+	}
+
+	@Test
+	@DisplayName("리뷰 수정 실패 - 존재하지 않는 결제 ID - FAIL")
+	void testUpdateReview__fail_reviewNotFound() {
+		// Given
+		UUID notExistId = UUID.randomUUID();
+		ReviewUpdateReqDto reqDto = new ReviewUpdateReqDto("updateTitle", "updateContent");
+
+		when(reviewRepository.findByIdAndDeletedAtIsNull(notExistId)).thenReturn(Optional.empty());
+
+		// When & Then
+		ReviewException exception = assertThrows(ReviewException.class, () -> {
+			reviewService.updateReview(notExistId, reqDto, authenticatedUser);
+		});
+
+		assertEquals("해당 리뷰가 존재하지않습니다.", exception.getMessage());
 	}
 }
