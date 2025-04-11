@@ -48,9 +48,7 @@ public class PerformanceSeatPrice extends BaseTimeEntity {
 
 	public void update(UpdateSeatPriceDto dto) {
 
-		if (dto.getSeatType() != null)
-			this.seatType = dto.getSeatType();
-		if (dto.getPrice() != null)
-			this.price = dto.getPrice();
+		this.seatType = dto.getSeatType();
+		this.price = dto.getPrice();
 	}
 }
