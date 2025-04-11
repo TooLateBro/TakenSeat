@@ -184,4 +184,11 @@ public class Performance {
 		this.deletedBy = userId;
 		this.deletedAt = LocalDateTime.now();
 	}
+
+	public PerformanceSchedule getScheduleById(UUID performanceScheduleId) {
+		return schedules.stream()
+			.filter(performanceSchedule -> performanceSchedule.getId().equals(performanceScheduleId))
+			.findFirst()
+			.orElseThrow(() -> new IllegalArgumentException("공연 회차가 존재하지 않습니다"));
+	}
 }
