@@ -7,7 +7,7 @@ import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
 
-import com.taken_seat.booking_service.booking.application.RedissonService;
+import com.taken_seat.booking_service.booking.application.service.RedissonService;
 import com.taken_seat.common_service.exception.customException.BookingException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
 

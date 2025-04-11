@@ -42,14 +42,14 @@ public abstract class BaseTimeEntity {
 	}
 
 	public void prePersist(UUID createdBy) {
-		createdAt = LocalDateTime.now();
+		this.createdAt = LocalDateTime.now();
 		this.createdBy = createdBy;
-		updatedAt = null;
-		updatedBy = null;
+		this.updatedAt = null;
+		this.updatedBy = null;
 	}
 
 	public void preUpdate(UUID updatedBy) {
-		updatedAt = LocalDateTime.now();
+		this.updatedAt = LocalDateTime.now();
 		this.updatedBy = updatedBy;
 	}
 

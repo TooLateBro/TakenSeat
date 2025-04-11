@@ -92,7 +92,7 @@ public class PaymentServiceTest {
 
 	@Test
 	@DisplayName("결제 수동 등록 - SUCCESS")
-	void registerPayment_success() {
+	void testRegisterPayment_success() {
 		// Given
 		UUID registerTestPaymentId = UUID.randomUUID();
 		UUID createdBy = UUID.randomUUID();
@@ -112,7 +112,7 @@ public class PaymentServiceTest {
 
 	@Test
 	@DisplayName("결제 수동 등록 - 결제 금액이 1원 이하  - FAIL ")
-	void registerPayment_fail_zeroOrNegativePrice() {
+	void testRegisterPayment_fail_zeroOrNegativePrice() {
 		// Given
 		UUID registerTestPaymentId = UUID.randomUUID();
 		UUID createdBy = UUID.randomUUID();
@@ -199,8 +199,6 @@ public class PaymentServiceTest {
 		assertNotNull(result);
 		assertEquals(0, result.getTotalElements());
 		assertEquals(0, result.getContent().size());
-
-		assertEquals(0, result.getTotalElements());
 		assertTrue(result.getContent().isEmpty());
 	}
 

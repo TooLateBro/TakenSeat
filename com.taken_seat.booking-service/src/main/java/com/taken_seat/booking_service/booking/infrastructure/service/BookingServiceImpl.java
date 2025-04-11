@@ -7,14 +7,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.taken_seat.booking_service.booking.application.BookingService;
-import com.taken_seat.booking_service.booking.application.RedissonService;
 import com.taken_seat.booking_service.booking.application.dto.request.BookingCreateRequest;
 import com.taken_seat.booking_service.booking.application.dto.response.AdminBookingPageResponse;
 import com.taken_seat.booking_service.booking.application.dto.response.AdminBookingReadResponse;
 import com.taken_seat.booking_service.booking.application.dto.response.BookingCreateResponse;
 import com.taken_seat.booking_service.booking.application.dto.response.BookingPageResponse;
 import com.taken_seat.booking_service.booking.application.dto.response.BookingReadResponse;
+import com.taken_seat.booking_service.booking.application.service.BookingEventProducer;
+import com.taken_seat.booking_service.booking.application.service.BookingService;
+import com.taken_seat.booking_service.booking.application.service.RedissonService;
 import com.taken_seat.booking_service.booking.domain.Booking;
 import com.taken_seat.booking_service.booking.domain.repository.BookingAdminRepository;
 import com.taken_seat.booking_service.booking.domain.repository.BookingRepository;
@@ -31,6 +32,7 @@ public class BookingServiceImpl implements BookingService {
 	private final RedissonService redissonService;
 	private final BookingRepository bookingRepository;
 	private final BookingAdminRepository bookingAdminRepository;
+	private final BookingEventProducer bookingEventProducer;
 
 	@Override
 	@Transactional
@@ -47,6 +49,7 @@ public class BookingServiceImpl implements BookingService {
 			request.getSeatId());
 
 		Booking saved = bookingRepository.save(booking);
+		bookingEventProducer.sendBookingCreatedEvent(saved, 10000);
 
 		return BookingCreateResponse.toDto(saved);
 	}
