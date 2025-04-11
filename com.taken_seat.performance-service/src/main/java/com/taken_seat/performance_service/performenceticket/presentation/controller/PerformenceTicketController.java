@@ -23,12 +23,13 @@ public class PerformenceTicketController {
 
 	private final PerformenceTicketService performenceTicketService;
 
-	@GetMapping("/{performanceScheduleId}/seats/{seatId}")
+	@GetMapping("/{performanceId}/schedules/{performanceScheduleId}/seats/{seatId}")
 	public ResponseEntity<TicketPerformanceClientResponse> getPerformanceInfo(
+		@PathVariable UUID performanceId,
 		@PathVariable UUID performanceScheduleId,
 		@PathVariable UUID seatId) {
 
-		TicketPerformanceClientRequest request = RequestMapper.fromParams(performanceScheduleId, seatId);
+		TicketPerformanceClientRequest request = RequestMapper.fromParams(performanceId, performanceScheduleId, seatId);
 
 		TicketPerformanceClientResponse response = performenceTicketService.getPerformanceInfo(request);
 		return ResponseEntity.status(HttpStatus.OK).body(response);

@@ -22,8 +22,8 @@ public class PerformenceTicketService {
 
 	public TicketPerformanceClientResponse getPerformanceInfo(TicketPerformanceClientRequest request) {
 
-		Performance performance = performanceRepository.findByPerformanceScheduleId(request.getPerformanceScheduleId())
-			.orElseThrow(() -> new IllegalArgumentException("공연 회차가 존재하지 않습니다"));
+		Performance performance = performanceRepository.findById(request.getPerformanceId())
+			.orElseThrow(() -> new IllegalArgumentException("공연 정보가 존재하지 않습니다"));
 
 		PerformanceSchedule schedule = performance.getScheduleById(request.getPerformanceScheduleId());
 
