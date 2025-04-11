@@ -73,4 +73,13 @@ public class PerformanceHallService {
 
 		return toUpdate(performanceHall);
 	}
+
+	public void delete(UUID id, UUID deletedBy) {
+
+		if (id == null) {
+			throw new IllegalArgumentException("삭제할 공연 ID는 필수입니다");
+		}
+
+		performanceHallRepository.deleteById(id, deletedBy);
+	}
 }
