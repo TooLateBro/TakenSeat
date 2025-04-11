@@ -11,6 +11,7 @@ import com.taken_seat.performance_service.performancehall.application.dto.respon
 import com.taken_seat.performance_service.performancehall.application.dto.response.PageResponseDto;
 import com.taken_seat.performance_service.performancehall.application.dto.response.SearchResponseDto;
 import com.taken_seat.performance_service.performancehall.application.dto.response.SeatDto;
+import com.taken_seat.performance_service.performancehall.application.dto.response.UpdateResponseDto;
 import com.taken_seat.performance_service.performancehall.domain.model.PerformanceHall;
 import com.taken_seat.performance_service.performancehall.domain.model.Seat;
 
@@ -60,6 +61,7 @@ public class HallResponseMapper {
 
 	public SearchResponseDto toSearch(PerformanceHall performanceHall) {
 		return SearchResponseDto.builder()
+			.performanceHallId(performanceHall.getId())
 			.name(performanceHall.getName())
 			.totalSeats(performanceHall.getTotalSeats())
 			.build();
@@ -81,6 +83,26 @@ public class HallResponseMapper {
 			.totalPages(pages.getTotalPages())
 			.totalElements(pages.getTotalElements())
 			.isLast(pages.isLast())
+			.build();
+	}
+
+	public static UpdateResponseDto toUpdate(PerformanceHall performanceHall) {
+		return UpdateResponseDto.builder()
+			.performanceHallId(performanceHall.getId())
+			.name(performanceHall.getName())
+			.address(performanceHall.getAddress())
+			.totalSeats(performanceHall.getTotalSeats())
+			.description(performanceHall.getDescription())
+			.seats(
+				performanceHall.getSeats().stream()
+					.map(seat -> SeatDto.builder()
+						.rowNumber(seat.getRowNumber())
+						.seatNumber(seat.getSeatNumber())
+						.seatType(seat.getSeatType())
+						.status(seat.getStatus())
+						.build())
+					.toList()
+			)
 			.build();
 	}
 }
