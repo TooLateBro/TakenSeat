@@ -14,11 +14,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.taken_seat.booking_service.booking.application.BookingService;
 import com.taken_seat.booking_service.booking.application.dto.request.BookingCreateRequest;
 import com.taken_seat.booking_service.booking.application.dto.response.BookingCreateResponse;
 import com.taken_seat.booking_service.booking.application.dto.response.BookingPageResponse;
 import com.taken_seat.booking_service.booking.application.dto.response.BookingReadResponse;
+import com.taken_seat.booking_service.booking.application.service.BookingService;
 import com.taken_seat.common_service.dto.ApiResponseData;
 import com.taken_seat.common_service.dto.AuthenticatedUser;
 
