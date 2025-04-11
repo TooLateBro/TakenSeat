@@ -13,7 +13,7 @@ import com.taken_seat.review_service.infrastructure.client.dto.BookingStatusDto;
 @FeignClient(name = "${feign.client.booking.name}", url = "${feign.client.booking.url}")
 public interface BookingClient {
 
-	@GetMapping("/{userId}/{performanceId}/status)")
+	@GetMapping("/{userId}/{performanceId}/status")
 	ResponseEntity<ApiResponseData<BookingStatusDto>> getBookingStatus(@PathVariable UUID userId,
 		@PathVariable UUID performanceId);
 }
