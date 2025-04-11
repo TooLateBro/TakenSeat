@@ -30,13 +30,13 @@ public class Review extends BaseTimeEntity {
 	@Column(columnDefinition = "BINARY(16)", updatable = false, nullable = false, length = 36)
 	private UUID id;
 
-	@Column(nullable = false, length = 36)
+	@Column(nullable = false)
 	private UUID performanceId;
 
-	@Column(nullable = false, length = 36)
+	@Column(nullable = false)
 	private UUID performanceScheduleId;
 
-	@Column(nullable = false, length = 36)
+	@Column(nullable = false)
 	private UUID authorId;
 
 	@Column(nullable = false)
