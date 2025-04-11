@@ -302,4 +302,50 @@ public class ReviewServiceTest {
 
 		assertEquals("해당 리뷰에 접근할 권한이 없습니다.", exception.getMessage()); // FORBIDDEN_REVIEW_ACCESS 메시지
 	}
+
+	@Test
+	@DisplayName("리뷰 논리적 삭제 성공 - SUCCESS")
+	void testDeleteReview_success() {
+		// Given
+		when(reviewRepository.findByIdAndDeletedAtIsNull(testReviewId)).thenReturn(Optional.of(testReview));
+
+		// When
+		assertDoesNotThrow(() -> reviewService.deleteReview(testReviewId, authenticatedUser));
+
+		// Then
+		assertNotNull(testReview.getDeletedAt());
+	}
+
+	@Test
+	@DisplayName("리뷰 논리적 삭제 실패 - 존재하지않는 결제 ID - FAIL")
+	void testDeletePayment_fail_paymentNotFound() {
+		// Given
+		when(reviewRepository.findByIdAndDeletedAtIsNull(any(UUID.class))).thenReturn(Optional.empty());
+
+		UUID notAuthorId = UUID.randomUUID();
+		AuthenticatedUser anotherUser = new AuthenticatedUser(notAuthorId, "other@gmail.com", "other@gmail.com");
+		// When & Then
+		ReviewException exception = assertThrows(ReviewException.class, () ->
+			reviewService.deleteReview(UUID.randomUUID(), anotherUser)
+		);
+
+		assertEquals("해당 리뷰가 존재하지않습니다.", exception.getMessage());
+
+	}
+
+	@Test
+	@DisplayName("리뷰 수정 실패 - 작성자도 아니고 마스터도 아님 - FAIL")
+	void testDeleteReview_fail_forbiddenAccess() {
+		// Given
+		UUID notAuthorId = UUID.randomUUID();
+		AuthenticatedUser anotherUser = new AuthenticatedUser(notAuthorId, "other@gmail.com", "other@gmail.com");
+		when(reviewRepository.findByIdAndDeletedAtIsNull(testReviewId)).thenReturn(Optional.of(testReview));
+
+		// When & Then
+		ReviewException exception = assertThrows(ReviewException.class, () -> {
+			reviewService.deleteReview(testReviewId, anotherUser);
+		});
+
+		assertEquals("해당 리뷰에 접근할 권한이 없습니다.", exception.getMessage()); // FORBIDDEN_REVIEW_ACCESS 메시지
+	}
 }

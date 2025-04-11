@@ -94,15 +94,29 @@ public class ReviewService {
 		Review review = reviewRepository.findByIdAndDeletedAtIsNull(id)
 			.orElseThrow(() -> new ReviewException(ResponseCode.REVIEW_NOT_FOUND));
 
-		boolean isAuthor = review.getAuthorId().equals(authenticatedUser.getUserId());
-		boolean isMaster = authenticatedUser.getRole().equals("MASTER");
-
-		if (!(isAuthor || isMaster)) {
-			throw new ReviewException(ResponseCode.FORBIDDEN_REVIEW_ACCESS);
-		}
+		validateAccessAuthority(review, authenticatedUser);
 
 		review.update(reviewUpdateReqDto, authenticatedUser);
 
 		return ReviewDetailResDto.toResponse(review);
+	}
+
+	public void deleteReview(UUID id, AuthenticatedUser authenticatedUser) {
+
+		Review review = reviewRepository.findByIdAndDeletedAtIsNull(id)
+			.orElseThrow(() -> new ReviewException(ResponseCode.REVIEW_NOT_FOUND));
+
+		validateAccessAuthority(review, authenticatedUser);
+
+		review.delete(authenticatedUser.getUserId());
+	}
+
+	private void validateAccessAuthority(Review review, AuthenticatedUser authenticatedUser) {
+		boolean isAuthor = review.getAuthorId().equals(authenticatedUser.getUserId());
+		boolean isMaster = "MASTER".equals(authenticatedUser.getRole());
+
+		if (!(isAuthor || isMaster)) {
+			throw new ReviewException(ResponseCode.FORBIDDEN_REVIEW_ACCESS);
+		}
 	}
 }
