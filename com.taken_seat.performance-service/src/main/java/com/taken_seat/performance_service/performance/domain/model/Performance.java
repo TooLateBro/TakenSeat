@@ -6,10 +6,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.taken_seat.common_service.entity.BaseTimeEntity;
 import com.taken_seat.performance_service.performance.application.dto.request.CreateRequestDto;
 import com.taken_seat.performance_service.performance.application.dto.request.UpdatePerformanceScheduleDto;
 import com.taken_seat.performance_service.performance.application.dto.request.UpdateRequestDto;
 import com.taken_seat.performance_service.performance.application.dto.request.UpdateSeatPriceDto;
+import com.taken_seat.performance_service.performance.domain.helper.PerformanceCreateHelper;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -32,7 +34,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Table(name = "p_performances")
 @Entity
-public class Performance {
+public class Performance extends BaseTimeEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
@@ -64,60 +66,21 @@ public class Performance {
 
 	private String discountInfo;
 
-	@Column(name = "deleted_by")
-	private UUID deletedBy;
-
-	@Column(name = "deleted_at")
-	private LocalDateTime deletedAt;
-
 	@OneToMany(mappedBy = "performance", cascade = CascadeType.ALL, orphanRemoval = true)
 	@Builder.Default
 	private List<PerformanceSchedule> schedules = new ArrayList<>();
 
-	public static Performance create(CreateRequestDto request) {
+	public static Performance create(CreateRequestDto request, UUID createdBy) {
 
-		Performance performance = Performance.builder()
-			.title(request.getTitle())
-			.description(request.getDescription())
-			.startAt(request.getStartAt())
-			.endAt(request.getEndAt())
-			.status(PerformanceStatus.status(request.getStartAt(), request.getEndAt()))
-			.posterUrl(request.getPosterUrl())
-			.ageLimit(request.getAgeLimit())
-			.maxTicketCount(request.getMaxTicketCount())
-			.discountInfo(request.getDiscountInfo())
-			.build();
+		Performance performance = PerformanceCreateHelper.createPerformance(request);
 
-		List<PerformanceSchedule> schedules = request.getSchedules().stream()
-			.map(createPerformanceScheduleDto -> {
-				PerformanceSchedule schedule = PerformanceSchedule.builder()
-					.performance(performance)
-					.performanceHallId(createPerformanceScheduleDto.getPerformanceHallId())
-					.startAt(createPerformanceScheduleDto.getStartAt())
-					.endAt(createPerformanceScheduleDto.getEndAt())
-					.saleStartAt(createPerformanceScheduleDto.getSaleStartAt())
-					.saleEndAt(createPerformanceScheduleDto.getSaleEndAt())
-					.status(PerformanceScheduleStatus.status(
-						createPerformanceScheduleDto.getSaleStartAt(),
-						createPerformanceScheduleDto.getSaleEndAt(),
-						false
-					))
-					.build();
+		performance.prePersist(createdBy);
 
-				List<PerformanceSeatPrice> seatPrices = createPerformanceScheduleDto.getSeatPrices().stream()
-					.map(CreateSeatPriceDto -> PerformanceSeatPrice.builder()
-						.performanceSchedule(schedule)
-						.seatType(CreateSeatPriceDto.getSeatType())
-						.price(CreateSeatPriceDto.getPrice())
-						.build())
-					.toList();
-
-				schedule.getSeatPrices().addAll(seatPrices);
-				return schedule;
-			})
-			.toList();
+		List<PerformanceSchedule> schedules = PerformanceCreateHelper.createPerformanceSchedules(request, performance,
+			createdBy);
 
 		performance.getSchedules().addAll(schedules);
+
 		return performance;
 	}
 
@@ -177,12 +140,6 @@ public class Performance {
 				}
 			}
 		}
-	}
-
-	public void softDelete(UUID userId) {
-
-		this.deletedBy = userId;
-		this.deletedAt = LocalDateTime.now();
 	}
 
 	public PerformanceSchedule getScheduleById(UUID performanceScheduleId) {
