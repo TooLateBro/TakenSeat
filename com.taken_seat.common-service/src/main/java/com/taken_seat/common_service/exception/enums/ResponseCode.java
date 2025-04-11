@@ -31,6 +31,7 @@ public enum ResponseCode {
 
 	// 기본 응답
 	SUCCESS(HttpStatus.OK, HttpStatus.OK.value(), "성공적으로 처리되었습니다."),
+	SUCCESS_NO_CONTENT(HttpStatus.NO_CONTENT, HttpStatus.NO_CONTENT.value(), "성공적으로 처리되었습니다."),
 	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR.value(), "서버에러"),
 	VALIDATION_ERROR(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), "잘못된 입력값이 존재합니다."),
 	ACCESS_DENIED_EXCEPTION(HttpStatus.FORBIDDEN, HttpStatus.FORBIDDEN.value(), "권한이 없습니다."),
@@ -52,7 +53,17 @@ public enum ResponseCode {
 	EARLY_REVIEW(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), "공연 시작 전에는 리뷰를 등록할 수 없습니다."),
 
 	// Performance
-	PERFORMANCE_NOT_FOUND(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "해당 공연 정보를 찾을 수 없습니다.");
+	PERFORMANCE_NOT_FOUND(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "해당 공연 정보를 찾을 수 없습니다."),
+
+	// User
+	USER_NOT_FOUND(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "해당 유저 정보를 찾을 수 없습니다."),
+
+	// Booking
+	BOOKING_NOT_FOUND_EXCEPTION(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "해당 예매는 존재하지 않습니다."),
+	BOOKING_ALREADY_CANCELED_EXCEPTION(HttpStatus.CONFLICT, HttpStatus.CONFLICT.value(), "이미 취소된 예약입니다."),
+	BOOKING_NOT_CANCELED_EXCEPTION(HttpStatus.CONFLICT, HttpStatus.CONFLICT.value(), "예약 취소 후 삭제할 수 있습니다."),
+	BOOKING_SEAT_LOCKED_EXCEPTION(HttpStatus.CONFLICT, HttpStatus.CONFLICT.value(), "이미 선점된 좌석입니다."),
+	BOOKING_INTERRUPTED_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR.value(), "인터럽트가 발생했습니다.");
 
 	private final HttpStatus status;
 	private final Integer code;

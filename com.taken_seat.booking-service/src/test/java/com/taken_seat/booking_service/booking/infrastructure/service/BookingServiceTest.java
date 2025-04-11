@@ -1,4 +1,4 @@
-package com.taken_seat.booking_service.infrastructure.service;
+package com.taken_seat.booking_service.booking.infrastructure.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -18,13 +18,16 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.taken_seat.booking_service.booking.application.dto.response.AdminBookingPageResponse;
 import com.taken_seat.booking_service.booking.application.dto.response.AdminBookingReadResponse;
 import com.taken_seat.booking_service.booking.application.dto.response.BookingPageResponse;
 import com.taken_seat.booking_service.booking.application.dto.response.BookingReadResponse;
 import com.taken_seat.booking_service.booking.domain.Booking;
-import com.taken_seat.booking_service.booking.domain.repository.BookingRepository;
+import com.taken_seat.booking_service.booking.infrastructure.repository.BookingJpaRepository;
+import com.taken_seat.common_service.dto.ApiResponseData;
+import com.taken_seat.common_service.dto.response.BookingStatusDto;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -36,7 +39,7 @@ class BookingServiceTest {
 	@Autowired
 	private MockMvc mockMvc;
 	@Autowired
-	private BookingRepository bookingRepository;
+	private BookingJpaRepository bookingJpaRepository;
 	@Autowired
 	private ObjectMapper objectMapper;
 
@@ -46,11 +49,12 @@ class BookingServiceTest {
 
 		Booking booking = Booking.builder()
 			.userId(userId)
+			.performanceId(UUID.randomUUID())
 			.performanceScheduleId(UUID.randomUUID())
 			.seatId(UUID.randomUUID())
 			.build();
 
-		Booking saved = bookingRepository.saveAndFlush(booking);
+		Booking saved = bookingJpaRepository.saveAndFlush(booking);
 
 		MvcResult mvcResult = mockMvc.perform(
 				get("/api/v1/bookings/" + saved.getId())
@@ -59,9 +63,11 @@ class BookingServiceTest {
 			.andReturn();
 
 		String contentAsString = mvcResult.getResponse().getContentAsString(StandardCharsets.UTF_8);
-		BookingReadResponse response = objectMapper.readValue(contentAsString, BookingReadResponse.class);
+		ApiResponseData<BookingReadResponse> response = objectMapper.readValue(contentAsString,
+			new TypeReference<ApiResponseData<BookingReadResponse>>() {
+			});
 
-		assertEquals(response.getId(), saved.getId());
+		assertEquals(response.body().getId(), saved.getId());
 	}
 
 	@Test
@@ -70,18 +76,20 @@ class BookingServiceTest {
 
 		Booking booking1 = Booking.builder()
 			.userId(userId)
+			.performanceId(UUID.randomUUID())
 			.performanceScheduleId(UUID.randomUUID())
 			.seatId(UUID.randomUUID())
 			.build();
 
 		Booking booking2 = Booking.builder()
 			.userId(userId)
+			.performanceId(UUID.randomUUID())
 			.performanceScheduleId(UUID.randomUUID())
 			.seatId(UUID.randomUUID())
 			.build();
 
 		List<Booking> list = List.of(booking1, booking2);
-		List<Booking> savedList = bookingRepository.saveAllAndFlush(list);
+		List<Booking> savedList = bookingJpaRepository.saveAllAndFlush(list);
 
 		MvcResult mvcResult = mockMvc.perform(
 				get("/api/v1/bookings")
@@ -91,9 +99,11 @@ class BookingServiceTest {
 			.andReturn();
 
 		String contentAsString = mvcResult.getResponse().getContentAsString(StandardCharsets.UTF_8);
-		BookingPageResponse response = objectMapper.readValue(contentAsString, BookingPageResponse.class);
+		ApiResponseData<BookingPageResponse> response = objectMapper.readValue(contentAsString,
+			new TypeReference<ApiResponseData<BookingPageResponse>>() {
+			});
 
-		assertEquals(response.getTotalElements(), savedList.size());
+		assertEquals(response.body().getTotalElements(), savedList.size());
 	}
 
 	@Test
@@ -102,11 +112,12 @@ class BookingServiceTest {
 
 		Booking booking = Booking.builder()
 			.userId(userId)
+			.performanceId(UUID.randomUUID())
 			.performanceScheduleId(UUID.randomUUID())
 			.seatId(UUID.randomUUID())
 			.build();
 
-		Booking saved = bookingRepository.saveAndFlush(booking);
+		Booking saved = bookingJpaRepository.saveAndFlush(booking);
 
 		mockMvc.perform(
 				patch("/api/v1/bookings/" + saved.getId())
@@ -122,12 +133,13 @@ class BookingServiceTest {
 
 		Booking booking = Booking.builder()
 			.userId(userId)
+			.performanceId(UUID.randomUUID())
 			.performanceScheduleId(UUID.randomUUID())
 			.seatId(UUID.randomUUID())
 			.canceledAt(LocalDateTime.now())
 			.build();
 
-		Booking saved = bookingRepository.saveAndFlush(booking);
+		Booking saved = bookingJpaRepository.saveAndFlush(booking);
 
 		mockMvc.perform(
 				delete("/api/v1/bookings/" + saved.getId())
@@ -142,12 +154,13 @@ class BookingServiceTest {
 		UUID randomUserId = UUID.randomUUID();
 		Booking booking = Booking.builder()
 			.userId(randomUserId)
+			.performanceId(UUID.randomUUID())
 			.performanceScheduleId(UUID.randomUUID())
 			.seatId(UUID.randomUUID())
 			.canceledAt(LocalDateTime.now())
 			.build();
 
-		Booking saved = bookingRepository.saveAndFlush(booking);
+		Booking saved = bookingJpaRepository.saveAndFlush(booking);
 
 		MvcResult mvcResult = mockMvc.perform(
 				get("/api/v1/admin/bookings/" + saved.getId())
@@ -157,9 +170,11 @@ class BookingServiceTest {
 			.andReturn();
 
 		String contentAsString = mvcResult.getResponse().getContentAsString(StandardCharsets.UTF_8);
-		AdminBookingReadResponse response = objectMapper.readValue(contentAsString, AdminBookingReadResponse.class);
+		ApiResponseData<AdminBookingReadResponse> response = objectMapper.readValue(contentAsString,
+			new TypeReference<ApiResponseData<AdminBookingReadResponse>>() {
+			});
 
-		assertEquals(randomUserId, response.getUserId());
+		assertEquals(randomUserId, response.body().getUserId());
 	}
 
 	@Test
@@ -169,6 +184,7 @@ class BookingServiceTest {
 		UUID randomUserId = UUID.randomUUID();
 		Booking booking1 = Booking.builder()
 			.userId(randomUserId)
+			.performanceId(UUID.randomUUID())
 			.performanceScheduleId(UUID.randomUUID())
 			.seatId(UUID.randomUUID())
 			.canceledAt(LocalDateTime.now())
@@ -176,13 +192,14 @@ class BookingServiceTest {
 
 		Booking booking2 = Booking.builder()
 			.userId(randomUserId)
+			.performanceId(UUID.randomUUID())
 			.performanceScheduleId(UUID.randomUUID())
 			.seatId(UUID.randomUUID())
 			.canceledAt(LocalDateTime.now())
 			.build();
 
 		List<Booking> list = List.of(booking1, booking2);
-		List<Booking> savedList = bookingRepository.saveAllAndFlush(list);
+		List<Booking> savedList = bookingJpaRepository.saveAllAndFlush(list);
 
 		MvcResult mvcResult = mockMvc.perform(
 				get("/api/v1/admin/bookings")
@@ -192,8 +209,37 @@ class BookingServiceTest {
 			.andReturn();
 
 		String contentAsString = mvcResult.getResponse().getContentAsString(StandardCharsets.UTF_8);
-		AdminBookingPageResponse response = objectMapper.readValue(contentAsString, AdminBookingPageResponse.class);
+		ApiResponseData<AdminBookingPageResponse> response = objectMapper.readValue(contentAsString,
+			new TypeReference<ApiResponseData<AdminBookingPageResponse>>() {
+			});
 
-		assertEquals(response.getTotalElements(), savedList.size());
+		assertEquals(response.body().getTotalElements(), savedList.size());
+	}
+
+	@Test
+	@DisplayName("클라이언트 메서드 테스트")
+	void test7() throws Exception {
+		UUID performanceId = UUID.randomUUID();
+		Booking booking = Booking.builder()
+			.userId(userId)
+			.performanceId(performanceId)
+			.performanceScheduleId(UUID.randomUUID())
+			.seatId(UUID.randomUUID())
+			.canceledAt(LocalDateTime.now())
+			.build();
+
+		bookingJpaRepository.saveAndFlush(booking);
+
+		MvcResult mvcResult = mockMvc.perform(
+				get("/api/v1/bookings/%s/%s/status".formatted(userId, performanceId)))
+			.andExpect(status().isOk())
+			.andReturn();
+
+		String contentAsString = mvcResult.getResponse().getContentAsString(StandardCharsets.UTF_8);
+		ApiResponseData<BookingStatusDto> response = objectMapper.readValue(contentAsString,
+			new TypeReference<ApiResponseData<BookingStatusDto>>() {
+			});
+
+		assertEquals("PENDING", response.body().status());
 	}
 }

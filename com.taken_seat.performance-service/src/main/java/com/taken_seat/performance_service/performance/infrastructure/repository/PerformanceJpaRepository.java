@@ -1,5 +1,6 @@
 package com.taken_seat.performance_service.performance.infrastructure.repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -12,4 +13,6 @@ public interface PerformanceJpaRepository
 	extends JpaRepository<Performance, UUID>, JpaSpecificationExecutor<Performance> {
 
 	Optional<Performance> findByIdAndDeletedAtIsNull(UUID id);
+
+	List<Performance> findAllByDeletedAtIsNull();
 }

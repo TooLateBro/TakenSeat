@@ -42,7 +42,8 @@ class ConcurrencyTest {
 			int userIndex = i;
 			results.add(executorService.submit(() -> {
 				try {
-					AuthenticatedUser authenticatedUser = new AuthenticatedUser(UUID.randomUUID(), "testEmail", "testRole");
+					AuthenticatedUser authenticatedUser = new AuthenticatedUser(UUID.randomUUID(), "testEmail",
+						"testRole");
 
 					BookingCreateRequest request = BookingCreateRequest.builder()
 						.seatId(seatId)

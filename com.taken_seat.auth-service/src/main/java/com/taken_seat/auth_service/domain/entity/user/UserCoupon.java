@@ -13,15 +13,17 @@ import java.util.UUID;
 @Builder(access = AccessLevel.PRIVATE)
 @Entity
 @Table(name = "p_user_coupon")
-@IdClass(UserCouponId.class)
 public class UserCoupon {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(columnDefinition = "BINARY(16)", updatable = false, nullable = false)
+    private UUID id;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", columnDefinition = "BINARY(16)")
     private User user;
 
-    @Id
     @Column(name = "coupon_id")
     private UUID couponId;
 
