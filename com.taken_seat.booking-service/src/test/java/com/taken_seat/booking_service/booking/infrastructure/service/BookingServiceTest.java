@@ -1,4 +1,4 @@
-package com.taken_seat.booking_service.infrastructure.service;
+package com.taken_seat.booking_service.booking.infrastructure.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
