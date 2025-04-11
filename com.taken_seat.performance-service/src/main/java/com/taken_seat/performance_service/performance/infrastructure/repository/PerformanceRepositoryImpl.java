@@ -47,4 +47,12 @@ public class PerformanceRepositoryImpl implements PerformanceRepository {
 
 		performance.softDelete(deletedBy);
 	}
+
+	@Override
+	public Optional<Performance> findByPerformanceScheduleId(UUID performanceScheduleId) {
+		return performanceJpaRepository.findAllByDeletedAtIsNull().stream()
+			.filter(performance -> performance.getSchedules().stream()
+				.anyMatch(performanceSchedule -> performanceSchedule.getId().equals(performanceScheduleId)))
+			.findFirst();
+	}
 }

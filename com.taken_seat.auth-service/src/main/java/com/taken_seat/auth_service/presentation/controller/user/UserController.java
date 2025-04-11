@@ -7,7 +7,6 @@ import com.taken_seat.auth_service.presentation.dto.user.UserUpdateRequestDto;
 import com.taken_seat.common_service.dto.ApiResponseData;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
 import jakarta.validation.Valid;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,7 +15,6 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/users")
-@Slf4j
 public class UserController {
 
     private final UserService userService;

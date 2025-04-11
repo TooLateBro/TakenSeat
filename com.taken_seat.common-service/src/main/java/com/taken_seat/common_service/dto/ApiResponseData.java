@@ -11,7 +11,15 @@ public record ApiResponseData<T>(Integer status, String message, T body) {
 			data
 		);
 	}
-	
+
+	public static <T> ApiResponseData<T> success() {
+		return new ApiResponseData<>(
+			ResponseCode.SUCCESS_NO_CONTENT.getCode(),
+			ResponseCode.SUCCESS_NO_CONTENT.getMessage(),
+			null
+		);
+	}
+
 	// 실패 응답
 	public static <T> ApiResponseData<T> failure(Integer code, String message) {
 		return new ApiResponseData<>(code, message, null);

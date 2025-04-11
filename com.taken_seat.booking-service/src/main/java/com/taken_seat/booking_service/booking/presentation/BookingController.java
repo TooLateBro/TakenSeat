@@ -19,6 +19,7 @@ import com.taken_seat.booking_service.booking.application.dto.request.BookingCre
 import com.taken_seat.booking_service.booking.application.dto.response.BookingCreateResponse;
 import com.taken_seat.booking_service.booking.application.dto.response.BookingPageResponse;
 import com.taken_seat.booking_service.booking.application.dto.response.BookingReadResponse;
+import com.taken_seat.common_service.dto.ApiResponseData;
 import com.taken_seat.common_service.dto.AuthenticatedUser;
 
 import jakarta.validation.Valid;
@@ -32,39 +33,42 @@ public class BookingController {
 	private final BookingService bookingService;
 
 	@PostMapping
-	public ResponseEntity<BookingCreateResponse> createBooking(AuthenticatedUser authenticatedUser,
+	public ResponseEntity<ApiResponseData<BookingCreateResponse>> createBooking(AuthenticatedUser authenticatedUser,
 		@RequestBody @Valid BookingCreateRequest request) {
 		BookingCreateResponse response = bookingService.createBooking(authenticatedUser, request);
 
-		return ResponseEntity.ok(response);
+		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<BookingReadResponse> readBooking(AuthenticatedUser authenticatedUser,
+	public ResponseEntity<ApiResponseData<BookingReadResponse>> readBooking(AuthenticatedUser authenticatedUser,
 		@PathVariable("id") UUID id) {
 		BookingReadResponse response = bookingService.readBooking(authenticatedUser, id);
 
-		return ResponseEntity.ok(response);
+		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
 	}
 
 	@GetMapping
-	public ResponseEntity<BookingPageResponse> readBookings(AuthenticatedUser authenticatedUser, Pageable pageable) {
+	public ResponseEntity<ApiResponseData<BookingPageResponse>> readBookings(AuthenticatedUser authenticatedUser,
+		Pageable pageable) {
 		BookingPageResponse response = bookingService.readBookings(authenticatedUser, pageable);
 
-		return ResponseEntity.ok(response);
+		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
 	}
 
 	@PatchMapping("/{id}")
-	public ResponseEntity<Void> updateBooking(AuthenticatedUser authenticatedUser, @PathVariable("id") UUID id) {
+	public ResponseEntity<ApiResponseData<Void>> updateBooking(AuthenticatedUser authenticatedUser,
+		@PathVariable("id") UUID id) {
 		bookingService.updateBooking(authenticatedUser, id);
 
-		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+		return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseData.success());
 	}
 
 	@DeleteMapping("/{id}")
-	public ResponseEntity<Void> deleteBooking(AuthenticatedUser authenticatedUser, @PathVariable("id") UUID id) {
+	public ResponseEntity<ApiResponseData<Void>> deleteBooking(AuthenticatedUser authenticatedUser,
+		@PathVariable("id") UUID id) {
 		bookingService.deleteBooking(authenticatedUser, id);
 
-		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+		return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseData.success());
 	}
 }

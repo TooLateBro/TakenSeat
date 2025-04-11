@@ -1,4 +1,4 @@
-package com.taken_seat.coupon_service.infrastructure.config;
+package com.taken_seat.coupon_service.infrastructure.config.query;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
