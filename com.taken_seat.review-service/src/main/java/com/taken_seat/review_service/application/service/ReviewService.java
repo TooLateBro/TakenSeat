@@ -94,6 +94,13 @@ public class ReviewService {
 		Review review = reviewRepository.findByIdAndDeletedAtIsNull(id)
 			.orElseThrow(() -> new ReviewException(ResponseCode.REVIEW_NOT_FOUND));
 
+		boolean isAuthor = review.getAuthorId().equals(authenticatedUser.getUserId());
+		boolean isMaster = authenticatedUser.getRole().equals("MASTER");
+
+		if (!(isAuthor || isMaster)) {
+			throw new ReviewException(ResponseCode.FORBIDDEN_REVIEW_ACCESS);
+		}
+
 		review.update(reviewUpdateReqDto, authenticatedUser);
 
 		return ReviewDetailResDto.toResponse(review);
