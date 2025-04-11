@@ -65,18 +65,22 @@ public class PerformanceService {
 	public DetailResponseDto getDetail(UUID id) {
 
 		Performance performance = performanceRepository.findById(id)
-			.orElseThrow(() -> new IllegalArgumentException("공연 정보를 찾을 수 없습니다"));
+			.orElseThrow(() -> new PerformanceException(ResponseCode.PERFORMANCE_NOT_FOUND_EXCEPTION));
 
 		return detailToDto(performance);
 	}
 
 	@Transactional
-	public UpdateResponseDto update(UUID id, UpdateRequestDto request) {
+	public UpdateResponseDto update(UUID id, UpdateRequestDto request, AuthenticatedUser authenticatedUser) {
+
+		if (!isAuthorized(authenticatedUser)) {
+			throw new PerformanceException(ResponseCode.ACCESS_DENIED_EXCEPTION, "접근 권한이 없습니다.");
+		}
 
 		Performance performance = performanceRepository.findById(id)
-			.orElseThrow(() -> new IllegalArgumentException("수정하려는 공연 정보가 존재하지 않습니다"));
+			.orElseThrow(() -> new PerformanceException(ResponseCode.PERFORMANCE_NOT_FOUND_EXCEPTION));
 
-		performance.update(request);
+		performance.update(request, authenticatedUser.getUserId());
 
 		return toUpdate(performance);
 	}
