@@ -45,7 +45,7 @@ public class PerformanceRepositoryImpl implements PerformanceRepository {
 		Performance performance = performanceJpaRepository.findByIdAndDeletedAtIsNull(id)
 			.orElseThrow(() -> new IllegalArgumentException("이미 삭제된 아이디입니다"));
 
-		performance.softDelete(deletedBy);
+		performance.delete(deletedBy);
 	}
 
 	@Override
