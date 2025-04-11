@@ -46,7 +46,7 @@ public class ReviewController {
 	}
 
 	@GetMapping("/search")
-	public ResponseEntity<ApiResponseData<PageReviewResponseDto>> searchPayment(
+	public ResponseEntity<ApiResponseData<PageReviewResponseDto>> searchReview(
 		@RequestParam(required = false) String q,
 		@RequestParam(required = false) String category,
 		@RequestParam(defaultValue = "0") int page,
@@ -55,7 +55,7 @@ public class ReviewController {
 		@RequestParam(defaultValue = "desc") String order) {
 		return ResponseEntity.status(HttpStatus.OK)
 			.body(
-				ApiResponseData.success(reviewService.searchPayment(q, category, page, size, sort, order)));
+				ApiResponseData.success(reviewService.searchReview(q, category, page, size, sort, order)));
 	}
 
 }

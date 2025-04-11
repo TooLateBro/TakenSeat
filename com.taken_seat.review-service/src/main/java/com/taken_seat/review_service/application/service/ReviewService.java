@@ -77,7 +77,7 @@ public class ReviewService {
 	}
 
 	@Transactional(readOnly = true)
-	public PageReviewResponseDto searchPayment(String q, String category, int page, int size, String sort,
+	public PageReviewResponseDto searchReview(String q, String category, int page, int size, String sort,
 		String order) {
 
 		Page<Review> reviewPages = reviewQuerydslRepository.search(q, category, page, size, sort, order);
