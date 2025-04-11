@@ -12,9 +12,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.taken_seat.performance_service.performancehall.application.dto.mapper.HallResponseMapper;
 import com.taken_seat.performance_service.performancehall.application.dto.request.CreateRequestDto;
 import com.taken_seat.performance_service.performancehall.application.dto.request.SearchFilterParam;
+import com.taken_seat.performance_service.performancehall.application.dto.request.UpdateRequestDto;
 import com.taken_seat.performance_service.performancehall.application.dto.response.CreateResponseDto;
 import com.taken_seat.performance_service.performancehall.application.dto.response.DetailResponseDto;
 import com.taken_seat.performance_service.performancehall.application.dto.response.PageResponseDto;
+import com.taken_seat.performance_service.performancehall.application.dto.response.UpdateResponseDto;
 import com.taken_seat.performance_service.performancehall.domain.model.PerformanceHall;
 import com.taken_seat.performance_service.performancehall.domain.repository.PerformanceHallRepository;
 
@@ -58,5 +60,17 @@ public class PerformanceHallService {
 			.orElseThrow(() -> new IllegalArgumentException("공연장 정보를 찾을 수 없습니다"));
 
 		return toDetail(performanceHall);
+	}
+
+	public UpdateResponseDto update(UUID id, UpdateRequestDto request) {
+
+		PerformanceHall performanceHall = performanceHallRepository.findById(id)
+			.orElseThrow(() -> new IllegalArgumentException("해당 공연장을 찾을 수 없습니다"));
+
+		performanceHall.update(request);
+
+		performanceHallRepository.save(performanceHall);
+
+		return toUpdate(performanceHall);
 	}
 }

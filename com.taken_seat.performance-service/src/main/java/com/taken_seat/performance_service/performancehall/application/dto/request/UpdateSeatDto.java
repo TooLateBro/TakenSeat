@@ -1,4 +1,4 @@
-package com.taken_seat.performance_service.performancehall.application.dto.response;
+package com.taken_seat.performance_service.performancehall.application.dto.request;
 
 import java.util.UUID;
 
@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class SeatDto {
+public class UpdateSeatDto {
 
 	private UUID seatId;
 	private String rowNumber;

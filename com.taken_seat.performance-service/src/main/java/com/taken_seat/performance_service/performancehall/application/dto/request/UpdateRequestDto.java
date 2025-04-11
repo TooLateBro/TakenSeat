@@ -1,5 +1,6 @@
-package com.taken_seat.performance_service.performancehall.application.dto.response;
+package com.taken_seat.performance_service.performancehall.application.dto.request;
 
+import java.util.List;
 import java.util.UUID;
 
 import lombok.AllArgsConstructor;
@@ -11,9 +12,12 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class SearchResponseDto {
+public class UpdateRequestDto {
 
 	private UUID performanceHallId;
 	private String name;
+	private String address;
 	private Integer totalSeats;
+	private String description;
+	private List<UpdateSeatDto> seats;
 }

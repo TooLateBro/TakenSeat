@@ -2,6 +2,8 @@ package com.taken_seat.performance_service.performancehall.domain.model;
 
 import java.util.UUID;
 
+import com.taken_seat.performance_service.performancehall.application.dto.request.UpdateSeatDto;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -48,4 +50,11 @@ public class Seat {
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private SeatStatus status;
+
+	public void update(UpdateSeatDto seatDto) {
+		this.rowNumber = seatDto.getRowNumber();
+		this.seatNumber = seatDto.getSeatNumber();
+		this.seatType = seatDto.getSeatType();
+		this.status = seatDto.getStatus();
+	}
 }
