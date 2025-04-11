@@ -95,13 +95,17 @@ public class PerformanceService {
 	}
 
 	@Transactional
-	public void delete(UUID id, UUID deletedBy) {
+	public void delete(UUID id, AuthenticatedUser authenticatedUser) {
 
-		if (id == null) {
-			throw new IllegalArgumentException("삭제할 공연 ID는 필수입니다");
+		if (!isAuthorized(authenticatedUser)) {
+			throw new PerformanceException(ResponseCode.ACCESS_DENIED_EXCEPTION, "접근 권한이 없습니다.");
 		}
 
-		performanceRepository.deleteById(id, deletedBy);
+		Performance performance = performanceRepository.findById(id)
+			.orElseThrow(() -> new PerformanceException(ResponseCode.PERFORMANCE_NOT_FOUND_EXCEPTION,
+				"이미 삭제되었거나 존재하지 않는 공연입니다."));
+
+		performance.delete(authenticatedUser.getUserId());
 	}
 
 	@Transactional
