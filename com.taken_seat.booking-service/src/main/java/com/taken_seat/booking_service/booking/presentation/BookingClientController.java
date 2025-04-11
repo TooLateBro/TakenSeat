@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.taken_seat.booking_service.booking.application.BookingClientService;
+import com.taken_seat.booking_service.booking.application.service.BookingClientService;
 import com.taken_seat.common_service.dto.ApiResponseData;
 import com.taken_seat.common_service.dto.response.BookingStatusDto;
 

@@ -4,7 +4,7 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
-import com.taken_seat.booking_service.booking.application.BookingClientService;
+import com.taken_seat.booking_service.booking.application.service.BookingClientService;
 import com.taken_seat.booking_service.booking.domain.Booking;
 import com.taken_seat.booking_service.booking.domain.repository.BookingRepository;
 import com.taken_seat.common_service.dto.response.BookingStatusDto;
