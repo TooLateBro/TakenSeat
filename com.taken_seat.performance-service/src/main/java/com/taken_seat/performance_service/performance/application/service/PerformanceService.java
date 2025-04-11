@@ -16,8 +16,10 @@ import com.taken_seat.performance_service.performance.application.dto.request.Up
 import com.taken_seat.performance_service.performance.application.dto.response.CreateResponseDto;
 import com.taken_seat.performance_service.performance.application.dto.response.DetailResponseDto;
 import com.taken_seat.performance_service.performance.application.dto.response.PageResponseDto;
+import com.taken_seat.performance_service.performance.application.dto.response.PerformanceEndTimeDto;
 import com.taken_seat.performance_service.performance.application.dto.response.UpdateResponseDto;
 import com.taken_seat.performance_service.performance.domain.model.Performance;
+import com.taken_seat.performance_service.performance.domain.model.PerformanceSchedule;
 import com.taken_seat.performance_service.performance.domain.repository.PerformanceRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -78,5 +80,15 @@ public class PerformanceService {
 		}
 
 		performanceRepository.deleteById(id, deletedBy);
+	}
+
+	@Transactional
+	public PerformanceEndTimeDto getPerformanceEndTime(UUID performanceId, UUID performanceScheduleId) {
+		Performance performance = performanceRepository.findById(performanceId)
+			.orElseThrow(() -> new IllegalArgumentException("해당 공연이 존재하지 않습니다."));
+
+		PerformanceSchedule schedule = performance.getScheduleById(performanceScheduleId);
+
+		return new PerformanceEndTimeDto(schedule.getEndAt());
 	}
 }
