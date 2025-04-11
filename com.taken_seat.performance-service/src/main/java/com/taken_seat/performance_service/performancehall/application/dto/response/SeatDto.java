@@ -17,7 +17,6 @@ import lombok.NoArgsConstructor;
 public class SeatDto {
 
 	private UUID seatId;
-	private UUID performanceHallId;
 	private String rowNumber;
 	private String seatNumber;
 	private SeatType seatType;

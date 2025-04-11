@@ -36,7 +36,6 @@ public class HallResponseMapper {
 	public static SeatDto toSeat(Seat seat) {
 		return SeatDto.builder()
 			.seatId(seat.getId())
-			.performanceHallId(seat.getPerformanceHall().getId())
 			.seatNumber(seat.getSeatNumber())
 			.rowNumber(seat.getRowNumber())
 			.seatType(seat.getSeatType())
@@ -96,6 +95,7 @@ public class HallResponseMapper {
 			.seats(
 				performanceHall.getSeats().stream()
 					.map(seat -> SeatDto.builder()
+						.seatId(seat.getId())
 						.rowNumber(seat.getRowNumber())
 						.seatNumber(seat.getSeatNumber())
 						.seatType(seat.getSeatType())
