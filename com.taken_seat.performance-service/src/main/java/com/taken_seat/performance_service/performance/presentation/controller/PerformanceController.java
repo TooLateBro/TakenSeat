@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.taken_seat.common_service.dto.ApiResponseData;
@@ -40,10 +39,6 @@ public class PerformanceController {
 
 	private final PerformanceService performanceService;
 
-	/**
-	 * 공연 생성 API
-	 * 권한: ADMIN, MANAGER, PRODUCER
-	 */
 	@PostMapping
 	public ResponseEntity<ApiResponseData<CreateResponseDto>> create(
 		@Valid @RequestBody CreateRequestDto request,
@@ -53,10 +48,6 @@ public class PerformanceController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponseData.success(response));
 	}
 
-	/**
-	 * 공연 전체 조회 API
-	 * 권한: ALL
-	 */
 	@GetMapping("/search")
 	public ResponseEntity<ApiResponseData<PageResponseDto>> getList(
 		@ModelAttribute SearchFilterParam filterParam,
@@ -66,21 +57,12 @@ public class PerformanceController {
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
 	}
 
-	/**
-	 * 공연 상세 조회 API
-	 * 권한: ALL
-	 */
 	@GetMapping("/{id}")
 	public ResponseEntity<ApiResponseData<DetailResponseDto>> getDetail(@PathVariable("id") UUID id) {
 
 		DetailResponseDto response = performanceService.getDetail(id);
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
 	}
-
-	/**
-	 * 공연 수정 API
-	 * 권한: ADMIN, MANAGER, PRODUCER
-	 */
 
 	@PatchMapping("/{id}")
 	public ResponseEntity<ApiResponseData<UpdateResponseDto>> update(@PathVariable("id") UUID id,
@@ -91,15 +73,11 @@ public class PerformanceController {
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
 	}
 
-	/**
-	 * 공연 삭제 API
-	 * 권한: ADMIN, MANAGER, PRODUCER
-	 */
-
 	@DeleteMapping("/{id}")
-	public ResponseEntity<ApiResponseData<Void>> delete(@PathVariable("id") UUID id, @RequestParam UUID deletedBy) {
+	public ResponseEntity<ApiResponseData<Void>> delete(@PathVariable("id") UUID id,
+		AuthenticatedUser authenticatedUser) {
 
-		performanceService.delete(id, deletedBy);
+		performanceService.delete(id, authenticatedUser);
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseData.success());
 	}
 
