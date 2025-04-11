@@ -18,4 +18,6 @@ public interface PerformanceHallRepository {
 	Optional<PerformanceHall> findById(UUID id);
 
 	Page<PerformanceHall> findAll(SearchFilterParam filterParam, Pageable pageable);
+
+	void deleteById(UUID id, UUID deletedBy);
 }
