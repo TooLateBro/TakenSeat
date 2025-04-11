@@ -5,6 +5,7 @@ import java.util.UUID;
 import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.common_service.entity.BaseTimeEntity;
 import com.taken_seat.review_service.application.dto.request.ReviewRegisterReqDto;
+import com.taken_seat.review_service.application.dto.request.ReviewUpdateReqDto;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -68,4 +69,9 @@ public class Review extends BaseTimeEntity {
 		return review;
 	}
 
+	public void update(ReviewUpdateReqDto reviewUpdateReqDto, AuthenticatedUser authenticatedUser) {
+		this.title = reviewUpdateReqDto.getTitle();
+		this.content = reviewUpdateReqDto.getContent();
+		this.preUpdate(authenticatedUser.getUserId());
+	}
 }

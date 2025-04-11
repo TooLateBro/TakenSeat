@@ -12,6 +12,7 @@ import com.taken_seat.common_service.exception.customException.ReviewException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.review_service.application.client.ReviewClient;
 import com.taken_seat.review_service.application.dto.request.ReviewRegisterReqDto;
+import com.taken_seat.review_service.application.dto.request.ReviewUpdateReqDto;
 import com.taken_seat.review_service.application.dto.response.PageReviewResponseDto;
 import com.taken_seat.review_service.application.dto.response.ReviewDetailResDto;
 import com.taken_seat.review_service.domain.model.Review;
@@ -85,5 +86,16 @@ public class ReviewService {
 		Page<ReviewDetailResDto> reviewDetailResDtoPages = reviewPages.map(ReviewDetailResDto::toResponse);
 
 		return PageReviewResponseDto.toResponse(reviewDetailResDtoPages);
+	}
+
+	public ReviewDetailResDto updateReview(UUID id, ReviewUpdateReqDto reviewUpdateReqDto,
+		AuthenticatedUser authenticatedUser) {
+
+		Review review = reviewRepository.findByIdAndDeletedAtIsNull(id)
+			.orElseThrow(() -> new ReviewException(ResponseCode.REVIEW_NOT_FOUND));
+
+		review.update(reviewUpdateReqDto, authenticatedUser);
+
+		return ReviewDetailResDto.toResponse(review);
 	}
 }
