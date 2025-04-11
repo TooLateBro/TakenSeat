@@ -4,16 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.errors.SerializationException;
-import org.apache.kafka.common.header.Headers;
-import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serializer;
 
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 @Slf4j
-public class GenericJsonSerializer<T> implements Serializer<T>, Deserializer<T> {
+public class GenericJsonSerializer<T> implements Serializer<T> {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private Class<T> targetType;
 
@@ -26,53 +22,30 @@ public class GenericJsonSerializer<T> implements Serializer<T>, Deserializer<T> 
 
     @Override
     public void configure(Map<String, ?> configs, boolean isKey) {
-        Serializer.super.configure(configs, isKey);
+        if (configs != null && configs.containsKey("value.serializer.type")) {
+            try {
+                this.targetType = (Class<T>) Class.forName((String) configs.get("value.serializer.type"));
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException("Failed to configure serializer type", e);
+            }
+        }
     }
 
     @Override
     public byte[] serialize(String topic, T data) {
         if (data == null) return null;
         try {
-            return objectMapper.writeValueAsBytes(data);
+            byte[] result = objectMapper.writeValueAsBytes(data);
+            log.debug("Serializing message for topic {}: {}", topic, data);
+            return result;
         } catch (JsonProcessingException e) {
+            log.error("Error serializing data: {}", e.getMessage());
             throw new SerializationException("Error serializing value", e);
         }
     }
 
     @Override
-    public byte[] serialize(String topic, Headers headers, T data) {
-        return Serializer.super.serialize(topic, headers, data);
-    }
-
-    @Override
     public void close() {
-        Serializer.super.close();
-    }
-
-    @Override
-    public T deserialize(String topic, byte[] data) {
-        if (data == null) return null;
-        try {
-            String json = new String(data, StandardCharsets.UTF_8);
-            log.debug("Deserializing message: {}", json);
-
-            if (targetType == null) {
-                return (T) objectMapper.readValue(data, Object.class);
-            }
-            return objectMapper.readValue(data, targetType);
-        } catch (Exception e) {
-            log.error("Error deserializing message: {}", e.getMessage());
-            throw new SerializationException("Error deserializing JSON message", e);
-        }
-    }
-
-    @Override
-    public T deserialize(String topic, Headers headers, byte[] data) {
-        return Deserializer.super.deserialize(topic, headers, data);
-    }
-
-    @Override
-    public T deserialize(String topic, Headers headers, ByteBuffer data) {
-        return Deserializer.super.deserialize(topic, headers, data);
+        // 리소스 정리가 필요한 경우 구현
     }
 }
