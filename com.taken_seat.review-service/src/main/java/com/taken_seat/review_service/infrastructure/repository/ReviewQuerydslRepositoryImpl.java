@@ -67,8 +67,6 @@ public class ReviewQuerydslRepositoryImpl implements ReviewQuerydslRepository {
 		if (!StringUtils.hasText(query) || !StringUtils.hasText(category))
 			return null;
 
-		QReview review = QReview.review;
-
 		return switch (category) {
 			case "title" -> titleContains(query);
 			case "performanceId" -> performanceIdEq(query);
