@@ -14,6 +14,6 @@ public interface ReviewClient {
 	BookingStatusDto getBookingStatus(UUID userId, UUID performanceId);
 
 	// 공연 종료 시간 조회
-	PerformanceEndTimeDto getPerformanceEndTime(UUID performanceId);
+	PerformanceEndTimeDto getPerformanceEndTime(UUID performanceId, UUID performanceScheduleId);
 
 }

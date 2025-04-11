@@ -34,6 +34,9 @@ public class Review extends BaseTimeEntity {
 	private UUID performanceId;
 
 	@Column(nullable = false, length = 36)
+	private UUID performanceScheduleId;
+
+	@Column(nullable = false, length = 36)
 	private UUID authorId;
 
 	@Column(nullable = false)
@@ -52,6 +55,7 @@ public class Review extends BaseTimeEntity {
 
 		Review review = Review.builder()
 			.performanceId(reviewRegisterReqDto.getPerformanceId())
+			.performanceScheduleId(reviewRegisterReqDto.getPerformanceScheduleId())
 			.authorId(authenticatedUser.getUserId())
 			.authorEmail(authenticatedUser.getEmail())
 			.title(reviewRegisterReqDto.getTitle())

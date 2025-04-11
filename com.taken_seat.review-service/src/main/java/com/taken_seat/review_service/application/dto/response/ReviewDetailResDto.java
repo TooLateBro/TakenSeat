@@ -20,6 +20,8 @@ public class ReviewDetailResDto {
 
 	private UUID performanceId;
 
+	private UUID performanceScheduleId;
+
 	private UUID authorId;
 
 	private String authorEmail;
@@ -34,6 +36,7 @@ public class ReviewDetailResDto {
 		return ReviewDetailResDto.builder()
 			.id(review.getId())
 			.performanceId(review.getPerformanceId())
+			.performanceScheduleId(review.getPerformanceScheduleId())
 			.authorId(review.getAuthorId())
 			.authorEmail(review.getAuthorEmail())
 			.title(review.getTitle())

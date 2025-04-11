@@ -39,14 +39,14 @@ public class ReviewClientImpl implements ReviewClient {
 	}
 
 	@Override
-	public PerformanceEndTimeDto getPerformanceEndTime(UUID performanceId) {
+	public PerformanceEndTimeDto getPerformanceEndTime(UUID performanceId, UUID performanceScheduleId) {
 
 		if (performanceId == null) {
 			throw new ReviewException(ResponseCode.PERFORMANCE_NOT_FOUND);
 		}
 
 		ResponseEntity<ApiResponseData<PerformanceEndTimeDto>> performanceEndTime = performanceClient.getPerformanceEndTime(
-			performanceId);
+			performanceId, performanceScheduleId);
 
 		if (performanceEndTime.getBody() == null || performanceEndTime.getBody().body() == null) {
 			throw new ReviewException(ResponseCode.PERFORMANCE_NOT_FOUND);
