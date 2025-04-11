@@ -17,11 +17,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.taken_seat.booking_service.ticket.application.dto.response.TicketPageResponse;
 import com.taken_seat.booking_service.ticket.application.dto.response.TicketReadResponse;
 import com.taken_seat.booking_service.ticket.domain.Ticket;
 import com.taken_seat.booking_service.ticket.domain.repository.TicketRepository;
+import com.taken_seat.common_service.dto.ApiResponseData;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -56,9 +58,11 @@ class TicketServiceTest {
 			.andReturn();
 
 		String contentAsString = mvcResult.getResponse().getContentAsString(StandardCharsets.UTF_8);
-		TicketReadResponse response = objectMapper.readValue(contentAsString, TicketReadResponse.class);
+		ApiResponseData<TicketReadResponse> response = objectMapper.readValue(contentAsString,
+			new TypeReference<ApiResponseData<TicketReadResponse>>() {
+			});
 
-		assertEquals(response.getId(), saved.getId());
+		assertEquals(response.body().getId(), saved.getId());
 	}
 
 	@Test
@@ -88,8 +92,10 @@ class TicketServiceTest {
 			.andReturn();
 
 		String contentAsString = mvcResult.getResponse().getContentAsString(StandardCharsets.UTF_8);
-		TicketPageResponse response = objectMapper.readValue(contentAsString, TicketPageResponse.class);
+		ApiResponseData<TicketPageResponse> response = objectMapper.readValue(contentAsString,
+			new TypeReference<ApiResponseData<TicketPageResponse>>() {
+			});
 
-		assertEquals(response.getTotalElements(), savedList.size());
+		assertEquals(response.body().getTotalElements(), savedList.size());
 	}
 }
