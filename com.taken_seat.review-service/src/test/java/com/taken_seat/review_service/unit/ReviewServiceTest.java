@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -14,15 +15,20 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.common_service.exception.customException.ReviewException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.review_service.application.client.ReviewClient;
 import com.taken_seat.review_service.application.dto.request.ReviewRegisterReqDto;
+import com.taken_seat.review_service.application.dto.response.PageReviewResponseDto;
 import com.taken_seat.review_service.application.dto.response.ReviewDetailResDto;
 import com.taken_seat.review_service.application.service.ReviewService;
 import com.taken_seat.review_service.domain.model.Review;
+import com.taken_seat.review_service.domain.repository.ReviewQuerydslRepository;
 import com.taken_seat.review_service.domain.repository.ReviewRepository;
 import com.taken_seat.review_service.infrastructure.client.dto.BookingStatusDto;
 import com.taken_seat.review_service.infrastructure.client.dto.PerformanceEndTimeDto;
@@ -32,6 +38,9 @@ public class ReviewServiceTest {
 
 	@Mock
 	private ReviewRepository reviewRepository;
+
+	@Mock
+	private ReviewQuerydslRepository reviewQuerydslRepository;
 
 	@Mock
 	private ReviewClient reviewClient;
@@ -191,5 +200,52 @@ public class ReviewServiceTest {
 
 		assertEquals(ResponseCode.REVIEW_NOT_FOUND.getMessage(), ex.getMessage());
 
+	}
+
+	@Test
+	@DisplayName("리뷰 리스트 검색 - 제목(title) 필터 적용 - SUCCESS")
+	void testSearchReview_success_withTitleFilter() {
+
+		// Given
+		String query = "testTitle";
+		String category = "title";
+		int page = 0;
+		int size = 10;
+		String sort = "createdAt";
+		String order = "desc";
+
+		Page<Review> mockPage = new PageImpl<>(Collections.singletonList(testReview), PageRequest.of(page, size), 1);
+
+		when(reviewQuerydslRepository.search(query, category, page, size, sort, order)).thenReturn(mockPage);
+
+		// When
+		PageReviewResponseDto result = reviewService.searchReview(query, category, page, size, sort, order);
+
+		// Then
+		assertNotNull(result);
+		assertEquals(1, result.getTotalElements());
+		assertEquals(1, result.getContent().size());
+
+		ReviewDetailResDto detail = result.getContent().get(0);
+		assertEquals(testReview.getTitle(), detail.getTitle());
+		assertEquals(testReview.getContent(), detail.getContent());
+		assertEquals(testReview.getAuthorEmail(), detail.getAuthorEmail());
+	}
+
+	@Test
+	@DisplayName("리뷰 리스트 검색 - 비어있는 결과 - SUCCESS")
+	void testSearchReview_success_emptyResult() {
+		// Given
+		when(reviewQuerydslRepository.search(anyString(), anyString(), anyInt(), anyInt(), anyString(), anyString()))
+			.thenReturn(Page.empty());
+
+		// When
+		PageReviewResponseDto result = reviewService.searchReview("emptyTitle", "title", 0, 10, "createdAt", "desc");
+
+		// Then
+		assertNotNull(result);
+		assertEquals(0, result.getTotalElements());
+		assertEquals(0, result.getContent().size());
+		assertTrue(result.getContent().isEmpty());
 	}
 }

@@ -199,8 +199,6 @@ public class PaymentServiceTest {
 		assertNotNull(result);
 		assertEquals(0, result.getTotalElements());
 		assertEquals(0, result.getContent().size());
-
-		assertEquals(0, result.getTotalElements());
 		assertTrue(result.getContent().isEmpty());
 	}
 
