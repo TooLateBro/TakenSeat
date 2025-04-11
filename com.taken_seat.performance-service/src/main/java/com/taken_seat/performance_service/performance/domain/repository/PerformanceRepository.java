@@ -17,7 +17,5 @@ public interface PerformanceRepository {
 
 	Page<Performance> findAll(SearchFilterParam filterParam, Pageable pageable);
 
-	void deleteById(UUID id, UUID deletedBy);
-
 	Optional<Performance> findByPerformanceScheduleId(UUID performanceScheduleId);
 }

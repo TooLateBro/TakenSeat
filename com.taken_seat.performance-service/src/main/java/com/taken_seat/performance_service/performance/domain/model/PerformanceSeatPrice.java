@@ -2,6 +2,7 @@ package com.taken_seat.performance_service.performance.domain.model;
 
 import java.util.UUID;
 
+import com.taken_seat.common_service.entity.BaseTimeEntity;
 import com.taken_seat.performance_service.performance.application.dto.request.UpdateSeatPriceDto;
 import com.taken_seat.performance_service.performancehall.domain.model.SeatType;
 
@@ -27,7 +28,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Table(name = "p_performance_seat_prices")
 @Entity
-public class PerformanceSeatPrice {
+public class PerformanceSeatPrice extends BaseTimeEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
@@ -47,10 +48,7 @@ public class PerformanceSeatPrice {
 
 	public void update(UpdateSeatPriceDto dto) {
 
-		if (dto.getSeatType() != null)
-			this.seatType = dto.getSeatType();
-		if (dto.getPrice() != null)
-			this.price = dto.getPrice();
+		this.seatType = dto.getSeatType();
+		this.price = dto.getPrice();
 	}
-
 }

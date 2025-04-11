@@ -2,6 +2,7 @@ package com.taken_seat.performance_service.performancehall.domain.model;
 
 import java.util.UUID;
 
+import com.taken_seat.common_service.entity.BaseTimeEntity;
 import com.taken_seat.performance_service.performancehall.application.dto.request.UpdateSeatDto;
 
 import jakarta.persistence.Column;
@@ -26,7 +27,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Table(name = "p_seats")
 @Entity
-public class Seat {
+public class Seat extends BaseTimeEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)

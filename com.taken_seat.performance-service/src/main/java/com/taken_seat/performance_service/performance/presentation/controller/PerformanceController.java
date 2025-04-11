@@ -15,10 +15,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.taken_seat.common_service.dto.ApiResponseData;
+import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.performance_service.performance.application.dto.request.CreateRequestDto;
 import com.taken_seat.performance_service.performance.application.dto.request.SearchFilterParam;
 import com.taken_seat.performance_service.performance.application.dto.request.UpdateRequestDto;
@@ -39,73 +39,52 @@ public class PerformanceController {
 
 	private final PerformanceService performanceService;
 
-	/**
-	 * 공연 생성 API
-	 * 권한: ADMIN, MANAGER, PRODUCER
-	 */
 	@PostMapping
-	public ResponseEntity<CreateResponseDto> create(
-		@Valid @RequestBody CreateRequestDto request) {
+	public ResponseEntity<ApiResponseData<CreateResponseDto>> create(
+		@Valid @RequestBody CreateRequestDto request,
+		AuthenticatedUser authenticatedUser) {
 
-		CreateResponseDto response = performanceService.create(request);
-		return ResponseEntity.status(HttpStatus.CREATED).body(response);
-
+		CreateResponseDto response = performanceService.create(request, authenticatedUser);
+		return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponseData.success(response));
 	}
 
-	/**
-	 * 공연 전체 조회 API
-	 * 권한: ALL
-	 */
 	@GetMapping("/search")
-	public ResponseEntity<PageResponseDto> getList(
+	public ResponseEntity<ApiResponseData<PageResponseDto>> getList(
 		@ModelAttribute SearchFilterParam filterParam,
 		@PageableDefault(page = 0, size = 10, sort = "startAt", direction = Sort.Direction.DESC) Pageable pageable) {
 
 		PageResponseDto response = performanceService.search(filterParam, pageable);
-		return ResponseEntity.status(HttpStatus.OK).body(response);
+		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
 	}
 
-	/**
-	 * 공연 상세 조회 API
-	 * 권한: ALL
-	 */
 	@GetMapping("/{id}")
-	public ResponseEntity<DetailResponseDto> getDetail(@PathVariable("id") UUID id) {
+	public ResponseEntity<ApiResponseData<DetailResponseDto>> getDetail(@PathVariable("id") UUID id) {
 
 		DetailResponseDto response = performanceService.getDetail(id);
-		return ResponseEntity.status(HttpStatus.OK).body(response);
+		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
 	}
-
-	/**
-	 * 공연 수정 API
-	 * 권한: ADMIN, MANAGER, PRODUCER
-	 */
 
 	@PatchMapping("/{id}")
-	public ResponseEntity<UpdateResponseDto> update(@PathVariable("id") UUID id,
-		@Valid @RequestBody UpdateRequestDto request) {
+	public ResponseEntity<ApiResponseData<UpdateResponseDto>> update(@PathVariable("id") UUID id,
+		@Valid @RequestBody UpdateRequestDto request,
+		AuthenticatedUser authenticatedUser) {
 
-		UpdateResponseDto response = performanceService.update(id, request);
-		return ResponseEntity.status(HttpStatus.OK).body(response);
+		UpdateResponseDto response = performanceService.update(id, request, authenticatedUser);
+		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
 	}
 
-	/**
-	 * 공연 삭제 API
-	 * 권한: ADMIN, MANAGER, PRODUCER
-	 */
-
 	@DeleteMapping("/{id}")
-	public ResponseEntity<Void> delete(@PathVariable("id") UUID id, @RequestParam UUID deletedBy) {
+	public ResponseEntity<ApiResponseData<Void>> delete(@PathVariable("id") UUID id,
+		AuthenticatedUser authenticatedUser) {
 
-		performanceService.delete(id, deletedBy);
-		return ResponseEntity.noContent().build();
+		performanceService.delete(id, authenticatedUser);
+		return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseData.success());
 	}
 
 	/**
 	 * 공연 종료 시간 조회 API
 	 * 리뷰 등록하기 전 해당 공연이 종료되었는지 검사하기 위해 종료시간을 받아오는 메서드
 	 */
-
 	@GetMapping("/{performanceId}/schedules/{performanceScheduleId}/end-time")
 	ResponseEntity<ApiResponseData<PerformanceEndTimeDto>> getPerformanceEndTime(
 		@PathVariable("performanceId") UUID performanceId,

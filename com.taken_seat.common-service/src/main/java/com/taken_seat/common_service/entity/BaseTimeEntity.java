@@ -58,7 +58,5 @@ public abstract class BaseTimeEntity {
 		this.deletedBy = null;
 		this.updatedAt = LocalDateTime.now();
 		this.updatedBy = updatedBy;
-
 	}
-
 }
