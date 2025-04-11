@@ -8,6 +8,8 @@ import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
 
 import com.taken_seat.booking_service.booking.application.RedissonService;
+import com.taken_seat.common_service.exception.customException.BookingException;
+import com.taken_seat.common_service.exception.enums.ResponseCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -18,7 +20,7 @@ public class RedissonServiceImpl implements RedissonService {
 	private final RedissonClient redissonClient;
 
 	@Override
-	public void tryHoldSeat(UUID userId, UUID seatId) {
+	public void tryHoldSeat(UUID performanceId, UUID performanceScheduleId, UUID seatId) {
 		String key = "lock:seat:" + seatId;
 		RLock lock = redissonClient.getLock(key);
 
@@ -27,11 +29,15 @@ public class RedissonServiceImpl implements RedissonService {
 				// TODO: 좌석 선점 요청 보내기
 				// TODO: 공연 도메인에게 해당 좌석이 유효한지, 이미 선점된 좌석인지 확인 부탁하기
 			} else {
-				throw new RuntimeException("이미 선점된 좌석입니다.");
+				throw new BookingException(ResponseCode.BOOKING_SEAT_LOCKED_EXCEPTION);
 			}
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
-			throw new RuntimeException("락 대기 중 인터럽트 발생", e);
+			throw new BookingException(ResponseCode.BOOKING_INTERRUPTED_EXCEPTION, e.getMessage());
+		} finally {
+			if (lock.isHeldByCurrentThread()) {
+				lock.unlock();
+			}
 		}
 	}
 }

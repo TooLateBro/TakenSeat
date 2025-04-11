@@ -2,12 +2,12 @@ package com.taken_seat.booking_service.ticket.infrastructure.service;
 
 import org.springframework.stereotype.Service;
 
-import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.booking_service.ticket.application.dto.request.TicketCreateRequest;
 import com.taken_seat.booking_service.ticket.application.dto.response.TicketCreateResponse;
 import com.taken_seat.booking_service.ticket.application.service.TicketService;
 import com.taken_seat.booking_service.ticket.domain.Ticket;
 import com.taken_seat.booking_service.ticket.domain.repository.TicketRepository;
+import com.taken_seat.common_service.dto.AuthenticatedUser;
 
 import lombok.RequiredArgsConstructor;
 

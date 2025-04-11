@@ -29,8 +29,8 @@ import lombok.NoArgsConstructor;
 	name = "p_booking",
 	uniqueConstraints = {
 		@UniqueConstraint(
-			name = "uk_user_schedule_seat",
-			columnNames = {"userId", "performanceScheduleId", "seatId"}
+			name = "uk_upps",
+			columnNames = {"userId", "performanceId", "performanceScheduleId", "seatId"}
 		)
 	}
 )
@@ -42,6 +42,9 @@ public class Booking extends BaseEntity {
 
 	@Column(nullable = false)
 	private UUID userId;
+
+	@Column(nullable = false)
+	private UUID performanceId;
 
 	@Column(nullable = false)
 	private UUID performanceScheduleId;
