@@ -18,12 +18,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.taken_seat.common_service.dto.ApiResponseData;
 import com.taken_seat.performance_service.performance.application.dto.request.CreateRequestDto;
 import com.taken_seat.performance_service.performance.application.dto.request.SearchFilterParam;
 import com.taken_seat.performance_service.performance.application.dto.request.UpdateRequestDto;
 import com.taken_seat.performance_service.performance.application.dto.response.CreateResponseDto;
 import com.taken_seat.performance_service.performance.application.dto.response.DetailResponseDto;
 import com.taken_seat.performance_service.performance.application.dto.response.PageResponseDto;
+import com.taken_seat.performance_service.performance.application.dto.response.PerformanceEndTimeDto;
 import com.taken_seat.performance_service.performance.application.dto.response.UpdateResponseDto;
 import com.taken_seat.performance_service.performance.application.service.PerformanceService;
 
@@ -97,5 +99,19 @@ public class PerformanceController {
 
 		performanceService.delete(id, deletedBy);
 		return ResponseEntity.noContent().build();
+	}
+
+	/**
+	 * 공연 종료 시간 조회 API
+	 * 리뷰 등록하기 전 해당 공연이 종료되었는지 검사하기 위해 종료시간을 받아오는 메서드
+	 */
+
+	@GetMapping("/{performanceId}/schedules/{performanceScheduleId}/end-time")
+	ResponseEntity<ApiResponseData<PerformanceEndTimeDto>> getPerformanceEndTime(
+		@PathVariable("performanceId") UUID performanceId,
+		@PathVariable("performanceScheduleId") UUID performanceScheduleId) {
+
+		PerformanceEndTimeDto response = performanceService.getPerformanceEndTime(performanceId, performanceScheduleId);
+		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
 	}
 }
