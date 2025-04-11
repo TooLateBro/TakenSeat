@@ -1,7 +1,9 @@
 package com.taken_seat.review_service.application.service;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,8 +12,10 @@ import com.taken_seat.common_service.exception.customException.ReviewException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.review_service.application.client.ReviewClient;
 import com.taken_seat.review_service.application.dto.request.ReviewRegisterReqDto;
+import com.taken_seat.review_service.application.dto.response.PageReviewResponseDto;
 import com.taken_seat.review_service.application.dto.response.ReviewDetailResDto;
 import com.taken_seat.review_service.domain.model.Review;
+import com.taken_seat.review_service.domain.repository.ReviewQuerydslRepository;
 import com.taken_seat.review_service.domain.repository.ReviewRepository;
 import com.taken_seat.review_service.infrastructure.client.dto.PerformanceEndTimeDto;
 
@@ -24,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 public class ReviewService {
 
 	private final ReviewRepository reviewRepository;
+	private final ReviewQuerydslRepository reviewQuerydslRepository;
 	private final ReviewClient reviewClient;
 
 	public ReviewDetailResDto registerReview(ReviewRegisterReqDto requestDto, AuthenticatedUser authenticatedUser) {
@@ -60,5 +65,25 @@ public class ReviewService {
 		reviewRepository.save(review);
 
 		return ReviewDetailResDto.toResponse(review);
+	}
+
+	@Transactional(readOnly = true)
+	public ReviewDetailResDto getReviewDetail(UUID id) {
+
+		Review review = reviewRepository.findByIdAndDeletedAtIsNull(id)
+			.orElseThrow(() -> new ReviewException(ResponseCode.REVIEW_NOT_FOUND));
+
+		return ReviewDetailResDto.toResponse(review);
+	}
+
+	@Transactional(readOnly = true)
+	public PageReviewResponseDto searchReview(String q, String category, int page, int size, String sort,
+		String order) {
+
+		Page<Review> reviewPages = reviewQuerydslRepository.search(q, category, page, size, sort, order);
+
+		Page<ReviewDetailResDto> reviewDetailResDtoPages = reviewPages.map(ReviewDetailResDto::toResponse);
+
+		return PageReviewResponseDto.toResponse(reviewDetailResDtoPages);
 	}
 }

@@ -24,7 +24,7 @@ public class ReviewDetailResDto {
 
 	private UUID authorId;
 
-	private String authorName;
+	private String authorEmail;
 
 	private String title;
 
@@ -38,7 +38,7 @@ public class ReviewDetailResDto {
 			.performanceId(review.getPerformanceId())
 			.performanceScheduleId(review.getPerformanceScheduleId())
 			.authorId(review.getAuthorId())
-			.authorName(review.getAuthorEmail())
+			.authorEmail(review.getAuthorEmail())
 			.title(review.getTitle())
 			.content(review.getContent())
 			.likeCount(review.getLikeCount())
