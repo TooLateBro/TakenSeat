@@ -23,7 +23,7 @@ public class PerformenceTicketController {
 
 	private final PerformenceTicketService performenceTicketService;
 
-	@GetMapping("/{performanceId}/{performanceScheduleId}/seats/{seatId}")
+	@GetMapping("/{performanceId}/schedules/{performanceScheduleId}/seats/{seatId}")
 	public ResponseEntity<TicketPerformanceClientResponse> getPerformanceInfo(
 		@PathVariable UUID performanceId,
 		@PathVariable UUID performanceScheduleId,
