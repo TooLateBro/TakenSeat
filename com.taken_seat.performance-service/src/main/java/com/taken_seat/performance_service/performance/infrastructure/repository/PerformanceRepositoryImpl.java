@@ -40,15 +40,6 @@ public class PerformanceRepositoryImpl implements PerformanceRepository {
 	}
 
 	@Override
-	public void deleteById(UUID id, UUID deletedBy) {
-
-		Performance performance = performanceJpaRepository.findByIdAndDeletedAtIsNull(id)
-			.orElseThrow(() -> new IllegalArgumentException("이미 삭제된 아이디입니다"));
-
-		performance.delete(deletedBy);
-	}
-
-	@Override
 	public Optional<Performance> findByPerformanceScheduleId(UUID performanceScheduleId) {
 		return performanceJpaRepository.findAllByDeletedAtIsNull().stream()
 			.filter(performance -> performance.getSchedules().stream()
