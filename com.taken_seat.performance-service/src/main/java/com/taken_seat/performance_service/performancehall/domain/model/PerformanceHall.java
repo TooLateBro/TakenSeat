@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import com.taken_seat.common_service.entity.BaseTimeEntity;
 import com.taken_seat.performance_service.performancehall.application.dto.request.CreateRequestDto;
 import com.taken_seat.performance_service.performancehall.application.dto.request.UpdateRequestDto;
 import com.taken_seat.performance_service.performancehall.application.dto.request.UpdateSeatDto;
@@ -28,7 +29,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Table(name = "p_performance_halls")
 @Entity
-public class PerformanceHall {
+public class PerformanceHall extends BaseTimeEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)

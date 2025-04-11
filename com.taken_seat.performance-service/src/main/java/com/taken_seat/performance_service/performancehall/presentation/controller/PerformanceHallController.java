@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.taken_seat.common_service.dto.ApiResponseData;
 import com.taken_seat.performance_service.performancehall.application.dto.request.CreateRequestDto;
 import com.taken_seat.performance_service.performancehall.application.dto.request.SearchFilterParam;
 import com.taken_seat.performance_service.performancehall.application.dto.request.UpdateRequestDto;
@@ -42,10 +43,10 @@ public class PerformanceHallController {
 	 * 권한: ADMIN, MANAGER
 	 */
 	@PostMapping
-	public ResponseEntity<CreateResponseDto> create(@Valid @RequestBody CreateRequestDto request) {
+	public ResponseEntity<ApiResponseData<CreateResponseDto>> create(@Valid @RequestBody CreateRequestDto request) {
 
 		CreateResponseDto response = performanceHallService.create(request);
-		return ResponseEntity.status(HttpStatus.CREATED).body(response);
+		return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponseData.success(response));
 	}
 
 	/**
@@ -53,12 +54,12 @@ public class PerformanceHallController {
 	 * 권한: ALL
 	 */
 	@GetMapping("/search")
-	public ResponseEntity<PageResponseDto> getList(
+	public ResponseEntity<ApiResponseData<PageResponseDto>> getList(
 		@ModelAttribute SearchFilterParam filterParam,
 		@PageableDefault(page = 0, size = 10, sort = "name", direction = Sort.Direction.ASC) Pageable pageable) {
 
 		PageResponseDto response = performanceHallService.search(filterParam, pageable);
-		return ResponseEntity.status(HttpStatus.OK).body(response);
+		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
 	}
 
 	/**
@@ -66,10 +67,10 @@ public class PerformanceHallController {
 	 * 권한: ALL
 	 */
 	@GetMapping("/{id}")
-	public ResponseEntity<DetailResponseDto> getDetail(@PathVariable("id") UUID id) {
+	public ResponseEntity<ApiResponseData<DetailResponseDto>> getDetail(@PathVariable("id") UUID id) {
 
 		DetailResponseDto response = performanceHallService.getDetail(id);
-		return ResponseEntity.status(HttpStatus.OK).body(response);
+		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
 	}
 
 	/**
@@ -77,12 +78,12 @@ public class PerformanceHallController {
 	 * 권한: ADMIN, MANAGER
 	 */
 	@PatchMapping("/{id}")
-	public ResponseEntity<UpdateResponseDto> update(
+	public ResponseEntity<ApiResponseData<UpdateResponseDto>> update(
 		@PathVariable("id") UUID id,
 		@Valid @RequestBody UpdateRequestDto request) {
 
 		UpdateResponseDto response = performanceHallService.update(id, request);
-		return ResponseEntity.status(HttpStatus.OK).body(response);
+		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
 	}
 
 	/**
@@ -90,9 +91,9 @@ public class PerformanceHallController {
 	 * 권한: ADMIN, MANAGER
 	 */
 	@DeleteMapping("/{id}")
-	public ResponseEntity<Void> delete(@PathVariable("id") UUID id, @RequestParam UUID deletedBy) {
+	public ResponseEntity<ApiResponseData<Void>> delete(@PathVariable("id") UUID id, @RequestParam UUID deletedBy) {
 
 		performanceHallService.delete(id, deletedBy);
-		return ResponseEntity.noContent().build();
+		return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseData.success());
 	}
 }
