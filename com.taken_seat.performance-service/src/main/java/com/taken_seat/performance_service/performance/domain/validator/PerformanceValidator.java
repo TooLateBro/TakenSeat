@@ -12,22 +12,26 @@ import com.taken_seat.common_service.exception.customException.PerformanceExcept
 import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.performance_service.performance.application.dto.request.CreatePerformanceScheduleDto;
 import com.taken_seat.performance_service.performance.application.dto.request.UpdatePerformanceScheduleDto;
+import com.taken_seat.performance_service.performance.application.dto.request.UpdateRequestDto;
 
 public class PerformanceValidator {
 
 	public static void validateDuplicateSchedules(List<CreatePerformanceScheduleDto> schedules) {
+
 		validateDuplicateScheduleLogic(schedules.stream()
 			.map(dto -> new ScheduleDtoWrapper(dto.getPerformanceHallId(), dto.getStartAt(), dto.getEndAt()))
 			.toList());
 	}
 
 	public static void validateDuplicateSchedulesForUpdate(List<UpdatePerformanceScheduleDto> schedules) {
+
 		validateDuplicateScheduleLogic(schedules.stream()
 			.map(dto -> new ScheduleDtoWrapper(dto.getPerformanceHallId(), dto.getStartAt(), dto.getEndAt()))
 			.toList());
 	}
 
 	private static void validateDuplicateScheduleLogic(List<ScheduleDtoWrapper> schedules) {
+
 		Map<UUID, List<ScheduleDtoWrapper>> scheduleMap = new HashMap<>();
 		for (ScheduleDtoWrapper schedule : schedules) {
 			scheduleMap
@@ -53,15 +57,24 @@ public class PerformanceValidator {
 	private record ScheduleDtoWrapper(UUID hallId, LocalDateTime startAt, LocalDateTime endAt) {
 	}
 
-	public static void validateScheduleDataForUpdate(UpdatePerformanceScheduleDto dto) {
-		if (dto.getPerformanceHallId() == null) {
+	public static void validatePerformanceData(UpdateRequestDto request) {
+
+		if (request.getStartAt() != null && request.getEndAt() != null) {
+			if (!request.getStartAt().isBefore(request.getEndAt())) {
+				throw new PerformanceException(ResponseCode.PERFORMANCE_VALIDATION_EXCEPTION, "공연 시작일은 종료일보다 빨라야 합니다.");
+			}
+		}
+	}
+
+	public static void validateScheduleDataForUpdate(UpdatePerformanceScheduleDto schedule) {
+
+		if (schedule.getPerformanceHallId() == null) {
 			throw new PerformanceException(ResponseCode.PERFORMANCE_VALIDATION_EXCEPTION, "공연장 ID는 필수입니다.");
 		}
 
-		if (dto.getStartAt() != null && dto.getEndAt() != null) {
-			if (!dto.getStartAt().isBefore(dto.getEndAt())) {
-				throw new PerformanceException(ResponseCode.PERFORMANCE_VALIDATION_EXCEPTION,
-					"공연 시작일은 종료일보다 빠른 시간이어야 합니다.");
+		if (schedule.getStartAt() != null && schedule.getEndAt() != null) {
+			if (!schedule.getStartAt().isBefore(schedule.getEndAt())) {
+				throw new PerformanceException(ResponseCode.PERFORMANCE_VALIDATION_EXCEPTION, "공연 시작일은 종료일보다 빨라야 합니다.");
 			}
 		}
 	}

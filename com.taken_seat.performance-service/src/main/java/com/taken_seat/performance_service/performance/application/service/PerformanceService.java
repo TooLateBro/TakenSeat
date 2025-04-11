@@ -78,6 +78,8 @@ public class PerformanceService {
 			throw new PerformanceException(ResponseCode.ACCESS_DENIED_EXCEPTION, "접근 권한이 없습니다.");
 		}
 
+		PerformanceValidator.validatePerformanceData(request);
+
 		for (UpdatePerformanceScheduleDto schedule : request.getSchedules()) {
 			PerformanceValidator.validateScheduleDataForUpdate(schedule);
 		}
