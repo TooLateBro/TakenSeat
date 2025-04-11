@@ -84,9 +84,10 @@ public class PerformanceController {
 
 	@PatchMapping("/{id}")
 	public ResponseEntity<ApiResponseData<UpdateResponseDto>> update(@PathVariable("id") UUID id,
-		@Valid @RequestBody UpdateRequestDto request) {
+		@Valid @RequestBody UpdateRequestDto request,
+		AuthenticatedUser authenticatedUser) {
 
-		UpdateResponseDto response = performanceService.update(id, request);
+		UpdateResponseDto response = performanceService.update(id, request, authenticatedUser);
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
 	}
 
