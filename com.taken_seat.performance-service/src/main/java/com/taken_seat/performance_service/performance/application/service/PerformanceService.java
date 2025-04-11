@@ -15,6 +15,7 @@ import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.performance_service.performance.application.dto.mapper.ResponseMapper;
 import com.taken_seat.performance_service.performance.application.dto.request.CreateRequestDto;
 import com.taken_seat.performance_service.performance.application.dto.request.SearchFilterParam;
+import com.taken_seat.performance_service.performance.application.dto.request.UpdatePerformanceScheduleDto;
 import com.taken_seat.performance_service.performance.application.dto.request.UpdateRequestDto;
 import com.taken_seat.performance_service.performance.application.dto.response.CreateResponseDto;
 import com.taken_seat.performance_service.performance.application.dto.response.DetailResponseDto;
@@ -76,6 +77,12 @@ public class PerformanceService {
 		if (!isAuthorized(authenticatedUser)) {
 			throw new PerformanceException(ResponseCode.ACCESS_DENIED_EXCEPTION, "접근 권한이 없습니다.");
 		}
+
+		for (UpdatePerformanceScheduleDto schedule : request.getSchedules()) {
+			PerformanceValidator.validateScheduleDataForUpdate(schedule);
+		}
+
+		PerformanceValidator.validateDuplicateSchedulesForUpdate(request.getSchedules());
 
 		Performance performance = performanceRepository.findById(id)
 			.orElseThrow(() -> new PerformanceException(ResponseCode.PERFORMANCE_NOT_FOUND_EXCEPTION));
