@@ -3,6 +3,10 @@ package com.taken_seat.review_service.application.service;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +36,7 @@ public class ReviewService {
 	private final ReviewQuerydslRepository reviewQuerydslRepository;
 	private final ReviewClient reviewClient;
 
+	@CachePut(cacheNames = "reviewCache", key = "#result.id")
 	public ReviewDetailResDto registerReview(ReviewRegisterReqDto requestDto, AuthenticatedUser authenticatedUser) {
 		// 1. 리뷰 중복 작성 방지
 		if (reviewRepository.existsByAuthorIdAndPerformanceId(authenticatedUser.getUserId(),
@@ -69,6 +74,7 @@ public class ReviewService {
 	}
 
 	@Transactional(readOnly = true)
+	@CachePut(cacheNames = "reviewCache", key = "#id")
 	public ReviewDetailResDto getReviewDetail(UUID id) {
 
 		Review review = reviewRepository.findByIdAndDeletedAtIsNull(id)
@@ -78,6 +84,7 @@ public class ReviewService {
 	}
 
 	@Transactional(readOnly = true)
+	@Cacheable(cacheNames = "reviewSearchCache", key = "#q + '-' + #category + '-' + #page + '-' + #size")
 	public PageReviewResponseDto searchReview(String q, String category, int page, int size, String sort,
 		String order) {
 
@@ -88,6 +95,8 @@ public class ReviewService {
 		return PageReviewResponseDto.toResponse(reviewDetailResDtoPages);
 	}
 
+	@CachePut(cacheNames = "reviewCache", key = "#id")
+	@CacheEvict(cacheNames = "reviewSearchCache", allEntries = true)
 	public ReviewDetailResDto updateReview(UUID id, ReviewUpdateReqDto reviewUpdateReqDto,
 		AuthenticatedUser authenticatedUser) {
 
@@ -101,6 +110,10 @@ public class ReviewService {
 		return ReviewDetailResDto.toResponse(review);
 	}
 
+	@Caching(evict = {
+		@CacheEvict(cacheNames = "reviewCache", key = "#id"),
+		@CacheEvict(cacheNames = "reviewSearchCache", key = "#id")
+	})
 	public void deleteReview(UUID id, AuthenticatedUser authenticatedUser) {
 
 		Review review = reviewRepository.findByIdAndDeletedAtIsNull(id)
