@@ -9,6 +9,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
 import com.querydsl.core.types.Order;
@@ -22,6 +23,7 @@ import com.taken_seat.review_service.domain.repository.ReviewQuerydslRepository;
 
 import lombok.RequiredArgsConstructor;
 
+@Repository
 @RequiredArgsConstructor
 public class ReviewQuerydslRepositoryImpl implements ReviewQuerydslRepository {
 

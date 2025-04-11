@@ -1,4 +1,4 @@
-package com.taken_seat.coupon_service.infrastructure.redis;
+package com.taken_seat.coupon_service.infrastructure.config.redis;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.EnableCaching;
