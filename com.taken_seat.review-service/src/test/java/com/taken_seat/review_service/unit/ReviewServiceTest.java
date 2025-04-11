@@ -284,4 +284,22 @@ public class ReviewServiceTest {
 
 		assertEquals("해당 리뷰가 존재하지않습니다.", exception.getMessage());
 	}
+
+	@Test
+	@DisplayName("리뷰 수정 실패 - 작성자도 아니고 마스터도 아님 - FAIL")
+	void testUpdateReview_fail_forbiddenAccess() {
+		// Given
+		ReviewUpdateReqDto reqDto = new ReviewUpdateReqDto("updateTitle", "updateContent");
+
+		UUID notAuthorId = UUID.randomUUID();
+		AuthenticatedUser anotherUser = new AuthenticatedUser(notAuthorId, "other@gmail.com", "other@gmail.com");
+		when(reviewRepository.findByIdAndDeletedAtIsNull(testReviewId)).thenReturn(Optional.of(testReview));
+
+		// When & Then
+		ReviewException exception = assertThrows(ReviewException.class, () -> {
+			reviewService.updateReview(testReviewId, reqDto, anotherUser);
+		});
+
+		assertEquals("해당 리뷰에 접근할 권한이 없습니다.", exception.getMessage()); // FORBIDDEN_REVIEW_ACCESS 메시지
+	}
 }
