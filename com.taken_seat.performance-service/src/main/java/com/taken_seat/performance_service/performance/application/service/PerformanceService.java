@@ -9,6 +9,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.taken_seat.common_service.dto.AuthenticatedUser;
+import com.taken_seat.common_service.exception.customException.PerformanceException;
+import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.performance_service.performance.application.dto.mapper.ResponseMapper;
 import com.taken_seat.performance_service.performance.application.dto.request.CreateRequestDto;
 import com.taken_seat.performance_service.performance.application.dto.request.SearchFilterParam;
@@ -21,6 +24,7 @@ import com.taken_seat.performance_service.performance.application.dto.response.U
 import com.taken_seat.performance_service.performance.domain.model.Performance;
 import com.taken_seat.performance_service.performance.domain.model.PerformanceSchedule;
 import com.taken_seat.performance_service.performance.domain.repository.PerformanceRepository;
+import com.taken_seat.performance_service.performance.domain.validator.PerformanceValidator;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,14 +38,19 @@ public class PerformanceService {
 	private final ResponseMapper responseMapper;
 
 	@Transactional
-	public CreateResponseDto create(CreateRequestDto request) {
+	public CreateResponseDto create(CreateRequestDto request, AuthenticatedUser authenticatedUser) {
 
-		Performance performance = Performance.create(request);
+		if (!isAuthorized(authenticatedUser)) {
+			throw new PerformanceException(ResponseCode.ACCESS_DENIED_EXCEPTION, "접근 권한이 없습니다.");
+		}
+
+		PerformanceValidator.validateDuplicateSchedules(request.getSchedules());
+
+		Performance performance = Performance.create(request, authenticatedUser.getUserId());
 
 		Performance saved = performanceRepository.save(performance);
 
 		return createToDto(saved);
-
 	}
 
 	@Transactional(readOnly = true)
@@ -90,5 +99,11 @@ public class PerformanceService {
 		PerformanceSchedule schedule = performance.getScheduleById(performanceScheduleId);
 
 		return new PerformanceEndTimeDto(schedule.getEndAt());
+	}
+
+	private boolean isAuthorized(AuthenticatedUser authenticatedUser) {
+
+		String role = authenticatedUser.getRole();
+		return role.equals("ADMIN") || role.equals("MANAGER") || role.equals("PRODUCER");
 	}
 }
