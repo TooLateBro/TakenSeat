@@ -36,24 +36,33 @@ public enum ResponseCode {
 	VALIDATION_ERROR(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), "잘못된 입력값이 존재합니다."),
 	ACCESS_DENIED_EXCEPTION(HttpStatus.FORBIDDEN, HttpStatus.FORBIDDEN.value(), "권한이 없습니다."),
 
-	// 자주 사용되는 기본 예외 처리
+	// 자주 사용되는 공통 예외 처리
 	ILLEGAL_ARGUMENT(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), "잘못된 요청입니다."),
 	ENTITY_NOT_FOUND(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "요청한 자원을 찾을 수 없습니다."),
 	METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, HttpStatus.METHOD_NOT_ALLOWED.value(), "허용되지 않은 HTTP 메서드입니다."),
+	MISSING_HEADER(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), "필수 요청 헤더가 누락되었습니다."),
 
 	// Payment
 	PAYMENT_NOT_FOUND_EXCEPTION(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "해당 결제가 존재하지않습니다."),
 	PAYMENT_HISTORY_NOT_FOUND_EXCEPTION(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "해당 결제의 내역이 존재하지않습니다."),
+
+	// Review
+	REVIEW_ALREADY_WRITTEN(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), "해당 공연에 대한 리뷰는 이미 작성하셨습니다."),
+	BOOKING_NOT_COMPLETED(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), "예매가 완료된 공연에 대해서만 리뷰를 작성할 수 있습니다."),
+	EARLY_REVIEW(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), "공연 시작 전에는 리뷰를 등록할 수 없습니다."),
+
+	// Performance
+	PERFORMANCE_NOT_FOUND(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "해당 공연 정보를 찾을 수 없습니다."),
+
+	// User
+	USER_NOT_FOUND(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "해당 유저 정보를 찾을 수 없습니다."),
 
 	// Booking
 	BOOKING_NOT_FOUND_EXCEPTION(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "해당 예매는 존재하지 않습니다."),
 	BOOKING_ALREADY_CANCELED_EXCEPTION(HttpStatus.CONFLICT, HttpStatus.CONFLICT.value(), "이미 취소된 예약입니다."),
 	BOOKING_NOT_CANCELED_EXCEPTION(HttpStatus.CONFLICT, HttpStatus.CONFLICT.value(), "예약 취소 후 삭제할 수 있습니다."),
 	BOOKING_SEAT_LOCKED_EXCEPTION(HttpStatus.CONFLICT, HttpStatus.CONFLICT.value(), "이미 선점된 좌석입니다."),
-	BOOKING_INTERRUPTED_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR.value(), "인터럽트가 발생했습니다."),
-
-
-	;
+	BOOKING_INTERRUPTED_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR.value(), "인터럽트가 발생했습니다.");
 
 	private final HttpStatus status;
 	private final Integer code;
