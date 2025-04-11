@@ -1,4 +1,4 @@
-package com.taken_seat.auth_service.infrastructure.config.kafka;
+package com.taken_seat.coupon_service.infrastructure.config.kafka;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
