@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,9 +18,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.taken_seat.performance_service.performancehall.application.dto.request.CreateRequestDto;
 import com.taken_seat.performance_service.performancehall.application.dto.request.SearchFilterParam;
+import com.taken_seat.performance_service.performancehall.application.dto.request.UpdateRequestDto;
 import com.taken_seat.performance_service.performancehall.application.dto.response.CreateResponseDto;
 import com.taken_seat.performance_service.performancehall.application.dto.response.DetailResponseDto;
 import com.taken_seat.performance_service.performancehall.application.dto.response.PageResponseDto;
+import com.taken_seat.performance_service.performancehall.application.dto.response.UpdateResponseDto;
 import com.taken_seat.performance_service.performancehall.application.service.PerformanceHallService;
 
 import jakarta.validation.Valid;
@@ -64,6 +67,19 @@ public class PerformanceHallController {
 	public ResponseEntity<DetailResponseDto> getDetail(@PathVariable("id") UUID id) {
 
 		DetailResponseDto response = performanceHallService.getDetail(id);
+		return ResponseEntity.status(HttpStatus.OK).body(response);
+	}
+
+	/**
+	 * 공연장 수정 API
+	 * 권한: ADMIN, MANAGER
+	 */
+	@PatchMapping("/{id}")
+	public ResponseEntity<UpdateResponseDto> update(
+		@PathVariable("id") UUID id,
+		@Valid @RequestBody UpdateRequestDto request) {
+
+		UpdateResponseDto response = performanceHallService.update(id, request);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 }

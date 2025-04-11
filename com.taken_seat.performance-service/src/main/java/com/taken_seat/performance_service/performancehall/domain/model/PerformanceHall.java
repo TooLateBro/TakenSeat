@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.UUID;
 
 import com.taken_seat.performance_service.performancehall.application.dto.request.CreateRequestDto;
+import com.taken_seat.performance_service.performancehall.application.dto.request.UpdateRequestDto;
+import com.taken_seat.performance_service.performancehall.application.dto.request.UpdateSeatDto;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -89,5 +91,31 @@ public class PerformanceHall {
 			.filter(seat -> seat.getId().equals(seatId))
 			.findFirst()
 			.orElseThrow(() -> new IllegalArgumentException("해당 좌석이 존재하지 않습니다"));
+	}
+
+	public void update(UpdateRequestDto request) {
+		this.name = request.getName();
+		this.address = request.getAddress();
+		this.totalSeats = request.getTotalSeats();
+		this.description = request.getDescription();
+
+		if (request.getSeats() != null) {
+			for (UpdateSeatDto seatDto : request.getSeats()) {
+				Seat existingSeat = this.getSeatById(seatDto.getSeatId());
+
+				if (existingSeat != null) {
+					existingSeat.update(seatDto);
+				} else {
+					Seat newSeat = Seat.builder()
+						.performanceHall(this)
+						.rowNumber(seatDto.getRowNumber())
+						.seatNumber(seatDto.getSeatNumber())
+						.seatType(seatDto.getSeatType())
+						.status(seatDto.getStatus())
+						.build();
+					this.seats.add(newSeat);
+				}
+			}
+		}
 	}
 }
