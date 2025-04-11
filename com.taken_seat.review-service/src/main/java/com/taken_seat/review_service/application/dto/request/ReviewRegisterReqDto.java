@@ -15,6 +15,8 @@ public class ReviewRegisterReqDto {
 
 	private UUID performanceId;
 
+	private UUID performanceScheduleId;
+
 	private String title;
 
 	private String content;

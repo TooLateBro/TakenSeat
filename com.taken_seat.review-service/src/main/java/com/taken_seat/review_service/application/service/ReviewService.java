@@ -46,7 +46,8 @@ public class ReviewService {
 
 		// 3. 공연 종료 여부 확인
 		try {
-			PerformanceEndTimeDto perInfo = reviewClient.getPerformanceEndTime(requestDto.getPerformanceId());
+			PerformanceEndTimeDto perInfo = reviewClient.getPerformanceEndTime(requestDto.getPerformanceId(),
+				requestDto.getPerformanceScheduleId());
 			if (LocalDateTime.now().isBefore(perInfo.endAt())) {
 				throw new ReviewException(ResponseCode.EARLY_REVIEW);
 			}

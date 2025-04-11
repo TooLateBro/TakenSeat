@@ -13,6 +13,7 @@ import com.taken_seat.review_service.infrastructure.client.dto.PerformanceEndTim
 @FeignClient(name = "${feign.client.performance.name}", url = "${feign.client.performance.url}")
 public interface PerformanceClient {
 
-	@GetMapping("/{performanceId}/end-time")
-	ResponseEntity<ApiResponseData<PerformanceEndTimeDto>> getPerformanceEndTime(@PathVariable UUID performanceId);
+	@GetMapping("/{performanceId}/schedules/{performanceScheduleId}/end-time")
+	ResponseEntity<ApiResponseData<PerformanceEndTimeDto>> getPerformanceEndTime(@PathVariable UUID performanceId,
+		@PathVariable UUID performanceScheduleId);
 }

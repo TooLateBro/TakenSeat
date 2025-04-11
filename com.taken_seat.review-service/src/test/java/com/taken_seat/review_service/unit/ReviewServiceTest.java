@@ -40,6 +40,8 @@ public class ReviewServiceTest {
 
 	private UUID testPerformanceId;
 
+	private UUID testPerformanceScheduleId;
+
 	private UUID testReviewId;
 
 	private UUID testAuthorId;
@@ -54,6 +56,7 @@ public class ReviewServiceTest {
 	void setUp() {
 
 		testPerformanceId = UUID.randomUUID();
+		testPerformanceScheduleId = UUID.randomUUID();
 		testReviewId = UUID.randomUUID();
 		testAuthorId = UUID.randomUUID();
 		testAuthorEmail = "test@gmail.com";
@@ -61,6 +64,7 @@ public class ReviewServiceTest {
 		testReview = Review.builder()
 			.id(testReviewId)
 			.performanceId(testPerformanceId)
+			.performanceScheduleId(testPerformanceScheduleId)
 			.authorId(testAuthorId)
 			.authorEmail(testAuthorEmail)
 			.title("testReviewTitle")
@@ -78,12 +82,13 @@ public class ReviewServiceTest {
 	@DisplayName("리뷰 등록 - SUCCESS")
 	void testRegisterReview_success() {
 		// Given
-		ReviewRegisterReqDto requestDto = new ReviewRegisterReqDto(testPerformanceId, "testRegister", "testContent");
+		ReviewRegisterReqDto requestDto = new ReviewRegisterReqDto(testPerformanceId, testPerformanceScheduleId,
+			"testRegister", "testContent");
 
 		when(reviewRepository.existsByAuthorIdAndPerformanceId(testAuthorId, testPerformanceId)).thenReturn(false);
 		when(reviewClient.getBookingStatus(testAuthorId, testPerformanceId)).thenReturn(
 			new BookingStatusDto("COMPLETED"));
-		when(reviewClient.getPerformanceEndTime(testPerformanceId)).thenReturn(
+		when(reviewClient.getPerformanceEndTime(testPerformanceId, testPerformanceScheduleId)).thenReturn(
 			new PerformanceEndTimeDto(LocalDateTime.now().minusDays(1)));
 		when(reviewRepository.save(any(Review.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -102,7 +107,8 @@ public class ReviewServiceTest {
 	@DisplayName("리뷰 등록 실패 - 해당 공연에 이미 작성된 리뷰가 존재하는 경우")
 	void testRegisterReview_fail_alreadyWritten() {
 		// Given
-		ReviewRegisterReqDto requestDto = new ReviewRegisterReqDto(testPerformanceId, "중복", "중복내용");
+		ReviewRegisterReqDto requestDto = new ReviewRegisterReqDto(testPerformanceId, testPerformanceScheduleId, "중복",
+			"중복내용");
 
 		when(reviewRepository.existsByAuthorIdAndPerformanceId(testAuthorId, testPerformanceId)).thenReturn(true);
 
@@ -118,7 +124,8 @@ public class ReviewServiceTest {
 	@DisplayName("리뷰 등록 실패 - 예매 상태가 완료되지 않음")
 	void testRegisterReview_fail_bookingNotCompleted() {
 		// Given
-		ReviewRegisterReqDto requestDto = new ReviewRegisterReqDto(testPerformanceId, "test", "내용");
+		ReviewRegisterReqDto requestDto = new ReviewRegisterReqDto(testPerformanceId, testPerformanceScheduleId, "test",
+			"내용");
 
 		when(reviewRepository.existsByAuthorIdAndPerformanceId(testAuthorId, testPerformanceId)).thenReturn(false);
 		when(reviewClient.getBookingStatus(testAuthorId, testPerformanceId)).thenReturn(
@@ -136,12 +143,13 @@ public class ReviewServiceTest {
 	@DisplayName("리뷰 등록 실패 - 종료되지 않은 공연에 리뷰를 작성하려는 경우")
 	void testRegisterReview_fail_earlyReview() {
 		// Given
-		ReviewRegisterReqDto requestDto = new ReviewRegisterReqDto(testPerformanceId, "early", "내용");
+		ReviewRegisterReqDto requestDto = new ReviewRegisterReqDto(testPerformanceId, testPerformanceScheduleId,
+			"early", "내용");
 
 		when(reviewRepository.existsByAuthorIdAndPerformanceId(testAuthorId, testPerformanceId)).thenReturn(false);
 		when(reviewClient.getBookingStatus(testAuthorId, testPerformanceId)).thenReturn(
 			new BookingStatusDto("COMPLETED"));
-		when(reviewClient.getPerformanceEndTime(testPerformanceId)).thenReturn(
+		when(reviewClient.getPerformanceEndTime(testPerformanceId, testPerformanceScheduleId)).thenReturn(
 			new PerformanceEndTimeDto(LocalDateTime.now().plusDays(1))); // 종료되지 않음
 
 		// When & Then
