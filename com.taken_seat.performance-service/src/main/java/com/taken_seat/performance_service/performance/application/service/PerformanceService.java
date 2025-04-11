@@ -111,7 +111,7 @@ public class PerformanceService {
 	@Transactional
 	public PerformanceEndTimeDto getPerformanceEndTime(UUID performanceId, UUID performanceScheduleId) {
 		Performance performance = performanceRepository.findById(performanceId)
-			.orElseThrow(() -> new IllegalArgumentException("해당 공연이 존재하지 않습니다."));
+			.orElseThrow(() -> new PerformanceException(ResponseCode.PERFORMANCE_NOT_FOUND_EXCEPTION));
 
 		PerformanceSchedule schedule = performance.getScheduleById(performanceScheduleId);
 
