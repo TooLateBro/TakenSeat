@@ -41,4 +41,13 @@ public class PerformanceHallRepositoryImpl implements PerformanceHallRepository 
 			PerformanceHallSpecification.withFilter(filterParam), pageable
 		);
 	}
+
+	@Override
+	public void deleteById(UUID id, UUID deletedBy) {
+
+		PerformanceHall performanceHall = performanceHallJpaRepository.findByIdAndDeletedAtIsNull(id)
+			.orElseThrow(() -> new IllegalArgumentException("이미 삭제된 아이디입니다"));
+
+		performanceHall.softDelete(deletedBy);
+	}
 }
