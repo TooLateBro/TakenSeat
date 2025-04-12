@@ -20,6 +20,7 @@ import com.taken_seat.review_service.application.dto.request.ReviewRegisterReqDt
 import com.taken_seat.review_service.application.dto.request.ReviewUpdateReqDto;
 import com.taken_seat.review_service.application.dto.response.PageReviewResponseDto;
 import com.taken_seat.review_service.application.dto.response.ReviewDetailResDto;
+import com.taken_seat.review_service.application.service.ReviewLikeService;
 import com.taken_seat.review_service.application.service.ReviewService;
 
 import jakarta.validation.Valid;
@@ -31,6 +32,7 @@ import lombok.RequiredArgsConstructor;
 public class ReviewController {
 
 	private final ReviewService reviewService;
+	private final ReviewLikeService reviewLikeService;
 
 	@PostMapping
 	public ResponseEntity<ApiResponseData<ReviewDetailResDto>> registerReview(
@@ -76,5 +78,15 @@ public class ReviewController {
 		return ResponseEntity.status(HttpStatus.OK)
 			.body(ApiResponseData.success());
 	}
+
+	@PostMapping("/{id}/like")
+	public ResponseEntity<ApiResponseData<Void>> toggleReviewLike(@PathVariable("id") UUID id,
+		AuthenticatedUser authenticatedUser) {
+		reviewLikeService.toggleReviewLike(id, authenticatedUser);
+
+		return ResponseEntity.status(HttpStatus.OK)
+			.body(ApiResponseData.success());
+	}
+
 }
 
