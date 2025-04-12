@@ -1,10 +1,7 @@
 package com.taken_seat.auth_service.application.service.user;
 
-import com.taken_seat.auth_service.domain.entity.user.User;
 import com.taken_seat.auth_service.domain.repository.user.UserRepository;
 import com.taken_seat.common_service.message.KafkaUserInfoMessage;
-import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.header.internals.RecordHeader;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
@@ -23,9 +20,13 @@ public class KafkaProducerService {
     }
 
     public void sendUserCoupon(KafkaUserInfoMessage message) {
-        User user = userRepository.findByIdAndDeletedAtIsNull(message.getUserId())
+        userRepository.findByIdAndDeletedAtIsNull(message.getUserId())
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
-        kafkaTemplate.send(REQUEST_TOPIC, REQUEST_KEY, message);
+        try {
+            kafkaTemplate.send(REQUEST_TOPIC, REQUEST_KEY, message);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }
