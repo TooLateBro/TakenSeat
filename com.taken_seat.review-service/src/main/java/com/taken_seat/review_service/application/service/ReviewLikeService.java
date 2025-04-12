@@ -35,6 +35,14 @@ public class ReviewLikeService {
 		if (reviewLikeOpt.isEmpty()) {
 			reviewLikeRepository.save(ReviewLike.create(review, authenticatedUser.getUserId()));
 			review.updateLikeCount(1);
+		} else if (reviewLikeOpt.get().isDeleted()) {
+			
+			reviewLikeOpt.get().addReviewLike(authenticatedUser.getUserId());
+			review.updateLikeCount(1);
+		} else {
+			// 이미 좋아요가 눌려있으면 취소
+			reviewLikeOpt.get().cancelReviewLike(authenticatedUser.getUserId());
+			review.updateLikeCount(-1);
 		}
 
 	}

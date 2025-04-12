@@ -3,6 +3,8 @@ package com.taken_seat.review_service.domain.model;
 import java.util.UUID;
 
 import com.taken_seat.common_service.entity.BaseTimeEntity;
+import com.taken_seat.common_service.exception.customException.ReviewException;
+import com.taken_seat.common_service.exception.enums.ResponseCode;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -48,5 +50,28 @@ public class ReviewLike extends BaseTimeEntity {
 		reviewLike.prePersist(userId);
 
 		return reviewLike;
+	}
+
+	public boolean isDeleted() {
+		return this.getDeletedAt() != null;
+	}
+
+	public void addReviewLike(UUID authorId) {
+		validateOwner(authorId);
+		this.deletedAt = null;
+		this.preUpdate(authorId);
+
+	}
+
+	public void cancelReviewLike(UUID authorId) {
+		validateOwner(authorId);
+		this.delete(authorId);
+		this.preUpdate(authorId);
+	}
+
+	private void validateOwner(UUID authorId) {
+		if (!this.authorId.equals(authorId)) {
+			throw new ReviewException(ResponseCode.FORBIDDEN_REVIEW_ACCESS);
+		}
 	}
 }
