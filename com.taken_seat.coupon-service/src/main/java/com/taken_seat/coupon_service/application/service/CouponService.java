@@ -36,9 +36,8 @@ public class CouponService {
     public CouponResponseDto createCoupon(CouponDto dto, UUID userId) {
         Coupon coupon = Coupon.create(
                 dto.getName(), dto.getCode(), dto.getQuantity(),
-                dto.getDiscount(), dto.getExpiredAt()
+                dto.getDiscount(), dto.getExpiredAt(), userId
         );
-        coupon.prePersist(userId);
 
         couponRepository.save(coupon);
 
@@ -76,10 +75,8 @@ public class CouponService {
         coupon.update(
                 dto.getName().orElse(coupon.getName()), dto.getCode().orElse(coupon.getCode()),
                 dto.getQuantity().orElse(coupon.getQuantity()), dto.getDiscount().orElse(coupon.getDiscount()),
-                dto.getExpiredAt().orElse(coupon.getExpiredAt())
+                dto.getExpiredAt().orElse(coupon.getExpiredAt()), userId
         );
-        coupon.preUpdate(userId);
-
         return CouponResponseDto.of(coupon);
     }
 

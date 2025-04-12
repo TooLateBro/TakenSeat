@@ -82,9 +82,9 @@ public class UserService {
                 dto.getEmail(),
                 dto.getPhone(),
                 dto.getPassword(),
-                dto.getRole()
+                dto.getRole(),
+                userId
         );
-        user.preUpdate(userId);
         return UserInfoResponseDto.of(user);
     }
 

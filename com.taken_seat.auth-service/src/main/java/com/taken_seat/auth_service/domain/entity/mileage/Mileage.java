@@ -24,14 +24,17 @@ public class Mileage extends BaseTimeEntity {
     private Integer count = 0;
 
     public static Mileage create(User user, Integer count){
-        return Mileage.builder()
+        Mileage mileage = Mileage.builder()
                 .user(user)
                 .count(count)
                 .build();
+        mileage.prePersist(user.getId());
+        return mileage;
     }
 
-    public void update(Integer count) {
+    public void update(Integer count, UUID userId) {
         this.count = count;
+        this.preUpdate(userId);
     }
 
     // ======================================= 테이블 연관 관게 =======================================
