@@ -11,15 +11,8 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class KafkaUserCouponMessage {
+public class KafkaUserInfoMessage {
 
     private UUID userId;
     private UUID couponId;
-
-    public static KafkaUserCouponMessage of(UUID userId, UUID couponId) {
-        return KafkaUserCouponMessage.builder()
-                .userId(userId)
-                .couponId(couponId)
-                .build();
-    }
 }
