@@ -9,6 +9,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.taken_seat.common_service.dto.AuthenticatedUser;
+import com.taken_seat.common_service.exception.customException.PerformanceException;
+import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.performance_service.performancehall.application.dto.mapper.HallResponseMapper;
 import com.taken_seat.performance_service.performancehall.application.dto.request.CreateRequestDto;
 import com.taken_seat.performance_service.performancehall.application.dto.request.SearchFilterParam;
@@ -30,16 +33,20 @@ public class PerformanceHallService {
 
 	public final HallResponseMapper hallResponseMapper;
 
-	public CreateResponseDto create(CreateRequestDto request) {
+	public CreateResponseDto create(CreateRequestDto request, AuthenticatedUser authenticatedUser) {
+
+		if (!isAuthorized(authenticatedUser)) {
+			throw new PerformanceException(ResponseCode.ACCESS_DENIED_EXCEPTION, "접근 권한이 없습니다.");
+		}
 
 		boolean exists = performanceHallRepository.existsByNameAndAddress(
 			request.getName(), request.getAddress());
 
 		if (exists) {
-			throw new IllegalArgumentException("이미 존재하는 공연장입니다.");
+			throw new PerformanceException(ResponseCode.PERFORMANCE_HALL_ALREADY_EXISTS);
 		}
 
-		PerformanceHall performanceHall = PerformanceHall.create(request);
+		PerformanceHall performanceHall = PerformanceHall.create(request, authenticatedUser.getUserId());
 
 		PerformanceHall saved = performanceHallRepository.save(performanceHall);
 
@@ -81,5 +88,11 @@ public class PerformanceHallService {
 		}
 
 		performanceHallRepository.deleteById(id, deletedBy);
+	}
+
+	private boolean isAuthorized(AuthenticatedUser authenticatedUser) {
+
+		String role = authenticatedUser.getRole();
+		return role.equals("ADMIN") || role.equals("MANAGER");
 	}
 }
