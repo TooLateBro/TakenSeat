@@ -1,10 +1,7 @@
 package com.taken_seat.auth_service.presentation.controller.user;
 
-import com.taken_seat.auth_service.application.dto.user.KafkaUserInfoMessage;
 import com.taken_seat.auth_service.application.service.user.KafkaProducerService;
-import com.taken_seat.common_service.dto.ApiResponseData;
-import com.taken_seat.common_service.message.KafkaUserCouponMessage;
-import org.springframework.http.ResponseEntity;
+import com.taken_seat.common_service.message.KafkaUserInfoMessage;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,11 +18,7 @@ public class KafkaProducerController {
     }
 
     @GetMapping("/send")
-    public ResponseEntity<ApiResponseData<KafkaUserInfoMessage>> sendUserCoupon(
-            @RequestBody KafkaUserCouponMessage message){
-
-        KafkaUserInfoMessage coupon = kafkaProducerService.sendUserCoupon(message);
-
-        return ResponseEntity.ok().body(ApiResponseData.success(coupon));
+    public void sendUserCoupon(@RequestBody KafkaUserInfoMessage message){
+        kafkaProducerService.sendUserCoupon(message);
     }
 }

@@ -19,7 +19,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class PaymentDetailResDto implements Serializable {
 
-	private UUID paymentId;
+	private UUID id;
 
 	private UUID bookingId;
 
@@ -35,7 +35,7 @@ public class PaymentDetailResDto implements Serializable {
 
 	public static PaymentDetailResDto toResponse(Payment payment) {
 		return PaymentDetailResDto.builder()
-			.paymentId(payment.getId())
+			.id(payment.getId())
 			.price(payment.getPrice())
 			.bookingId(payment.getBookingId())
 			.paymentStatus(payment.getPaymentStatus())

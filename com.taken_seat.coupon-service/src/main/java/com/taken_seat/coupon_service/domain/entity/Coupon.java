@@ -40,8 +40,8 @@ public class Coupon extends BaseTimeEntity{
     @Column(name = "expired_at", nullable = false)
     private LocalDateTime expiredAt;
 
-    public static Coupon create(String name, String code, Integer quantity, Integer discount, LocalDateTime expiredAt) {
-        return Coupon.builder()
+    public static Coupon create(String name, String code, Integer quantity, Integer discount, LocalDateTime expiredAt, UUID userId) {
+        Coupon coupon = Coupon.builder()
                 .name(name)
                 .code(code)
                 .quantity(quantity)
@@ -49,12 +49,15 @@ public class Coupon extends BaseTimeEntity{
                 .isActive(true)
                 .expiredAt(expiredAt)
                 .build();
+        coupon.prePersist(userId);
+        return coupon;
     }
-    public void update(String name, String code, Integer quantity, Integer discount, LocalDateTime expiredAt) {
+    public void update(String name, String code, Integer quantity, Integer discount, LocalDateTime expiredAt, UUID userId) {
         this.name = name;
         this.code = code;
         this.quantity = quantity;
         this.discount = discount;
         this.expiredAt = expiredAt;
+        this.preUpdate(userId);
     }
 }

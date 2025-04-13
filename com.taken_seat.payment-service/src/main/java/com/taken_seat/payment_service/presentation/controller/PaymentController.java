@@ -10,18 +10,16 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.taken_seat.common_service.dto.ApiResponseData;
+import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.payment_service.application.dto.request.PaymentRegisterReqDto;
 import com.taken_seat.payment_service.application.dto.request.PaymentUpdateReqDto;
 import com.taken_seat.payment_service.application.dto.response.PagePaymentResponseDto;
 import com.taken_seat.payment_service.application.dto.response.PaymentDetailResDto;
-import com.taken_seat.payment_service.application.dto.response.PaymentRegisterResDto;
-import com.taken_seat.payment_service.application.dto.response.PaymentUpdateResDto;
 import com.taken_seat.payment_service.application.service.PaymentService;
 
 import jakarta.validation.Valid;
@@ -35,13 +33,13 @@ public class PaymentController {
 	private final PaymentService paymentService;
 
 	@PostMapping
-	public ResponseEntity<ApiResponseData<PaymentRegisterResDto>> registerPayment(
+	public ResponseEntity<ApiResponseData<PaymentDetailResDto>> registerPayment(
 		@Valid @RequestBody PaymentRegisterReqDto paymentRegisterReqDto,
-		@RequestHeader("X-User-Id") UUID userId) {
+		AuthenticatedUser authenticatedUser) {
 
 		return ResponseEntity.status(HttpStatus.OK)
 			.body(
-				ApiResponseData.success(paymentService.registerPayment(paymentRegisterReqDto, userId)));
+				ApiResponseData.success(paymentService.registerPayment(paymentRegisterReqDto, authenticatedUser)));
 	}
 
 	@GetMapping("/{id}")
@@ -65,20 +63,20 @@ public class PaymentController {
 	}
 
 	@PatchMapping("/{id}")
-	public ResponseEntity<ApiResponseData<PaymentUpdateResDto>> updatePayment(@PathVariable("id") UUID id,
+	public ResponseEntity<ApiResponseData<PaymentDetailResDto>> updatePayment(@PathVariable("id") UUID id,
 		@Valid @RequestBody PaymentUpdateReqDto paymentUpdateReqDto,
-		@RequestHeader("X-User-Id") UUID userId) {
+		AuthenticatedUser authenticatedUser) {
 
 		return ResponseEntity.status(HttpStatus.OK)
 			.body(
-				ApiResponseData.success(paymentService.updatePayment(id, paymentUpdateReqDto, userId)));
+				ApiResponseData.success(paymentService.updatePayment(id, paymentUpdateReqDto, authenticatedUser)));
 
 	}
 
 	@DeleteMapping("/{id}")
 	public ResponseEntity<ApiResponseData<String>> deletePayment(@PathVariable("id") UUID id,
-		@RequestHeader("X-User-Id") UUID userId) {
-		paymentService.deletePayment(id, userId);
+		AuthenticatedUser authenticatedUser) {
+		paymentService.deletePayment(id, authenticatedUser);
 		return ResponseEntity.status(HttpStatus.OK)
 			.body(
 				ApiResponseData.success("Delete Success"));

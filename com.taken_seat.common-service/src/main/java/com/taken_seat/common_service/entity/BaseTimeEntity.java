@@ -19,22 +19,22 @@ public abstract class BaseTimeEntity {
 
 	@CreatedDate
 	@Column(updatable = false, nullable = false)
-	private LocalDateTime createdAt;
+	protected LocalDateTime createdAt;
 
 	@Column(updatable = false, nullable = false)
-	private UUID createdBy;
+	protected UUID createdBy;
 
 	@LastModifiedDate
-	private LocalDateTime updatedAt;
+	protected LocalDateTime updatedAt;
 
 	@Column
-	private UUID updatedBy;
+	protected UUID updatedBy;
 
 	@Column
-	private LocalDateTime deletedAt;
+	protected LocalDateTime deletedAt;
 
 	@Column
-	private UUID deletedBy;
+	protected UUID deletedBy;
 
 	public void delete(UUID deleteBy) {
 		this.deletedBy = deleteBy;

@@ -1,4 +1,4 @@
-package com.taken_seat.payment_service.infrastructure.redis;
+package com.taken_seat.payment_service.infrastructure.config.redis;
 
 import java.time.Duration;
 import java.util.HashMap;
@@ -36,7 +36,6 @@ public class RedisCachingConfig {
 	@Bean
 	public ObjectMapper redisObjectMapper() {
 		ObjectMapper objectMapper = new ObjectMapper();
-		objectMapper.registerModule(new JavaTimeModule());
 		objectMapper.registerModule(new Jdk8Module()); // Jdk8Module 추가
 		objectMapper.registerModule(new JavaTimeModule()); // JavaTimeModule 추가
 		objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
@@ -61,7 +60,7 @@ public class RedisCachingConfig {
 			.serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(paymentDetailSerializer));
 
 		// PaymentCache 설정 (10분 TTL, PaymentDetailResDto 직렬화)
-		RedisCacheConfiguration orderConfiguration = RedisCacheConfiguration
+		RedisCacheConfiguration paymentConfiguration = RedisCacheConfiguration
 			.defaultCacheConfig()
 			.entryTtl(PAYMENT_TTL)
 			.disableCachingNullValues()
@@ -70,7 +69,7 @@ public class RedisCachingConfig {
 			.serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(paymentDetailSerializer));
 
 		// PaymentSearchCache 설정 (1시간 TTL, PagePaymentResponseDto 직렬화)
-		RedisCacheConfiguration orderSearchConfiguration = RedisCacheConfiguration
+		RedisCacheConfiguration paymentSearchConfiguration = RedisCacheConfiguration
 			.defaultCacheConfig()
 			.entryTtl(PAYMENT_SEARCH_TTL)
 			.disableCachingNullValues()
@@ -80,8 +79,8 @@ public class RedisCachingConfig {
 
 		// 각 캐시 별로 설정을 관리하는 Map을 생성
 		Map<String, RedisCacheConfiguration> cacheConfigurations = new HashMap<>();
-		cacheConfigurations.put(PAYMENT_CACHE, orderConfiguration);
-		cacheConfigurations.put(PAYMENT_SEARCH_CACHE, orderSearchConfiguration);
+		cacheConfigurations.put(PAYMENT_CACHE, paymentConfiguration);
+		cacheConfigurations.put(PAYMENT_SEARCH_CACHE, paymentSearchConfiguration);
 
 		return RedisCacheManager
 			.builder(redisConnectionFactory)
