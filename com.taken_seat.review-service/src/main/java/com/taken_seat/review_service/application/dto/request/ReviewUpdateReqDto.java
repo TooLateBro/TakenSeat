@@ -1,7 +1,5 @@
 package com.taken_seat.review_service.application.dto.request;
 
-import java.util.UUID;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,11 +7,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ReviewRegisterReqDto {
-
-	private UUID performanceId;
-
-	private UUID performanceScheduleId;
+public class ReviewUpdateReqDto {
 
 	private String title;
 

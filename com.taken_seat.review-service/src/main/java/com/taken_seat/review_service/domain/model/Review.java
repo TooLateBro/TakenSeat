@@ -4,7 +4,10 @@ import java.util.UUID;
 
 import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.common_service.entity.BaseTimeEntity;
+import com.taken_seat.common_service.exception.customException.ReviewException;
+import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.review_service.application.dto.request.ReviewRegisterReqDto;
+import com.taken_seat.review_service.application.dto.request.ReviewUpdateReqDto;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -68,4 +71,17 @@ public class Review extends BaseTimeEntity {
 		return review;
 	}
 
+	public void update(ReviewUpdateReqDto reviewUpdateReqDto, AuthenticatedUser authenticatedUser) {
+		this.title = reviewUpdateReqDto.getTitle();
+		this.content = reviewUpdateReqDto.getContent();
+		this.preUpdate(authenticatedUser.getUserId());
+	}
+
+	public void updateLikeCount(int i) {
+		int newCnt = this.likeCount + i;
+		if (newCnt < 0) {
+			throw new ReviewException(ResponseCode.INVALID_LIKE_COUNT);
+		}
+		this.likeCount = newCnt;
+	}
 }

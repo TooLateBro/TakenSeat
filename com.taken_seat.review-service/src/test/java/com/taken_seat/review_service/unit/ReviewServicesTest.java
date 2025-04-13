@@ -24,17 +24,18 @@ import com.taken_seat.common_service.exception.customException.ReviewException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.review_service.application.client.ReviewClient;
 import com.taken_seat.review_service.application.dto.request.ReviewRegisterReqDto;
+import com.taken_seat.review_service.application.dto.request.ReviewUpdateReqDto;
 import com.taken_seat.review_service.application.dto.response.PageReviewResponseDto;
 import com.taken_seat.review_service.application.dto.response.ReviewDetailResDto;
-import com.taken_seat.review_service.application.service.ReviewService;
 import com.taken_seat.review_service.domain.model.Review;
 import com.taken_seat.review_service.domain.repository.ReviewQuerydslRepository;
 import com.taken_seat.review_service.domain.repository.ReviewRepository;
 import com.taken_seat.review_service.infrastructure.client.dto.BookingStatusDto;
 import com.taken_seat.review_service.infrastructure.client.dto.PerformanceEndTimeDto;
+import com.taken_seat.review_service.infrastructure.service.ReviewServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
-public class ReviewServiceTest {
+public class ReviewServicesTest {
 
 	@Mock
 	private ReviewRepository reviewRepository;
@@ -46,7 +47,7 @@ public class ReviewServiceTest {
 	private ReviewClient reviewClient;
 
 	@InjectMocks
-	private ReviewService reviewService;
+	private ReviewServiceImpl reviewServices;
 
 	private UUID testPerformanceId;
 
@@ -103,7 +104,7 @@ public class ReviewServiceTest {
 		when(reviewRepository.save(any(Review.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
 		// When
-		ReviewDetailResDto result = reviewService.registerReview(requestDto, authenticatedUser);
+		ReviewDetailResDto result = reviewServices.registerReview(requestDto, authenticatedUser);
 
 		// Then
 		assertNotNull(result);
@@ -124,7 +125,7 @@ public class ReviewServiceTest {
 
 		// When & Then
 		ReviewException ex = assertThrows(ReviewException.class, () -> {
-			reviewService.registerReview(requestDto, authenticatedUser);
+			reviewServices.registerReview(requestDto, authenticatedUser);
 		});
 
 		assertEquals(ResponseCode.REVIEW_ALREADY_WRITTEN.getMessage(), ex.getMessage());
@@ -143,7 +144,7 @@ public class ReviewServiceTest {
 
 		// When & Then
 		ReviewException ex = assertThrows(ReviewException.class, () -> {
-			reviewService.registerReview(requestDto, authenticatedUser);
+			reviewServices.registerReview(requestDto, authenticatedUser);
 		});
 
 		assertEquals(ResponseCode.BOOKING_NOT_COMPLETED.getMessage(), ex.getMessage());
@@ -164,7 +165,7 @@ public class ReviewServiceTest {
 
 		// When & Then
 		ReviewException ex = assertThrows(ReviewException.class, () -> {
-			reviewService.registerReview(requestDto, authenticatedUser);
+			reviewServices.registerReview(requestDto, authenticatedUser);
 		});
 
 		assertEquals(ResponseCode.EARLY_REVIEW.getMessage(), ex.getMessage());
@@ -177,7 +178,7 @@ public class ReviewServiceTest {
 		when(reviewRepository.findByIdAndDeletedAtIsNull(testReviewId)).thenReturn(Optional.of(testReview));
 
 		// When
-		ReviewDetailResDto result = reviewService.getReviewDetail(testReviewId);
+		ReviewDetailResDto result = reviewServices.getReviewDetail(testReviewId);
 
 		// Then
 		assertNotNull(result);
@@ -195,7 +196,7 @@ public class ReviewServiceTest {
 
 		// When & Then
 		ReviewException ex = assertThrows(ReviewException.class, () -> {
-			reviewService.getReviewDetail(TestRegisterReviewId);
+			reviewServices.getReviewDetail(TestRegisterReviewId);
 		});
 
 		assertEquals(ResponseCode.REVIEW_NOT_FOUND.getMessage(), ex.getMessage());
@@ -219,7 +220,7 @@ public class ReviewServiceTest {
 		when(reviewQuerydslRepository.search(query, category, page, size, sort, order)).thenReturn(mockPage);
 
 		// When
-		PageReviewResponseDto result = reviewService.searchReview(query, category, page, size, sort, order);
+		PageReviewResponseDto result = reviewServices.searchReview(query, category, page, size, sort, order);
 
 		// Then
 		assertNotNull(result);
@@ -240,12 +241,111 @@ public class ReviewServiceTest {
 			.thenReturn(Page.empty());
 
 		// When
-		PageReviewResponseDto result = reviewService.searchReview("emptyTitle", "title", 0, 10, "createdAt", "desc");
+		PageReviewResponseDto result = reviewServices.searchReview("emptyTitle", "title", 0, 10, "createdAt", "desc");
 
 		// Then
 		assertNotNull(result);
 		assertEquals(0, result.getTotalElements());
 		assertEquals(0, result.getContent().size());
 		assertTrue(result.getContent().isEmpty());
+	}
+
+	@Test
+	@DisplayName("리뷰 수정 - SUCCESS")
+	void testUpdateReview_success() {
+		// Given
+		ReviewUpdateReqDto reqDto = new ReviewUpdateReqDto("updateTitle", "updateContent");
+
+		when(reviewRepository.findByIdAndDeletedAtIsNull(testReviewId)).thenReturn(Optional.of(testReview));
+
+		// When
+		ReviewDetailResDto result = reviewServices.updateReview(testReviewId, reqDto, authenticatedUser);
+
+		// Then
+		assertNotNull(result);
+		assertEquals("updateTitle", result.getTitle());
+		assertEquals("updateContent", result.getContent());
+
+	}
+
+	@Test
+	@DisplayName("리뷰 수정 실패 - 존재하지 않는 결제 ID - FAIL")
+	void testUpdateReview__fail_reviewNotFound() {
+		// Given
+		UUID notExistId = UUID.randomUUID();
+		ReviewUpdateReqDto reqDto = new ReviewUpdateReqDto("updateTitle", "updateContent");
+
+		when(reviewRepository.findByIdAndDeletedAtIsNull(notExistId)).thenReturn(Optional.empty());
+
+		// When & Then
+		ReviewException exception = assertThrows(ReviewException.class, () -> {
+			reviewServices.updateReview(notExistId, reqDto, authenticatedUser);
+		});
+
+		assertEquals("해당 리뷰가 존재하지않습니다.", exception.getMessage());
+	}
+
+	@Test
+	@DisplayName("리뷰 수정 실패 - 작성자도 아니고 마스터도 아님 - FAIL")
+	void testUpdateReview_fail_forbiddenAccess() {
+		// Given
+		ReviewUpdateReqDto reqDto = new ReviewUpdateReqDto("updateTitle", "updateContent");
+
+		UUID notAuthorId = UUID.randomUUID();
+		AuthenticatedUser anotherUser = new AuthenticatedUser(notAuthorId, "other@gmail.com", "other@gmail.com");
+		when(reviewRepository.findByIdAndDeletedAtIsNull(testReviewId)).thenReturn(Optional.of(testReview));
+
+		// When & Then
+		ReviewException exception = assertThrows(ReviewException.class, () -> {
+			reviewServices.updateReview(testReviewId, reqDto, anotherUser);
+		});
+
+		assertEquals("해당 리뷰에 접근할 권한이 없습니다.", exception.getMessage()); // FORBIDDEN_REVIEW_ACCESS 메시지
+	}
+
+	@Test
+	@DisplayName("리뷰 논리적 삭제 성공 - SUCCESS")
+	void testDeleteReview_success() {
+		// Given
+		when(reviewRepository.findByIdAndDeletedAtIsNull(testReviewId)).thenReturn(Optional.of(testReview));
+
+		// When
+		assertDoesNotThrow(() -> reviewServices.deleteReview(testReviewId, authenticatedUser));
+
+		// Then
+		assertNotNull(testReview.getDeletedAt());
+	}
+
+	@Test
+	@DisplayName("리뷰 논리적 삭제 실패 - 존재하지않는 결제 ID - FAIL")
+	void testDeletePayment_fail_paymentNotFound() {
+		// Given
+		when(reviewRepository.findByIdAndDeletedAtIsNull(any(UUID.class))).thenReturn(Optional.empty());
+
+		UUID notAuthorId = UUID.randomUUID();
+		AuthenticatedUser anotherUser = new AuthenticatedUser(notAuthorId, "other@gmail.com", "other@gmail.com");
+		// When & Then
+		ReviewException exception = assertThrows(ReviewException.class, () ->
+			reviewServices.deleteReview(UUID.randomUUID(), anotherUser)
+		);
+
+		assertEquals("해당 리뷰가 존재하지않습니다.", exception.getMessage());
+
+	}
+
+	@Test
+	@DisplayName("리뷰 수정 실패 - 작성자도 아니고 마스터도 아님 - FAIL")
+	void testDeleteReview_fail_forbiddenAccess() {
+		// Given
+		UUID notAuthorId = UUID.randomUUID();
+		AuthenticatedUser anotherUser = new AuthenticatedUser(notAuthorId, "other@gmail.com", "other@gmail.com");
+		when(reviewRepository.findByIdAndDeletedAtIsNull(testReviewId)).thenReturn(Optional.of(testReview));
+
+		// When & Then
+		ReviewException exception = assertThrows(ReviewException.class, () -> {
+			reviewServices.deleteReview(testReviewId, anotherUser);
+		});
+
+		assertEquals("해당 리뷰에 접근할 권한이 없습니다.", exception.getMessage()); // FORBIDDEN_REVIEW_ACCESS 메시지
 	}
 }

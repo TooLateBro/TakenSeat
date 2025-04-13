@@ -49,8 +49,10 @@ public enum ResponseCode {
 	// Review
 	REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "해당 리뷰가 존재하지않습니다."),
 	REVIEW_ALREADY_WRITTEN(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), "해당 공연에 대한 리뷰는 이미 작성하셨습니다."),
+	FORBIDDEN_REVIEW_ACCESS(HttpStatus.FORBIDDEN, HttpStatus.FORBIDDEN.value(), "해당 리뷰에 접근할 권한이 없습니다."),
 	BOOKING_NOT_COMPLETED(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), "예매가 완료된 공연에 대해서만 리뷰를 작성할 수 있습니다."),
 	EARLY_REVIEW(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), "공연 시작 전에는 리뷰를 등록할 수 없습니다."),
+	INVALID_LIKE_COUNT(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), "좋아요 수는 0보다 작을 수 없습니다."),
 
 	// Performance
 	PERFORMANCE_NOT_FOUND(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "해당 공연 정보를 찾을 수 없습니다."),
@@ -71,9 +73,8 @@ public enum ResponseCode {
 	PERFORMANCE_VALIDATION_EXCEPTION(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "동일 공연장에 겹치는 회차가 존재합니다."),
 	PERFORMANCE_HALL_NOT_FOUND_EXCEPTION(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "해당 공연장은 존재하지 않습니다"),
 	PERFORMANCE_HALL_ALREADY_EXISTS(HttpStatus.CONFLICT, HttpStatus.CONFLICT.value(), "이미 존재하는 공연장입니다."),
-	PERFORMANCE_HALL_DUPLICATE_SEAT(HttpStatus.CONFLICT, HttpStatus.CONFLICT.value(), "중복된 좌석이 존재합니다."),
+	PERFORMANCE_HALL_DUPLICATE_SEAT(HttpStatus.CONFLICT, HttpStatus.CONFLICT.value(), "중복된 좌석이 존재합니다.");
 
-	;
 
 	private final HttpStatus status;
 	private final Integer code;
