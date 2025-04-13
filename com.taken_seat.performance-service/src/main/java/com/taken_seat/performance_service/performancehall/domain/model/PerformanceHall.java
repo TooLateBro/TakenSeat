@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.UUID;
 
 import com.taken_seat.common_service.entity.BaseTimeEntity;
+import com.taken_seat.common_service.exception.customException.PerformanceException;
+import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.performance_service.performancehall.application.dto.request.CreateRequestDto;
 import com.taken_seat.performance_service.performancehall.application.dto.request.UpdateRequestDto;
 import com.taken_seat.performance_service.performancehall.application.dto.request.UpdateSeatDto;
@@ -65,7 +67,7 @@ public class PerformanceHall extends BaseTimeEntity {
 		return this.getSeats().stream()
 			.filter(seat -> seat.getId().equals(seatId))
 			.findFirst()
-			.orElseThrow(() -> new IllegalArgumentException("해당 좌석이 존재하지 않습니다"));
+			.orElseThrow(() -> new PerformanceException(ResponseCode.SEAT_NOT_FOUND_EXCEPTION));
 	}
 
 	public void update(UpdateRequestDto request) {
