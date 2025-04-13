@@ -6,6 +6,7 @@ import java.util.UUID;
 import com.taken_seat.performance_service.performancehall.application.dto.request.CreateRequestDto;
 import com.taken_seat.performance_service.performancehall.domain.model.PerformanceHall;
 import com.taken_seat.performance_service.performancehall.domain.model.Seat;
+import com.taken_seat.performance_service.performancehall.domain.model.SeatStatus;
 
 public class PerformanceHallCreateHelper {
 
@@ -29,7 +30,7 @@ public class PerformanceHallCreateHelper {
 					.rowNumber(createSeatDto.getRowNumber())
 					.seatNumber(createSeatDto.getSeatNumber())
 					.seatType(createSeatDto.getSeatType())
-					.status(createSeatDto.getStatus())
+					.status(createSeatDto.getStatus() != null ? createSeatDto.getStatus() : SeatStatus.AVAILABLE)
 					.build();
 				seat.prePersist(createdBy);
 				return seat;
