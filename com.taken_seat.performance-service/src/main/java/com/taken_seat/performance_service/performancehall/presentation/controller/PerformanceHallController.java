@@ -70,9 +70,10 @@ public class PerformanceHallController {
 	@PatchMapping("/{id}")
 	public ResponseEntity<ApiResponseData<UpdateResponseDto>> update(
 		@PathVariable("id") UUID id,
-		@Valid @RequestBody UpdateRequestDto request) {
+		@Valid @RequestBody UpdateRequestDto request,
+		AuthenticatedUser authenticatedUser) {
 
-		UpdateResponseDto response = performanceHallService.update(id, request);
+		UpdateResponseDto response = performanceHallService.update(id, request, authenticatedUser);
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
 	}
 
