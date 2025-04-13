@@ -20,4 +20,6 @@ public interface PerformanceHallRepository {
 	Page<PerformanceHall> findAll(SearchFilterParam filterParam, Pageable pageable);
 
 	boolean existsByNameAndAddressAndIdNot(String name, String address, UUID id);
+
+	Optional<PerformanceHall> findBySeatId(UUID seatId);
 }
