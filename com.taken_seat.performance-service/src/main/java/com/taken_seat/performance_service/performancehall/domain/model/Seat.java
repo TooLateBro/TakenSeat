@@ -3,6 +3,8 @@ package com.taken_seat.performance_service.performancehall.domain.model;
 import java.util.UUID;
 
 import com.taken_seat.common_service.entity.BaseTimeEntity;
+import com.taken_seat.common_service.exception.customException.PerformanceException;
+import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.performance_service.performancehall.application.dto.request.UpdateSeatDto;
 
 import jakarta.persistence.Column;
@@ -57,5 +59,14 @@ public class Seat extends BaseTimeEntity {
 		this.seatNumber = seatDto.getSeatNumber();
 		this.seatType = seatDto.getSeatType();
 		this.status = seatDto.getStatus();
+	}
+
+	public void updateStatus(SeatStatus newStatus) {
+
+		if (this.status == SeatStatus.DISABLED) {
+			throw new PerformanceException(ResponseCode.SEAT_STATUS_CHANGE_NOT_ALLOWED);
+		}
+
+		this.status = newStatus;
 	}
 }
