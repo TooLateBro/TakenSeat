@@ -9,6 +9,7 @@ import com.taken_seat.common_service.entity.BaseTimeEntity;
 import com.taken_seat.performance_service.performancehall.application.dto.request.CreateRequestDto;
 import com.taken_seat.performance_service.performancehall.application.dto.request.UpdateRequestDto;
 import com.taken_seat.performance_service.performancehall.application.dto.request.UpdateSeatDto;
+import com.taken_seat.performance_service.performancehall.domain.helper.PerformanceHallCreateHelper;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -57,26 +58,12 @@ public class PerformanceHall extends BaseTimeEntity {
 	@Column(name = "deleted_at")
 	private LocalDateTime deletedAt;
 
-	public static PerformanceHall create(CreateRequestDto request) {
+	public static PerformanceHall create(CreateRequestDto request, UUID createBy) {
 
-		PerformanceHall performanceHall = PerformanceHall.builder()
-			.name(request.getName())
-			.address(request.getAddress())
-			.totalSeats(request.getTotalSeats())
-			.description(request.getDescription())
-			.build();
+		PerformanceHall performanceHall =
+			PerformanceHallCreateHelper.createPerformanceHall(request, createBy);
 
-		List<Seat> seats = request.getSeats().stream()
-			.map(createSeatDto -> Seat.builder()
-				.performanceHall(performanceHall)
-				.rowNumber(createSeatDto.getRowNumber())
-				.seatNumber(createSeatDto.getSeatNumber())
-				.seatType(createSeatDto.getSeatType())
-				.status(createSeatDto.getStatus())
-				.build())
-			.toList();
-
-		performanceHall.getSeats().addAll(seats);
+		PerformanceHallCreateHelper.createSeats(request, performanceHall, createBy);
 
 		return performanceHall;
 	}
