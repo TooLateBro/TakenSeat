@@ -2,6 +2,7 @@ package com.taken_seat.performance_service.performancehall.application.dto.reque
 
 import java.util.List;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -27,6 +28,7 @@ public class CreateRequestDto {
 
 	private String description;
 
+	@Valid
 	@NotEmpty(message = "공연 좌석 정보는 필수입니다")
 	private List<CreateSeatDto> seats;
 }
