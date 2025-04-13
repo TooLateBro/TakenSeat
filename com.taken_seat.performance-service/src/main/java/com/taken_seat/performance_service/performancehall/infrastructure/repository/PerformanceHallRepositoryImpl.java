@@ -50,4 +50,9 @@ public class PerformanceHallRepositoryImpl implements PerformanceHallRepository 
 
 		performanceHall.softDelete(deletedBy);
 	}
+
+	@Override
+	public boolean existsByNameAndAddressAndIdNot(String name, String address, UUID id) {
+		return performanceHallJpaRepository.existsByNameAndAddressAndIdNot(name, address, id);
+	}
 }

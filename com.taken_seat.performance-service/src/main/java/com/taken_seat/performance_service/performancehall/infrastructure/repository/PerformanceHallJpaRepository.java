@@ -14,4 +14,6 @@ public interface PerformanceHallJpaRepository
 	boolean existsByNameAndAddress(String name, String address);
 
 	Optional<PerformanceHall> findByIdAndDeletedAtIsNull(UUID id);
+
+	boolean existsByNameAndAddressAndIdNot(String name, String address, UUID id);
 }
