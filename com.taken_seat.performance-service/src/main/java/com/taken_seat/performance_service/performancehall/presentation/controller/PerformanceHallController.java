@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.taken_seat.common_service.dto.ApiResponseData;
@@ -63,10 +62,6 @@ public class PerformanceHallController {
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
 	}
 
-	/**
-	 * 공연장 수정 API
-	 * 권한: ADMIN, MANAGER
-	 */
 	@PatchMapping("/{id}")
 	public ResponseEntity<ApiResponseData<UpdateResponseDto>> update(
 		@PathVariable("id") UUID id,
@@ -77,14 +72,11 @@ public class PerformanceHallController {
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
 	}
 
-	/**
-	 * 공연장 삭제 API
-	 * 권한: ADMIN, MANAGER
-	 */
 	@DeleteMapping("/{id}")
-	public ResponseEntity<ApiResponseData<Void>> delete(@PathVariable("id") UUID id, @RequestParam UUID deletedBy) {
+	public ResponseEntity<ApiResponseData<Void>> delete(@PathVariable("id") UUID id,
+		AuthenticatedUser authenticatedUser) {
 
-		performanceHallService.delete(id, deletedBy);
+		performanceHallService.delete(id, authenticatedUser);
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseData.success());
 	}
 }
