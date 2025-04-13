@@ -39,10 +39,6 @@ public class PerformanceHallController {
 
 	private final PerformanceHallService performanceHallService;
 
-	/**
-	 * 공연장 생성 API
-	 * 권한: ADMIN, MANAGER
-	 */
 	@PostMapping
 	public ResponseEntity<ApiResponseData<CreateResponseDto>> create(@Valid @RequestBody CreateRequestDto request,
 		AuthenticatedUser authenticatedUser) {
@@ -51,10 +47,6 @@ public class PerformanceHallController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponseData.success(response));
 	}
 
-	/**
-	 * 공연장 전체 조회 API
-	 * 권한: ALL
-	 */
 	@GetMapping("/search")
 	public ResponseEntity<ApiResponseData<PageResponseDto>> getList(
 		@ModelAttribute SearchFilterParam filterParam,
@@ -64,10 +56,6 @@ public class PerformanceHallController {
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
 	}
 
-	/**
-	 * 공연장 상세 조회 API
-	 * 권한: ALL
-	 */
 	@GetMapping("/{id}")
 	public ResponseEntity<ApiResponseData<DetailResponseDto>> getDetail(@PathVariable("id") UUID id) {
 

@@ -61,10 +61,11 @@ public class PerformanceHallService {
 		return hallResponseMapper.toPage(pages);
 	}
 
+	@Transactional(readOnly = true)
 	public DetailResponseDto getDetail(UUID id) {
 
 		PerformanceHall performanceHall = performanceHallRepository.findById(id)
-			.orElseThrow(() -> new IllegalArgumentException("공연장 정보를 찾을 수 없습니다"));
+			.orElseThrow(() -> new PerformanceException(ResponseCode.PERFORMANCE_HALL_NOT_FOUND_EXCEPTION));
 
 		return toDetail(performanceHall);
 	}
