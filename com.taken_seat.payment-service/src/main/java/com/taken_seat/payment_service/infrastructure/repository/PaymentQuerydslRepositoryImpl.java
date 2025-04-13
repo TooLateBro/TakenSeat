@@ -21,6 +21,8 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.taken_seat.common_service.exception.customException.PaymentException;
+import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.payment_service.domain.enums.PaymentStatus;
 import com.taken_seat.payment_service.domain.model.Payment;
 import com.taken_seat.payment_service.domain.model.QPayment;
@@ -87,7 +89,8 @@ public class PaymentQuerydslRepositoryImpl implements PaymentQuerydslRepository 
 			return QPayment.payment.paymentStatus.eq(status);
 
 		} catch (IllegalArgumentException e) {
-			throw new IllegalArgumentException("올바른 결제 상태를 입력해주세요. (예: COMPLETED, FAILED, REFUNDED,DELETED)");
+			throw new PaymentException(ResponseCode.ILLEGAL_ARGUMENT
+				, "올바른 결제 상태를 입력해주세요. (예: COMPLETED, FAILED, REFUNDED,DELETED)");
 		}
 	}
 
@@ -99,7 +102,8 @@ public class PaymentQuerydslRepositoryImpl implements PaymentQuerydslRepository 
 
 			return QPayment.payment.approvedAt.between(startOfDay, endOfDay);
 		} catch (DateTimeParseException e) {
-			throw new IllegalArgumentException("올바른 날짜 형식이 아닙니다. (예: 2025-04-13)");
+			throw new PaymentException(ResponseCode.ILLEGAL_ARGUMENT,
+				"올바른 날짜 형식이 아닙니다. (예: 2025-04-13)");
 		}
 	}
 
@@ -111,7 +115,8 @@ public class PaymentQuerydslRepositoryImpl implements PaymentQuerydslRepository 
 
 			return QPayment.payment.refundRequestedAt.between(startOfDay, endOfDay);
 		} catch (DateTimeParseException e) {
-			throw new IllegalArgumentException("올바른 날짜 형식이 아닙니다. (예: 2025-04-13)");
+			throw new PaymentException(ResponseCode.ILLEGAL_ARGUMENT,
+				"올바른 날짜 형식이 아닙니다. (예: 2025-04-13)");
 		}
 	}
 
@@ -121,7 +126,8 @@ public class PaymentQuerydslRepositoryImpl implements PaymentQuerydslRepository 
 
 	private Sort getSortOrder(String sortBy, String order) {
 		if (!VALID_SORT_BY.contains(sortBy)) {
-			throw new IllegalArgumentException("정렬 필드는 createdAt, updatedAt, deletedAt 만 허용됩니다.");
+			throw new PaymentException(ResponseCode.ILLEGAL_ARGUMENT,
+				"정렬 필드는 createdAt, updatedAt, deletedAt 만 허용됩니다.");
 		}
 		return "desc".equalsIgnoreCase(order) ?
 			Sort.by(Sort.Order.desc(sortBy)) :
@@ -138,7 +144,8 @@ public class PaymentQuerydslRepositoryImpl implements PaymentQuerydslRepository 
 				new OrderSpecifier<>(direction, pathBuilder.get("updatedAt", java.time.LocalDateTime.class));
 			case "deletedAt" ->
 				new OrderSpecifier<>(direction, pathBuilder.get("deletedAt", java.time.LocalDateTime.class));
-			default -> throw new IllegalArgumentException("정렬 필드는 createdAt, updatedAt, deletedAt 만 허용됩니다.");
+			default -> throw new PaymentException(ResponseCode.ILLEGAL_ARGUMENT,
+				"정렬 필드는 createdAt, updatedAt, deletedAt 만 허용됩니다.");
 		};
 	}
 }
