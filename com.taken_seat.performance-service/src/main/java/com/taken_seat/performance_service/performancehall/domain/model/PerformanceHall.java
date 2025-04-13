@@ -82,28 +82,39 @@ public class PerformanceHall extends BaseTimeEntity {
 	}
 
 	public void update(UpdateRequestDto request) {
+		this.updatePerformanceHall(request);
+		this.updateSeats(request.getSeats());
+	}
+
+	public void updatePerformanceHall(UpdateRequestDto request) {
 		this.name = request.getName();
 		this.address = request.getAddress();
-		this.totalSeats = request.getTotalSeats();
 		this.description = request.getDescription();
+	}
 
-		if (request.getSeats() != null) {
-			for (UpdateSeatDto seatDto : request.getSeats()) {
-				Seat existingSeat = this.getSeatById(seatDto.getSeatId());
+	public void updateSeats(List<UpdateSeatDto> seatDtoList) {
 
-				if (existingSeat != null) {
-					existingSeat.update(seatDto);
-				} else {
-					Seat newSeat = Seat.builder()
-						.performanceHall(this)
-						.rowNumber(seatDto.getRowNumber())
-						.seatNumber(seatDto.getSeatNumber())
-						.seatType(seatDto.getSeatType())
-						.status(seatDto.getStatus())
-						.build();
-					this.seats.add(newSeat);
-				}
+		if (seatDtoList == null) {
+			return;
+		}
+
+		for (UpdateSeatDto seatDto : seatDtoList) {
+			Seat existingSeat = this.getSeatById(seatDto.getSeatId());
+
+			if (existingSeat != null) {
+				existingSeat.update(seatDto);
+			} else {
+				Seat newSeat = Seat.builder()
+					.performanceHall(this)
+					.rowNumber(seatDto.getRowNumber())
+					.seatNumber(seatDto.getSeatNumber())
+					.seatType(seatDto.getSeatType())
+					.status(seatDto.getStatus())
+					.build();
+				this.seats.add(newSeat);
 			}
 		}
+		this.totalSeats = this.seats.size();
+
 	}
 }
