@@ -18,8 +18,6 @@ import com.taken_seat.payment_service.application.dto.request.PaymentRegisterReq
 import com.taken_seat.payment_service.application.dto.request.PaymentUpdateReqDto;
 import com.taken_seat.payment_service.application.dto.response.PagePaymentResponseDto;
 import com.taken_seat.payment_service.application.dto.response.PaymentDetailResDto;
-import com.taken_seat.payment_service.application.dto.response.PaymentRegisterResDto;
-import com.taken_seat.payment_service.application.dto.response.PaymentUpdateResDto;
 import com.taken_seat.payment_service.application.service.PaymentService;
 import com.taken_seat.payment_service.domain.model.Payment;
 import com.taken_seat.payment_service.domain.model.PaymentHistory;
@@ -42,10 +40,10 @@ public class PaymentServiceImpl implements PaymentService {
 
 	/**
 	 * 결제 수동 등록 기능
-	 *
+	 * <p>
 	 * 주어진 결제 수동 결제 요청 DTO ( PaymentCreateReqDto )를 기반으로 새 결제를 등록한다.
 	 * 1. 결제 요청 금액이 1원 미만인지 검사한다.
-	 *   - 1원 미만인 경우 IllegalArgumentException 예외처리 발생
+	 * - 1원 미만인 경우 IllegalArgumentException 예외처리 발생
 	 * 2. Payment 등록 이후 결제 이력 추적용 PaymentHistory 생성
 	 * 3. 저장된 결제를 DTO ( PaymentCreateDto ) 형식으로 변환하여 반환한다.
 	 *
@@ -54,8 +52,8 @@ public class PaymentServiceImpl implements PaymentService {
 	 * @throws IllegalArgumentException 결제 요청 금액이 1원 미만인 경우 예외 발생
 	 */
 	@Override
-	@CachePut(cacheNames = "paymentCache", key = "#result.paymentId")
-	public PaymentRegisterResDto registerPayment(PaymentRegisterReqDto paymentRegisterReqDto,
+	@CachePut(cacheNames = "paymentCache", key = "#result.id")
+	public PaymentDetailResDto registerPayment(PaymentRegisterReqDto paymentRegisterReqDto,
 		AuthenticatedUser authenticatedUser) {
 		// MASTER 계정이 직접 등록하는 API - 결제 API 호출 없이 수동 등록
 
@@ -63,13 +61,13 @@ public class PaymentServiceImpl implements PaymentService {
 			throw new IllegalArgumentException("결제 금액은 1원 미만일 수 없습니다. 요청 금액 : " + paymentRegisterReqDto.getPrice());
 		}
 
-		Payment payment = Payment.register(paymentRegisterReqDto, authenticatedUser.getUserId());
+		Payment payment = Payment.register(paymentRegisterReqDto, authenticatedUser);
 		paymentRepository.save(payment);
 
 		PaymentHistory paymentHistory = PaymentHistory.register(payment);
 		paymentHistoryRepository.save(paymentHistory);
 
-		return PaymentRegisterResDto.toResponse(payment);
+		return PaymentDetailResDto.toResponse(payment);
 	}
 
 	/**
@@ -119,7 +117,7 @@ public class PaymentServiceImpl implements PaymentService {
 	public PagePaymentResponseDto searchPayment(String q, String category, int page, int size, String sort,
 		String order) {
 
-		Page<Payment> paymentPages = paymentQuerydslRepository.findAll(q, category, page, size, sort, order);
+		Page<Payment> paymentPages = paymentQuerydslRepository.search(q, category, page, size, sort, order);
 
 		Page<PaymentDetailResDto> paymentDetailResDtoPages = paymentPages.map(PaymentDetailResDto::toResponse);
 
@@ -128,26 +126,26 @@ public class PaymentServiceImpl implements PaymentService {
 
 	/**
 	 * 결제 수정 기능
-	 *
+	 * <p>
 	 * 주어진 결제 ID와 수정 요청 DTO를 기반으로 결제 정보를 수정한다.
 	 * 1. 결제 금액이 1원 미만일 경우 IllegalArgumentException 예외를 발생시킨다.
 	 * 2. 삭제되지 않은 Payment와 관련된 PaymentHistory를 조회한다.
-	 *    - 둘 중 하나라도 없을 경우 각각 PaymentNotFoundException 또는 PaymentHistoryNotFoundException 발생
+	 * - 둘 중 하나라도 없을 경우 각각 PaymentNotFoundException 또는 PaymentHistoryNotFoundException 발생
 	 * 3. 결제 정보(Payment)를 수정하고, 이력(PaymentHistory)도 함께 수정한다.
 	 * 4. 수정된 결제 정보를 PaymentUpdateResDto로 변환하여 반환한다.
 	 *
-	 * @param id 수정할 결제 ID
+	 * @param id                  수정할 결제 ID
 	 * @param paymentUpdateReqDto 수정할 결제 정보 DTO
-	 * @param authenticatedUser 인증된 사용자 정보 (수정자 ID 포함)
-	 * @return 수정된 결제 응답 DTO
+	 * @param authenticatedUser   인증된 사용자 정보 (수정자 ID 포함)
+	 * @return PaymentDetailResDto 수정된 결제 응답 DTO
 	 * @throws IllegalArgumentException 결제 금액이 1원 미만인 경우 예외 발생
-	 * @throws PaymentException 결제가 존재하지 않는 경우 예외 발생
-	 * @throws PaymentHistoryException 결제 이력이 존재하지 않는 경우 예외 발생
+	 * @throws PaymentException         결제가 존재하지 않는 경우 예외 발생
+	 * @throws PaymentHistoryException  결제 이력이 존재하지 않는 경우 예외 발생
 	 */
 	@Override
 	@CachePut(cacheNames = "paymentCache", key = "#id")
 	@CacheEvict(cacheNames = "paymentSearchCache", allEntries = true)
-	public PaymentUpdateResDto updatePayment(UUID id, PaymentUpdateReqDto paymentUpdateReqDto,
+	public PaymentDetailResDto updatePayment(UUID id, PaymentUpdateReqDto paymentUpdateReqDto,
 		AuthenticatedUser authenticatedUser) {
 
 		if (paymentUpdateReqDto.getPrice() <= 0) {
@@ -166,7 +164,7 @@ public class PaymentServiceImpl implements PaymentService {
 		payment.update(paymentUpdateReqDto.getPrice(), paymentUpdateReqDto.getPaymentStatus(),
 			authenticatedUser);
 		paymentHistory.update(payment);
-		return PaymentUpdateResDto.toResponse(payment);
+		return PaymentDetailResDto.toResponse(payment);
 	}
 
 	/**

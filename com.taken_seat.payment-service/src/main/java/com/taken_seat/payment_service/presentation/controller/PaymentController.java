@@ -20,8 +20,6 @@ import com.taken_seat.payment_service.application.dto.request.PaymentRegisterReq
 import com.taken_seat.payment_service.application.dto.request.PaymentUpdateReqDto;
 import com.taken_seat.payment_service.application.dto.response.PagePaymentResponseDto;
 import com.taken_seat.payment_service.application.dto.response.PaymentDetailResDto;
-import com.taken_seat.payment_service.application.dto.response.PaymentRegisterResDto;
-import com.taken_seat.payment_service.application.dto.response.PaymentUpdateResDto;
 import com.taken_seat.payment_service.application.service.PaymentService;
 
 import jakarta.validation.Valid;
@@ -35,7 +33,7 @@ public class PaymentController {
 	private final PaymentService paymentService;
 
 	@PostMapping
-	public ResponseEntity<ApiResponseData<PaymentRegisterResDto>> registerPayment(
+	public ResponseEntity<ApiResponseData<PaymentDetailResDto>> registerPayment(
 		@Valid @RequestBody PaymentRegisterReqDto paymentRegisterReqDto,
 		AuthenticatedUser authenticatedUser) {
 
@@ -65,7 +63,7 @@ public class PaymentController {
 	}
 
 	@PatchMapping("/{id}")
-	public ResponseEntity<ApiResponseData<PaymentUpdateResDto>> updatePayment(@PathVariable("id") UUID id,
+	public ResponseEntity<ApiResponseData<PaymentDetailResDto>> updatePayment(@PathVariable("id") UUID id,
 		@Valid @RequestBody PaymentUpdateReqDto paymentUpdateReqDto,
 		AuthenticatedUser authenticatedUser) {
 
