@@ -71,6 +71,7 @@ public enum ResponseCode {
 	PERFORMANCE_VALIDATION_EXCEPTION(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "동일 공연장에 겹치는 회차가 존재합니다."),
 	PERFORMANCE_HALL_NOT_FOUND_EXCEPTION(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "해당 공연장은 존재하지 않습니다"),
 	PERFORMANCE_HALL_ALREADY_EXISTS(HttpStatus.CONFLICT, HttpStatus.CONFLICT.value(), "이미 존재하는 공연장입니다."),
+	PERFORMANCE_HALL_DUPLICATE_SEAT(HttpStatus.CONFLICT, HttpStatus.CONFLICT.value(), "중복된 좌석이 존재합니다."),
 
 	;
 
