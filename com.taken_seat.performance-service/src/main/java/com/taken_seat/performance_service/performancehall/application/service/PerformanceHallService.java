@@ -2,6 +2,7 @@ package com.taken_seat.performance_service.performancehall.application.service;
 
 import static com.taken_seat.performance_service.performancehall.application.dto.mapper.HallResponseMapper.*;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -15,6 +16,7 @@ import com.taken_seat.common_service.dto.response.BookingSeatClientResponseDto;
 import com.taken_seat.common_service.exception.customException.PerformanceException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.performance_service.performance.domain.model.Performance;
+import com.taken_seat.performance_service.performance.domain.model.PerformanceSchedule;
 import com.taken_seat.performance_service.performance.domain.repository.PerformanceRepository;
 import com.taken_seat.performance_service.performancehall.application.dto.mapper.HallResponseMapper;
 import com.taken_seat.performance_service.performancehall.application.dto.request.CreateRequestDto;
@@ -23,6 +25,8 @@ import com.taken_seat.performance_service.performancehall.application.dto.reques
 import com.taken_seat.performance_service.performancehall.application.dto.response.CreateResponseDto;
 import com.taken_seat.performance_service.performancehall.application.dto.response.DetailResponseDto;
 import com.taken_seat.performance_service.performancehall.application.dto.response.PageResponseDto;
+import com.taken_seat.performance_service.performancehall.application.dto.response.SeatDto;
+import com.taken_seat.performance_service.performancehall.application.dto.response.SeatLayoutResponseDto;
 import com.taken_seat.performance_service.performancehall.application.dto.response.UpdateResponseDto;
 import com.taken_seat.performance_service.performancehall.domain.model.PerformanceHall;
 import com.taken_seat.performance_service.performancehall.domain.model.Seat;
@@ -147,5 +151,23 @@ public class PerformanceHallService {
 		seat.updateStatus(SeatStatus.AVAILABLE);
 
 		return new BookingSeatClientResponseDto(null, false, "좌석 선점이 취소되었습니다.");
+	}
+
+	@Transactional
+	public SeatLayoutResponseDto getSeatLayout(UUID performanceScheduleId) {
+
+		Performance performance = performanceRepository.findByPerformanceScheduleId(performanceScheduleId)
+			.orElseThrow(() -> new PerformanceException(ResponseCode.PERFORMANCE_SCHEDULE_NOT_FOUND_EXCEPTION));
+
+		PerformanceSchedule schedule = performance.getScheduleById(performanceScheduleId);
+
+		UUID performanceHallId = schedule.getPerformanceHallId();
+
+		PerformanceHall performanceHall = performanceHallRepository.findById(performanceHallId)
+			.orElseThrow(() -> new PerformanceException(ResponseCode.PERFORMANCE_HALL_NOT_FOUND_EXCEPTION));
+
+		List<SeatDto> seatLayout = HallResponseMapper.toSeatLayout(performanceHall.getSeats());
+
+		return new SeatLayoutResponseDto(seatLayout);
 	}
 }
