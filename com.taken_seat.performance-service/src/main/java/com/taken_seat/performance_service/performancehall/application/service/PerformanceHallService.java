@@ -34,6 +34,7 @@ public class PerformanceHallService {
 
 	public final HallResponseMapper hallResponseMapper;
 
+	@Transactional
 	public CreateResponseDto create(CreateRequestDto request, AuthenticatedUser authenticatedUser) {
 
 		PerformanceHallValidator.validateAuthorized(authenticatedUser);
@@ -67,6 +68,7 @@ public class PerformanceHallService {
 		return toDetail(performanceHall);
 	}
 
+	@Transactional
 	public UpdateResponseDto update(UUID id, UpdateRequestDto request, AuthenticatedUser authenticatedUser) {
 
 		PerformanceHallValidator.validateAuthorized(authenticatedUser);
@@ -86,6 +88,7 @@ public class PerformanceHallService {
 		return toUpdate(performanceHall);
 	}
 
+	@Transactional
 	public void delete(UUID id, AuthenticatedUser authenticatedUser) {
 
 		PerformanceHallValidator.validateAuthorized(authenticatedUser);
@@ -95,5 +98,6 @@ public class PerformanceHallService {
 				"이미 삭제되었거나 존재하지 않는 공연장입니다."));
 
 		performanceHall.delete(authenticatedUser.getUserId());
+		performanceHallRepository.save(performanceHall);
 	}
 }

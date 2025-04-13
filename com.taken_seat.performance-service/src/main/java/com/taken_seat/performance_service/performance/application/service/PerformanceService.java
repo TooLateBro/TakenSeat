@@ -106,6 +106,7 @@ public class PerformanceService {
 				"이미 삭제되었거나 존재하지 않는 공연입니다."));
 
 		performance.delete(authenticatedUser.getUserId());
+		performanceRepository.save(performance);
 	}
 
 	@Transactional
