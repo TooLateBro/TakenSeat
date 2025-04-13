@@ -1,4 +1,4 @@
-package com.taken_seat.payment_service.infrastructure.redis;
+package com.taken_seat.payment_service.infrastructure.config.redis;
 
 import java.time.Duration;
 import java.util.HashMap;

@@ -2,13 +2,10 @@ package com.taken_seat.payment_service;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Import;
 
-import com.taken_seat.common_service.exception.handler.GlobalExceptionHandler;
-
-@SpringBootApplication
-@Import({
-	GlobalExceptionHandler.class
+@SpringBootApplication(scanBasePackages = {
+	"com.taken_seat.payment_service",
+	"com.taken_seat.common_service"
 })
 public class PaymentServiceApplication {
 

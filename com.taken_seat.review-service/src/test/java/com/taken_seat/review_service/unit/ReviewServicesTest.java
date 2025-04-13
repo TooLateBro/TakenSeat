@@ -86,7 +86,7 @@ public class ReviewServicesTest {
 		testReview.prePersist(UUID.randomUUID());
 		reviewRepository.save(testReview);
 
-		authenticatedUser = new AuthenticatedUser(testAuthorId, "test@gmail.com", testAuthorEmail);
+		authenticatedUser = new AuthenticatedUser(testAuthorId, "test@gmail.com", "MASTER");
 	}
 
 	@Test
