@@ -48,7 +48,7 @@ public class ReviewLikeServiceTest {
 	void setUp() {
 		reviewId = UUID.randomUUID();
 		userId = UUID.randomUUID();
-		user = new AuthenticatedUser(userId, "user@example.com", "USER");
+		user = new AuthenticatedUser(userId, "user@example.com", "MASTER");
 
 		when(likeCountRedisTemplate.opsForHash()).thenReturn(hashOperations);
 	}
@@ -91,7 +91,7 @@ public class ReviewLikeServiceTest {
 
 		// when
 		reviewLikeService.toggleReviewLike(reviewId, user);
-		
+
 		// then
 		verify(hashOperations).delete(key, userField);            // 좋아요 제거
 		verify(hashOperations).increment(key, "count", -1);       // count 감소

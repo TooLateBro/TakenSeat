@@ -20,6 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
+import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.common_service.exception.customException.PaymentNotFoundException;
 import com.taken_seat.payment_service.application.dto.request.PaymentRegisterReqDto;
 import com.taken_seat.payment_service.application.dto.request.PaymentUpdateReqDto;
@@ -27,13 +28,13 @@ import com.taken_seat.payment_service.application.dto.response.PagePaymentRespon
 import com.taken_seat.payment_service.application.dto.response.PaymentDetailResDto;
 import com.taken_seat.payment_service.application.dto.response.PaymentRegisterResDto;
 import com.taken_seat.payment_service.application.dto.response.PaymentUpdateResDto;
-import com.taken_seat.payment_service.application.service.PaymentService;
 import com.taken_seat.payment_service.domain.enums.PaymentStatus;
 import com.taken_seat.payment_service.domain.model.Payment;
 import com.taken_seat.payment_service.domain.model.PaymentHistory;
 import com.taken_seat.payment_service.domain.repository.PaymentHistoryRepository;
 import com.taken_seat.payment_service.domain.repository.PaymentQuerydslRepository;
 import com.taken_seat.payment_service.domain.repository.PaymentRepository;
+import com.taken_seat.payment_service.infrastructure.PaymentServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
 public class PaymentServiceTest {
@@ -48,7 +49,7 @@ public class PaymentServiceTest {
 	private PaymentQuerydslRepository paymentQuerydslRepository;
 
 	@InjectMocks
-	private PaymentService paymentService;
+	private PaymentServiceImpl paymentService;
 
 	private UUID testBookingId;
 
@@ -56,14 +57,18 @@ public class PaymentServiceTest {
 
 	private UUID testPaymentHistoryId;
 
+	private UUID testUserId;
+
 	private Payment testPayment;
 
 	private PaymentHistory testPaymentHistory;
 
+	private AuthenticatedUser authenticatedUser;
+
 	@BeforeEach
 	void setUp() {
+		testUserId = UUID.randomUUID();
 		testBookingId = UUID.randomUUID();
-
 		testPaymentId = UUID.randomUUID();
 		testPaymentHistoryId = UUID.randomUUID();
 
@@ -88,6 +93,8 @@ public class PaymentServiceTest {
 
 		testPaymentHistory.prePersist(UUID.randomUUID());
 		paymentHistoryRepository.save(testPaymentHistory);
+
+		authenticatedUser = new AuthenticatedUser(testUserId, "test@gmail.com", "MASTER");
 	}
 
 	@Test
@@ -102,7 +109,7 @@ public class PaymentServiceTest {
 		when(paymentHistoryRepository.save(any(PaymentHistory.class))).thenReturn(testPaymentHistory);
 
 		// When
-		PaymentRegisterResDto result = paymentService.registerPayment(paymentRegisterReqDto, createdBy);
+		PaymentRegisterResDto result = paymentService.registerPayment(paymentRegisterReqDto, authenticatedUser);
 
 		// Then
 		assertNotNull(result);
@@ -121,7 +128,7 @@ public class PaymentServiceTest {
 
 		// When & Then
 		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-			paymentService.registerPayment(paymentRegisterReqDto, createdBy);
+			paymentService.registerPayment(paymentRegisterReqDto, authenticatedUser);
 		});
 
 		assertEquals("결제 금액은 1원 미만일 수 없습니다. 요청 금액 : 0", exception.getMessage());
@@ -213,7 +220,8 @@ public class PaymentServiceTest {
 		when(paymentHistoryRepository.findByPayment(testPayment)).thenReturn(Optional.of(testPaymentHistory));
 
 		// When
-		PaymentUpdateResDto result = paymentService.updatePayment(testPaymentId, paymentUpdateReqDto, updatedBy);
+		PaymentUpdateResDto result = paymentService.updatePayment(testPaymentId, paymentUpdateReqDto,
+			authenticatedUser);
 
 		// Then
 		assertNotNull(result);
@@ -231,7 +239,7 @@ public class PaymentServiceTest {
 
 		// When & Then
 		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-			paymentService.updatePayment(testPaymentId, reqDto, updatedBy);
+			paymentService.updatePayment(testPaymentId, reqDto, authenticatedUser);
 		});
 
 		assertEquals("결제 금액은 1원 미만일 수 없습니다. 요청 금액 : 0", exception.getMessage());
@@ -249,7 +257,7 @@ public class PaymentServiceTest {
 
 		// When & Then
 		PaymentNotFoundException exception = assertThrows(PaymentNotFoundException.class, () -> {
-			paymentService.updatePayment(notExistId, reqDto, updatedBy);
+			paymentService.updatePayment(notExistId, reqDto, authenticatedUser);
 		});
 
 		assertEquals("해당 ID 에 대한 결제 정보를 찾을 수 없습니다 : " + notExistId, exception.getMessage());
@@ -267,7 +275,7 @@ public class PaymentServiceTest {
 
 		// When & Then
 		RuntimeException exception = assertThrows(RuntimeException.class, () ->
-			paymentService.updatePayment(testPaymentId, updateDto, updatedBy)
+			paymentService.updatePayment(testPaymentId, updateDto, authenticatedUser)
 		);
 
 		assertTrue(exception.getMessage().contains("해당 결제의 내역이 존재하지않습니다."));
@@ -283,7 +291,7 @@ public class PaymentServiceTest {
 		when(paymentHistoryRepository.findByPayment(testPayment)).thenReturn(Optional.of(testPaymentHistory));
 
 		// When
-		assertDoesNotThrow(() -> paymentService.deletePayment(testPaymentId, deletedBy));
+		assertDoesNotThrow(() -> paymentService.deletePayment(testPaymentId, authenticatedUser));
 
 		// Then
 		assertNotNull(testPayment.getDeletedAt());
@@ -298,7 +306,7 @@ public class PaymentServiceTest {
 
 		// When & Then
 		PaymentNotFoundException exception = assertThrows(PaymentNotFoundException.class, () ->
-			paymentService.deletePayment(UUID.randomUUID(), UUID.randomUUID())
+			paymentService.deletePayment(UUID.randomUUID(), authenticatedUser)
 		);
 
 		assertTrue(exception.getMessage().contains("해당 ID 에 대한 결제 정보를 찾을 수 없습니다"));
