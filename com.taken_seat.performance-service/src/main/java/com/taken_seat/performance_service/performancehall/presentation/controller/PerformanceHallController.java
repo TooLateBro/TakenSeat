@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.taken_seat.common_service.dto.ApiResponseData;
+import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.performance_service.performancehall.application.dto.request.CreateRequestDto;
 import com.taken_seat.performance_service.performancehall.application.dto.request.SearchFilterParam;
 import com.taken_seat.performance_service.performancehall.application.dto.request.UpdateRequestDto;
@@ -43,9 +44,10 @@ public class PerformanceHallController {
 	 * 권한: ADMIN, MANAGER
 	 */
 	@PostMapping
-	public ResponseEntity<ApiResponseData<CreateResponseDto>> create(@Valid @RequestBody CreateRequestDto request) {
+	public ResponseEntity<ApiResponseData<CreateResponseDto>> create(@Valid @RequestBody CreateRequestDto request,
+		AuthenticatedUser authenticatedUser) {
 
-		CreateResponseDto response = performanceHallService.create(request);
+		CreateResponseDto response = performanceHallService.create(request, authenticatedUser);
 		return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponseData.success(response));
 	}
 
