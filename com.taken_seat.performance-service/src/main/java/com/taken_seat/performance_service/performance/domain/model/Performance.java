@@ -101,7 +101,7 @@ public class Performance extends BaseTimeEntity {
 		return schedules.stream()
 			.filter(performanceSchedule -> performanceSchedule.getId().equals(performanceScheduleId))
 			.findFirst()
-			.orElseThrow(() -> new IllegalArgumentException("공연 회차가 존재하지 않습니다"));
+			.orElseThrow(() -> new PerformanceException(ResponseCode.PERFORMANCE_SCHEDULE_NOT_FOUND_EXCEPTION));
 	}
 
 	public Integer findPriceByScheduleAndSeatType(UUID performanceScheduleId, SeatType seatType) {
