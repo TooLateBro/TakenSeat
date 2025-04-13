@@ -3,6 +3,7 @@ package com.taken_seat.review_service.infrastructure.service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.redis.connection.RedisConnection;
@@ -14,7 +15,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.taken_seat.common_service.dto.AuthenticatedUser;
+import com.taken_seat.common_service.exception.customException.ReviewException;
+import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.review_service.application.service.ReviewLikeService;
+import com.taken_seat.review_service.domain.model.Review;
+import com.taken_seat.review_service.domain.model.ReviewLike;
+import com.taken_seat.review_service.domain.repository.ReviewLikeRepository;
+import com.taken_seat.review_service.domain.repository.ReviewRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -24,6 +31,8 @@ import lombok.RequiredArgsConstructor;
 public class ReviewLikeServiceImpl implements ReviewLikeService {
 
 	private final RedisTemplate<String, Integer> likeCountRedisTemplate;
+	private final ReviewLikeRepository reviewLikeRepository;
+	private final ReviewRepository reviewRepository;
 
 	private static final String LIKE_KEY_PREFIX = "review:like:";
 	private static final String USER_FIELD_PREFIX = "user:";
@@ -31,22 +40,36 @@ public class ReviewLikeServiceImpl implements ReviewLikeService {
 	private HashOperations<String, String, Object> hashOps;
 
 	@Override
-	public void toggleReviewLike(UUID id, AuthenticatedUser authenticatedUser) {
+	public void toggleReviewLike(UUID reviewId, AuthenticatedUser authenticatedUser) {
 		hashOps = likeCountRedisTemplate.opsForHash();
-		String key = getRedisKey(id);
+		String key = getRedisKey(reviewId);
 		String userField = getUserField(authenticatedUser.getUserId());
 
-		boolean hasLiked = hashOps.hasKey(key, userField);
+		Optional<ReviewLike> reviewLikeOpt = reviewLikeRepository.findByAuthorIdAndReviewId(
+			authenticatedUser.getUserId(), reviewId);
 
-		if (hasLiked) {
+		if (reviewLikeOpt.isPresent() && !reviewLikeOpt.get().isDeleted()) {
 			// 이미 좋아요를 누른 경우
 			hashOps.delete(key, userField);
 			decreaseLikeCount(key);
 
+			ReviewLike reviewLike = reviewLikeOpt.get();
+			reviewLike.cancelReviewLike(authenticatedUser.getUserId());
+			reviewLikeRepository.save(reviewLike);
+
 		} else {
-			// 좋아요 추가
+			// 좋아요를 안한 상태 -> 추가
 			hashOps.put(key, userField, true);
 			increaseLikeCount(key);
+
+			ReviewLike like = reviewLikeOpt
+				.map(l -> {
+					l.addReviewLike(authenticatedUser.getUserId()); // soft delete 되어 있던 것 복구
+					return l;
+				})
+				.orElse(ReviewLike.create(findReview(reviewId), authenticatedUser.getUserId())); // 완전 새로운 좋아요
+
+			reviewLikeRepository.save(like);
 		}
 
 	}
@@ -134,5 +157,10 @@ public class ReviewLikeServiceImpl implements ReviewLikeService {
 
 	private String getUserField(UUID userId) {
 		return USER_FIELD_PREFIX + userId;
+	}
+
+	private Review findReview(UUID reviewId) {
+		return reviewRepository.findByIdAndDeletedAtIsNull(reviewId)
+			.orElseThrow(() -> new ReviewException(ResponseCode.REVIEW_NOT_FOUND));
 	}
 }
