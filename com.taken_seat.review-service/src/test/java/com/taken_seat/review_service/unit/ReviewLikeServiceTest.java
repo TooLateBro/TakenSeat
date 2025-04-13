@@ -2,6 +2,7 @@ package com.taken_seat.review_service.unit;
 
 import static org.mockito.Mockito.*;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -15,6 +16,10 @@ import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 
 import com.taken_seat.common_service.dto.AuthenticatedUser;
+import com.taken_seat.review_service.domain.model.Review;
+import com.taken_seat.review_service.domain.model.ReviewLike;
+import com.taken_seat.review_service.domain.repository.ReviewLikeRepository;
+import com.taken_seat.review_service.domain.repository.ReviewRepository;
 import com.taken_seat.review_service.infrastructure.service.ReviewLikeServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
@@ -28,6 +33,12 @@ public class ReviewLikeServiceTest {
 
 	@Mock
 	private HashOperations<String, Object, Object> hashOperations;
+
+	@Mock
+	private ReviewRepository reviewRepository;
+
+	@Mock
+	private ReviewLikeRepository reviewLikeRepository;
 
 	private UUID reviewId;
 	private UUID userId;
@@ -49,7 +60,12 @@ public class ReviewLikeServiceTest {
 		String key = "review:like:" + reviewId;
 		String userField = "user:" + userId;
 
-		when(hashOperations.hasKey(key, userField)).thenReturn(false); // 좋아요를 누르지 않은 상태
+		// DB에 좋아요 기록 없음 (처음 누름)
+		when(reviewLikeRepository.findByAuthorIdAndReviewId(userId, reviewId)).thenReturn(Optional.empty());
+
+		// 리뷰 존재 mock
+		Review dummyReview = mock(Review.class);
+		when(reviewRepository.findByIdAndDeletedAtIsNull(reviewId)).thenReturn(Optional.of(dummyReview));
 
 		// when
 		reviewLikeService.toggleReviewLike(reviewId, user);
@@ -57,6 +73,7 @@ public class ReviewLikeServiceTest {
 		// then
 		verify(hashOperations).put(key, userField, true); // 좋아요 등록
 		verify(hashOperations).increment(key, "count", 1); // count 증가
+		verify(reviewLikeRepository).save(any(ReviewLike.class)); // DB에 저장
 	}
 
 	@Test
@@ -66,13 +83,19 @@ public class ReviewLikeServiceTest {
 		String key = "review:like:" + reviewId;
 		String userField = "user:" + userId;
 
-		when(hashOperations.hasKey(key, userField)).thenReturn(true); // 이미 좋아요를 누른 상태
+		ReviewLike like = mock(ReviewLike.class);
+		when(like.isDeleted()).thenReturn(false); // soft delete 아님 → 아직 좋아요 상태
+
+		when(reviewLikeRepository.findByAuthorIdAndReviewId(userId, reviewId))
+			.thenReturn(Optional.of(like));
 
 		// when
 		reviewLikeService.toggleReviewLike(reviewId, user);
-
+		
 		// then
-		verify(hashOperations).delete(key, userField); // 좋아요 삭제
-		verify(hashOperations).increment(key, "count", -1); // count 감소
+		verify(hashOperations).delete(key, userField);            // 좋아요 제거
+		verify(hashOperations).increment(key, "count", -1);       // count 감소
+		verify(like).cancelReviewLike(userId);                    // soft delete 호출
+		verify(reviewLikeRepository).save(like);                  // DB 저장
 	}
 }
