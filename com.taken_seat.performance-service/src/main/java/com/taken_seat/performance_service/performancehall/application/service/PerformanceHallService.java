@@ -22,6 +22,7 @@ import com.taken_seat.performance_service.performancehall.application.dto.respon
 import com.taken_seat.performance_service.performancehall.application.dto.response.UpdateResponseDto;
 import com.taken_seat.performance_service.performancehall.domain.model.PerformanceHall;
 import com.taken_seat.performance_service.performancehall.domain.repository.PerformanceHallRepository;
+import com.taken_seat.performance_service.performancehall.domain.validation.PerformanceHallValidator;
 
 import lombok.RequiredArgsConstructor;
 
@@ -35,16 +36,12 @@ public class PerformanceHallService {
 
 	public CreateResponseDto create(CreateRequestDto request, AuthenticatedUser authenticatedUser) {
 
-		if (!isAuthorized(authenticatedUser)) {
-			throw new PerformanceException(ResponseCode.ACCESS_DENIED_EXCEPTION, "접근 권한이 없습니다.");
-		}
+		PerformanceHallValidator.validateAuthorized(authenticatedUser);
 
-		boolean exists = performanceHallRepository.existsByNameAndAddress(
-			request.getName(), request.getAddress());
+		PerformanceHallValidator.createValidateDuplicateHall(request.getName(), request.getAddress(),
+			performanceHallRepository);
 
-		if (exists) {
-			throw new PerformanceException(ResponseCode.PERFORMANCE_HALL_ALREADY_EXISTS);
-		}
+		PerformanceHallValidator.validateDuplicateSeats(request.getSeats());
 
 		PerformanceHall performanceHall = PerformanceHall.create(request, authenticatedUser.getUserId());
 
@@ -70,10 +67,17 @@ public class PerformanceHallService {
 		return toDetail(performanceHall);
 	}
 
-	public UpdateResponseDto update(UUID id, UpdateRequestDto request) {
+	public UpdateResponseDto update(UUID id, UpdateRequestDto request, AuthenticatedUser authenticatedUser) {
+
+		PerformanceHallValidator.validateAuthorized(authenticatedUser);
 
 		PerformanceHall performanceHall = performanceHallRepository.findById(id)
-			.orElseThrow(() -> new IllegalArgumentException("해당 공연장을 찾을 수 없습니다"));
+			.orElseThrow(() -> new PerformanceException(ResponseCode.PERFORMANCE_HALL_NOT_FOUND_EXCEPTION));
+
+		PerformanceHallValidator.updateValidateDuplicateHall(
+			id, request.getName(), request.getAddress(), performanceHallRepository);
+
+		PerformanceHallValidator.validateDuplicateSeats(request.getSeats());
 
 		performanceHall.update(request);
 
@@ -89,11 +93,5 @@ public class PerformanceHallService {
 		}
 
 		performanceHallRepository.deleteById(id, deletedBy);
-	}
-
-	private boolean isAuthorized(AuthenticatedUser authenticatedUser) {
-
-		String role = authenticatedUser.getRole();
-		return role.equals("ADMIN") || role.equals("MANAGER");
 	}
 }
