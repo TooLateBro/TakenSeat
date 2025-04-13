@@ -50,14 +50,15 @@ public class Payment extends BaseTimeEntity {
 
 	private LocalDateTime refundRequestedAt;
 
-	public static Payment register(PaymentRegisterReqDto paymentRegisterReqDto, UUID createdBy) {
+	public static Payment register(PaymentRegisterReqDto paymentRegisterReqDto, AuthenticatedUser authenticatedUser) {
 		Payment payment = Payment.builder()
 			.bookingId(paymentRegisterReqDto.getBookingId())
 			.price(paymentRegisterReqDto.getPrice())
 			.paymentStatus(PaymentStatus.COMPLETED)
 			.approvedAt(LocalDateTime.now())
 			.build();
-		payment.prePersist(createdBy);
+
+		payment.prePersist(authenticatedUser.getUserId());
 
 		return payment;
 	}

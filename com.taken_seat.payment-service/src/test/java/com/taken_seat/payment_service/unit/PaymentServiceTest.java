@@ -26,8 +26,6 @@ import com.taken_seat.payment_service.application.dto.request.PaymentRegisterReq
 import com.taken_seat.payment_service.application.dto.request.PaymentUpdateReqDto;
 import com.taken_seat.payment_service.application.dto.response.PagePaymentResponseDto;
 import com.taken_seat.payment_service.application.dto.response.PaymentDetailResDto;
-import com.taken_seat.payment_service.application.dto.response.PaymentRegisterResDto;
-import com.taken_seat.payment_service.application.dto.response.PaymentUpdateResDto;
 import com.taken_seat.payment_service.domain.enums.PaymentStatus;
 import com.taken_seat.payment_service.domain.model.Payment;
 import com.taken_seat.payment_service.domain.model.PaymentHistory;
@@ -109,7 +107,7 @@ public class PaymentServiceTest {
 		when(paymentHistoryRepository.save(any(PaymentHistory.class))).thenReturn(testPaymentHistory);
 
 		// When
-		PaymentRegisterResDto result = paymentService.registerPayment(paymentRegisterReqDto, authenticatedUser);
+		PaymentDetailResDto result = paymentService.registerPayment(paymentRegisterReqDto, authenticatedUser);
 
 		// Then
 		assertNotNull(result);
@@ -177,7 +175,7 @@ public class PaymentServiceTest {
 
 		Page<Payment> mockPage = new PageImpl<>(Collections.singletonList(testPayment), PageRequest.of(page, size), 1);
 
-		when(paymentQuerydslRepository.findAll(query, category, page, size, sort, order)).thenReturn(mockPage);
+		when(paymentQuerydslRepository.search(query, category, page, size, sort, order)).thenReturn(mockPage);
 
 		// When
 		PagePaymentResponseDto result = paymentService.searchPayment(query, category, page, size, sort, order);
@@ -196,7 +194,7 @@ public class PaymentServiceTest {
 	@DisplayName("결제 리스트 검색 - 비어있는 결과 - SUCCESS")
 	void testSearchPayment_success_emptyResult() {
 		// Given
-		when(paymentQuerydslRepository.findAll(anyString(), anyString(), anyInt(), anyInt(), anyString(), anyString()))
+		when(paymentQuerydslRepository.search(anyString(), anyString(), anyInt(), anyInt(), anyString(), anyString()))
 			.thenReturn(Page.empty());
 
 		// When
@@ -220,7 +218,7 @@ public class PaymentServiceTest {
 		when(paymentHistoryRepository.findByPayment(testPayment)).thenReturn(Optional.of(testPaymentHistory));
 
 		// When
-		PaymentUpdateResDto result = paymentService.updatePayment(testPaymentId, paymentUpdateReqDto,
+		PaymentDetailResDto result = paymentService.updatePayment(testPaymentId, paymentUpdateReqDto,
 			authenticatedUser);
 
 		// Then

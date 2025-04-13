@@ -1,98 +1,118 @@
 package com.taken_seat.payment_service.infrastructure.repository;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.querydsl.QuerydslPredicateExecutor;
+import org.springframework.stereotype.Repository;
+import org.springframework.util.StringUtils;
 
-import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Order;
+import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.PathBuilder;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.taken_seat.payment_service.domain.enums.PaymentStatus;
 import com.taken_seat.payment_service.domain.model.Payment;
 import com.taken_seat.payment_service.domain.model.QPayment;
 import com.taken_seat.payment_service.domain.repository.PaymentQuerydslRepository;
 
-public interface PaymentQuerydslRepositoryImpl extends JpaRepository<Payment, UUID>, QuerydslPredicateExecutor<Payment>,
-	PaymentQuerydslRepository {
+import lombok.RequiredArgsConstructor;
 
-	// 허용된 페이지 크기 리스트
-	List<Integer> VALID_SIZES = Arrays.asList(10, 30, 50);
+@Repository
+@RequiredArgsConstructor
+public class PaymentQuerydslRepositoryImpl implements PaymentQuerydslRepository {
 
-	// 정렬 가능한 필드 리스트
-	List<String> VALID_SORT_BY = Arrays.asList("createdAt", "updatedAt", "deletedAt");
+	private final JPAQueryFactory queryFactory;
 
-	default Page<Payment> findAll(String query, String category, int page, int size, String sortBy,
-		String order) {
+	private static final List<Integer> VALID_SIZES = Arrays.asList(10, 30, 50);
+	private static final List<String> VALID_SORT_BY = Arrays.asList("createdAt", "updatedAt", "deletedAt");
 
+	@Override
+	public Page<Payment> search(String query, String category, int page, int size, String sortBy, String order) {
 		size = validateSize(size);
+		Sort sort = getSortOrder(sortBy, order);
+		Pageable pageable = PageRequest.of(page, size, sort);
 
 		QPayment payment = QPayment.payment;
 
-		// 검색 조건 생성
-		BooleanBuilder builder = buildSearchConditions(query, category, payment);
+		List<Payment> contents = queryFactory
+			.selectFrom(payment)
+			.where(
+				payment.deletedAt.isNull(),
+				buildSearchCondition(query, category)
+			)
+			.offset(pageable.getOffset())
+			.limit(pageable.getPageSize())
+			.orderBy(toOrderSpecifier(sortBy, order))
+			.fetch();
 
-		Sort sort = getSortOrder(sortBy, order);
+		Long total = queryFactory
+			.select(payment.count())
+			.from(payment)
+			.where(
+				payment.deletedAt.isNull(),
+				buildSearchCondition(query, category)
+			)
+			.fetchOne();
 
-		PageRequest pageRequest = PageRequest.of(page, size, sort);
-
-		return findAll(builder, pageRequest);
-
+		return new PageImpl<>(contents, pageable, total != null ? total : 0);
 	}
 
-	private BooleanBuilder buildSearchConditions(String query, String category, QPayment qPayment) {
+	private BooleanExpression buildSearchCondition(String query, String category) {
+		if (!StringUtils.hasText(query) || !StringUtils.hasText(category))
+			return null;
 
-		BooleanBuilder builder = new BooleanBuilder();
+		return switch (category) {
+			case "status" -> statusContains(query);
+			case "approvedAt" -> approvedAtEquals(query);
+			case "refundRequestedAt" -> refundRequestedAtEquals(query);
+			default -> null;
+		};
+	}
 
-		builder.and(qPayment.deletedAt.isNull());
+	private BooleanExpression statusContains(String query) {
+		try {
+			PaymentStatus status = PaymentStatus.valueOf(query.toUpperCase());
 
-		if (query == null || query.isEmpty()) {
-			return builder;
+			return QPayment.payment.paymentStatus.eq(status);
+
+		} catch (IllegalArgumentException e) {
+			throw new IllegalArgumentException("올바른 결제 상태를 입력해주세요. (예: COMPLETED, FAILED, REFUNDED,DELETED)");
 		}
+	}
 
-		if (category == null || category.isEmpty()) {
-			return builder;
-		} else {
-			switch (category) {
-				case "status":
-					// query 값이 ENUM과 정확히 일치할 때만 필터링
-					try {
-						PaymentStatus status = PaymentStatus.valueOf(query.toUpperCase());
-						builder.and(qPayment.paymentStatus.eq(status));
-					} catch (IllegalArgumentException e) {
-						throw new IllegalArgumentException("잘못된 결제 상태 값입니다 : " + query);
-					}
-					break;
-				case "approvedAt":
-					// yyyy-MM-dd 형태로 입력 시 해당 날짜 전체를 포함
-					try {
-						LocalDateTime start = LocalDateTime.parse(query + "T00:00:00");
-						LocalDateTime end = LocalDateTime.parse(query + "T23:59:59.999999999");
-						builder.and(qPayment.approvedAt.between(start, end));
-					} catch (DateTimeParseException e) {
-						throw new IllegalArgumentException("잘못된 날짜 형식입니다 yyyy-mm-dd 형식으로 입력해주세요. : " + query);
-					}
-					break;
-				case "refundRequestedAt":
-					try {
-						LocalDateTime start = LocalDateTime.parse(query + "T00:00:00");
-						LocalDateTime end = LocalDateTime.parse(query + "T23:59:59.999999999");
-						builder.and(qPayment.refundRequestedAt.between(start, end));
-					} catch (DateTimeParseException e) {
-						throw new IllegalArgumentException("잘못된 날짜 형식입니다 yyyy-mm-dd 형식으로 입력해주세요. : " + query);
-					}
-					break;
-				default:
-					return builder;
-			}
+	private BooleanExpression approvedAtEquals(String query) {
+		try {
+			LocalDate targetDate = LocalDate.parse(query, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+			LocalDateTime startOfDay = targetDate.atStartOfDay();
+			LocalDateTime endOfDay = targetDate.atTime(LocalTime.MAX); // 23:59:59.999999999
+
+			return QPayment.payment.approvedAt.between(startOfDay, endOfDay);
+		} catch (DateTimeParseException e) {
+			throw new IllegalArgumentException("올바른 날짜 형식이 아닙니다. (예: 2025-04-13)");
 		}
+	}
 
-		return builder;
+	private BooleanExpression refundRequestedAtEquals(String query) {
+		try {
+			LocalDate targetDate = LocalDate.parse(query, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+			LocalDateTime startOfDay = targetDate.atStartOfDay();
+			LocalDateTime endOfDay = targetDate.atTime(LocalTime.MAX);
+
+			return QPayment.payment.refundRequestedAt.between(startOfDay, endOfDay);
+		} catch (DateTimeParseException e) {
+			throw new IllegalArgumentException("올바른 날짜 형식이 아닙니다. (예: 2025-04-13)");
+		}
 	}
 
 	private int validateSize(int size) {
@@ -100,23 +120,25 @@ public interface PaymentQuerydslRepositoryImpl extends JpaRepository<Payment, UU
 	}
 
 	private Sort getSortOrder(String sortBy, String order) {
-
-		if (!isValidSortBy(sortBy)) {
-			throw new IllegalArgumentException("SortBy 는 'createdAt', 'updatedAt', 'deletedAt' 값만 허용합니다.");
+		if (!VALID_SORT_BY.contains(sortBy)) {
+			throw new IllegalArgumentException("정렬 필드는 createdAt, updatedAt, deletedAt 만 허용됩니다.");
 		}
-
-		Sort sort = Sort.by(Sort.Order.by(sortBy));
-
-		sort = getSortDirection(sort, order);
-
-		return sort;
+		return "desc".equalsIgnoreCase(order) ?
+			Sort.by(Sort.Order.desc(sortBy)) :
+			Sort.by(Sort.Order.asc(sortBy));
 	}
 
-	private boolean isValidSortBy(String sortBy) {
-		return VALID_SORT_BY.contains(sortBy);
-	}
-
-	private Sort getSortDirection(Sort sort, String order) {
-		return "desc".equals(order) ? sort.descending() : sort.ascending();
+	private OrderSpecifier<?> toOrderSpecifier(String sortBy, String order) {
+		PathBuilder<Payment> pathBuilder = new PathBuilder<>(Payment.class, "payment");
+		Order direction = "desc".equalsIgnoreCase(order) ? Order.DESC : Order.ASC;
+		return switch (sortBy) {
+			case "createdAt" ->
+				new OrderSpecifier<>(direction, pathBuilder.get("createdAt", java.time.LocalDateTime.class));
+			case "updatedAt" ->
+				new OrderSpecifier<>(direction, pathBuilder.get("updatedAt", java.time.LocalDateTime.class));
+			case "deletedAt" ->
+				new OrderSpecifier<>(direction, pathBuilder.get("deletedAt", java.time.LocalDateTime.class));
+			default -> throw new IllegalArgumentException("정렬 필드는 createdAt, updatedAt, deletedAt 만 허용됩니다.");
+		};
 	}
 }
