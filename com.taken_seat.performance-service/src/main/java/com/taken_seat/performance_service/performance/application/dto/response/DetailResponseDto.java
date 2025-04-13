@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.taken_seat.performance_service.performance.domain.model.PerformanceStatus;
 
 import lombok.AllArgsConstructor;
@@ -20,8 +21,13 @@ public class DetailResponseDto {
 	private UUID performanceId;
 	private String title;
 	private String description;
+
+	@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
 	private LocalDateTime startAt;
+
+	@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
 	private LocalDateTime endAt;
+
 	private PerformanceStatus status;
 	private String posterUrl;
 	private String ageLimit;
