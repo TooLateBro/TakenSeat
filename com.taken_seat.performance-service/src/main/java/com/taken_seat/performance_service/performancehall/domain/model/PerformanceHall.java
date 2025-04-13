@@ -1,6 +1,5 @@
 package com.taken_seat.performance_service.performancehall.domain.model;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -52,12 +51,6 @@ public class PerformanceHall extends BaseTimeEntity {
 	@Builder.Default
 	private List<Seat> seats = new ArrayList<>();
 
-	@Column(name = "deleted_by")
-	private UUID deletedBy;
-
-	@Column(name = "deleted_at")
-	private LocalDateTime deletedAt;
-
 	public static PerformanceHall create(CreateRequestDto request, UUID createBy) {
 
 		PerformanceHall performanceHall =
@@ -66,12 +59,6 @@ public class PerformanceHall extends BaseTimeEntity {
 		PerformanceHallCreateHelper.createSeats(request, performanceHall, createBy);
 
 		return performanceHall;
-	}
-
-	public void softDelete(UUID userId) {
-
-		this.deletedBy = userId;
-		this.deletedAt = LocalDateTime.now();
 	}
 
 	public Seat getSeatById(UUID seatId) {
@@ -115,6 +102,5 @@ public class PerformanceHall extends BaseTimeEntity {
 			}
 		}
 		this.totalSeats = this.seats.size();
-
 	}
 }

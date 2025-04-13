@@ -86,12 +86,14 @@ public class PerformanceHallService {
 		return toUpdate(performanceHall);
 	}
 
-	public void delete(UUID id, UUID deletedBy) {
+	public void delete(UUID id, AuthenticatedUser authenticatedUser) {
 
-		if (id == null) {
-			throw new IllegalArgumentException("삭제할 공연 ID는 필수입니다");
-		}
+		PerformanceHallValidator.validateAuthorized(authenticatedUser);
 
-		performanceHallRepository.deleteById(id, deletedBy);
+		PerformanceHall performanceHall = performanceHallRepository.findById(id)
+			.orElseThrow(() -> new PerformanceException(ResponseCode.PERFORMANCE_HALL_NOT_FOUND_EXCEPTION,
+				"이미 삭제되었거나 존재하지 않는 공연장입니다."));
+
+		performanceHall.delete(authenticatedUser.getUserId());
 	}
 }
