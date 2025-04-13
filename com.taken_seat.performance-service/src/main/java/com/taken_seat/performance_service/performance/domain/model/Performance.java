@@ -70,14 +70,10 @@ public class Performance extends BaseTimeEntity {
 
 	public static Performance create(CreateRequestDto request, UUID createdBy) {
 
-		Performance performance = PerformanceCreateHelper.createPerformance(request);
+		Performance performance = PerformanceCreateHelper.createPerformance(request, createdBy);
 
-		performance.prePersist(createdBy);
-
-		List<PerformanceSchedule> schedules = PerformanceCreateHelper.createPerformanceSchedules(request, performance,
+		PerformanceCreateHelper.createPerformanceSchedules(request, performance,
 			createdBy);
-
-		performance.getSchedules().addAll(schedules);
 
 		return performance;
 	}

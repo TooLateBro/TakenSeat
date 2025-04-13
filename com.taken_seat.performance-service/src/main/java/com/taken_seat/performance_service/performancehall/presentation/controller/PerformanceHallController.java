@@ -15,10 +15,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.taken_seat.common_service.dto.ApiResponseData;
+import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.performance_service.performancehall.application.dto.request.CreateRequestDto;
 import com.taken_seat.performance_service.performancehall.application.dto.request.SearchFilterParam;
 import com.taken_seat.performance_service.performancehall.application.dto.request.UpdateRequestDto;
@@ -38,21 +38,14 @@ public class PerformanceHallController {
 
 	private final PerformanceHallService performanceHallService;
 
-	/**
-	 * 공연장 생성 API
-	 * 권한: ADMIN, MANAGER
-	 */
 	@PostMapping
-	public ResponseEntity<ApiResponseData<CreateResponseDto>> create(@Valid @RequestBody CreateRequestDto request) {
+	public ResponseEntity<ApiResponseData<CreateResponseDto>> create(@Valid @RequestBody CreateRequestDto request,
+		AuthenticatedUser authenticatedUser) {
 
-		CreateResponseDto response = performanceHallService.create(request);
+		CreateResponseDto response = performanceHallService.create(request, authenticatedUser);
 		return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponseData.success(response));
 	}
 
-	/**
-	 * 공연장 전체 조회 API
-	 * 권한: ALL
-	 */
 	@GetMapping("/search")
 	public ResponseEntity<ApiResponseData<PageResponseDto>> getList(
 		@ModelAttribute SearchFilterParam filterParam,
@@ -62,10 +55,6 @@ public class PerformanceHallController {
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
 	}
 
-	/**
-	 * 공연장 상세 조회 API
-	 * 권한: ALL
-	 */
 	@GetMapping("/{id}")
 	public ResponseEntity<ApiResponseData<DetailResponseDto>> getDetail(@PathVariable("id") UUID id) {
 
@@ -73,27 +62,21 @@ public class PerformanceHallController {
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
 	}
 
-	/**
-	 * 공연장 수정 API
-	 * 권한: ADMIN, MANAGER
-	 */
 	@PatchMapping("/{id}")
 	public ResponseEntity<ApiResponseData<UpdateResponseDto>> update(
 		@PathVariable("id") UUID id,
-		@Valid @RequestBody UpdateRequestDto request) {
+		@Valid @RequestBody UpdateRequestDto request,
+		AuthenticatedUser authenticatedUser) {
 
-		UpdateResponseDto response = performanceHallService.update(id, request);
+		UpdateResponseDto response = performanceHallService.update(id, request, authenticatedUser);
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
 	}
 
-	/**
-	 * 공연장 삭제 API
-	 * 권한: ADMIN, MANAGER
-	 */
 	@DeleteMapping("/{id}")
-	public ResponseEntity<ApiResponseData<Void>> delete(@PathVariable("id") UUID id, @RequestParam UUID deletedBy) {
+	public ResponseEntity<ApiResponseData<Void>> delete(@PathVariable("id") UUID id,
+		AuthenticatedUser authenticatedUser) {
 
-		performanceHallService.delete(id, deletedBy);
+		performanceHallService.delete(id, authenticatedUser);
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseData.success());
 	}
 }

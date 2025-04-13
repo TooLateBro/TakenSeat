@@ -14,8 +14,8 @@ import com.taken_seat.performance_service.performance.domain.model.PerformanceSt
 public class PerformanceCreateHelper {
 
 	// Performance 객체 생성
-	public static Performance createPerformance(CreateRequestDto request) {
-		return Performance.builder()
+	public static Performance createPerformance(CreateRequestDto request, UUID createdBy) {
+		Performance performance = Performance.builder()
 			.title(request.getTitle())
 			.description(request.getDescription())
 			.startAt(request.getStartAt())
@@ -26,12 +26,16 @@ public class PerformanceCreateHelper {
 			.maxTicketCount(request.getMaxTicketCount())
 			.discountInfo(request.getDiscountInfo())
 			.build();
+
+		performance.prePersist(createdBy);
+		return performance;
 	}
 
 	// PerformanceSchedule 리스트 생성
 	public static List<PerformanceSchedule> createPerformanceSchedules(CreateRequestDto request,
 		Performance performance, UUID createdBy) {
-		return request.getSchedules().stream()
+
+		List<PerformanceSchedule> schedules = request.getSchedules().stream()
 			.map(createPerformanceScheduleDto -> {
 				PerformanceSchedule schedule = createPerformanceSchedule(createPerformanceScheduleDto, performance);
 				schedule.prePersist(createdBy);
@@ -45,6 +49,9 @@ public class PerformanceCreateHelper {
 				return schedule;
 			})
 			.toList();
+		performance.getSchedules().addAll(schedules);
+
+		return schedules;
 	}
 
 	// PerformanceSchedule 객체 생성

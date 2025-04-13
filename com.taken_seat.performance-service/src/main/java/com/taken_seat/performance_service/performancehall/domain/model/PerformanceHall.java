@@ -1,6 +1,5 @@
 package com.taken_seat.performance_service.performancehall.domain.model;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -9,6 +8,7 @@ import com.taken_seat.common_service.entity.BaseTimeEntity;
 import com.taken_seat.performance_service.performancehall.application.dto.request.CreateRequestDto;
 import com.taken_seat.performance_service.performancehall.application.dto.request.UpdateRequestDto;
 import com.taken_seat.performance_service.performancehall.application.dto.request.UpdateSeatDto;
+import com.taken_seat.performance_service.performancehall.domain.helper.PerformanceHallCreateHelper;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -51,40 +51,14 @@ public class PerformanceHall extends BaseTimeEntity {
 	@Builder.Default
 	private List<Seat> seats = new ArrayList<>();
 
-	@Column(name = "deleted_by")
-	private UUID deletedBy;
+	public static PerformanceHall create(CreateRequestDto request, UUID createBy) {
 
-	@Column(name = "deleted_at")
-	private LocalDateTime deletedAt;
+		PerformanceHall performanceHall =
+			PerformanceHallCreateHelper.createPerformanceHall(request, createBy);
 
-	public static PerformanceHall create(CreateRequestDto request) {
-
-		PerformanceHall performanceHall = PerformanceHall.builder()
-			.name(request.getName())
-			.address(request.getAddress())
-			.totalSeats(request.getTotalSeats())
-			.description(request.getDescription())
-			.build();
-
-		List<Seat> seats = request.getSeats().stream()
-			.map(createSeatDto -> Seat.builder()
-				.performanceHall(performanceHall)
-				.rowNumber(createSeatDto.getRowNumber())
-				.seatNumber(createSeatDto.getSeatNumber())
-				.seatType(createSeatDto.getSeatType())
-				.status(createSeatDto.getStatus())
-				.build())
-			.toList();
-
-		performanceHall.getSeats().addAll(seats);
+		PerformanceHallCreateHelper.createSeats(request, performanceHall, createBy);
 
 		return performanceHall;
-	}
-
-	public void softDelete(UUID userId) {
-
-		this.deletedBy = userId;
-		this.deletedAt = LocalDateTime.now();
 	}
 
 	public Seat getSeatById(UUID seatId) {
@@ -95,28 +69,38 @@ public class PerformanceHall extends BaseTimeEntity {
 	}
 
 	public void update(UpdateRequestDto request) {
+		this.updatePerformanceHall(request);
+		this.updateSeats(request.getSeats());
+	}
+
+	public void updatePerformanceHall(UpdateRequestDto request) {
 		this.name = request.getName();
 		this.address = request.getAddress();
-		this.totalSeats = request.getTotalSeats();
 		this.description = request.getDescription();
+	}
 
-		if (request.getSeats() != null) {
-			for (UpdateSeatDto seatDto : request.getSeats()) {
-				Seat existingSeat = this.getSeatById(seatDto.getSeatId());
+	public void updateSeats(List<UpdateSeatDto> seatDtoList) {
 
-				if (existingSeat != null) {
-					existingSeat.update(seatDto);
-				} else {
-					Seat newSeat = Seat.builder()
-						.performanceHall(this)
-						.rowNumber(seatDto.getRowNumber())
-						.seatNumber(seatDto.getSeatNumber())
-						.seatType(seatDto.getSeatType())
-						.status(seatDto.getStatus())
-						.build();
-					this.seats.add(newSeat);
-				}
+		if (seatDtoList == null) {
+			return;
+		}
+
+		for (UpdateSeatDto seatDto : seatDtoList) {
+			Seat existingSeat = this.getSeatById(seatDto.getSeatId());
+
+			if (existingSeat != null) {
+				existingSeat.update(seatDto);
+			} else {
+				Seat newSeat = Seat.builder()
+					.performanceHall(this)
+					.rowNumber(seatDto.getRowNumber())
+					.seatNumber(seatDto.getSeatNumber())
+					.seatType(seatDto.getSeatType())
+					.status(seatDto.getStatus())
+					.build();
+				this.seats.add(newSeat);
 			}
 		}
+		this.totalSeats = this.seats.size();
 	}
 }

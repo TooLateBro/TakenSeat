@@ -19,5 +19,5 @@ public interface PerformanceHallRepository {
 
 	Page<PerformanceHall> findAll(SearchFilterParam filterParam, Pageable pageable);
 
-	void deleteById(UUID id, UUID deletedBy);
+	boolean existsByNameAndAddressAndIdNot(String name, String address, UUID id);
 }

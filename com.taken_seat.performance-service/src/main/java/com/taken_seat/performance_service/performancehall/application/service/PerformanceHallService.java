@@ -9,6 +9,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.taken_seat.common_service.dto.AuthenticatedUser;
+import com.taken_seat.common_service.exception.customException.PerformanceException;
+import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.performance_service.performancehall.application.dto.mapper.HallResponseMapper;
 import com.taken_seat.performance_service.performancehall.application.dto.request.CreateRequestDto;
 import com.taken_seat.performance_service.performancehall.application.dto.request.SearchFilterParam;
@@ -19,6 +22,7 @@ import com.taken_seat.performance_service.performancehall.application.dto.respon
 import com.taken_seat.performance_service.performancehall.application.dto.response.UpdateResponseDto;
 import com.taken_seat.performance_service.performancehall.domain.model.PerformanceHall;
 import com.taken_seat.performance_service.performancehall.domain.repository.PerformanceHallRepository;
+import com.taken_seat.performance_service.performancehall.domain.validation.PerformanceHallValidator;
 
 import lombok.RequiredArgsConstructor;
 
@@ -30,16 +34,17 @@ public class PerformanceHallService {
 
 	public final HallResponseMapper hallResponseMapper;
 
-	public CreateResponseDto create(CreateRequestDto request) {
+	@Transactional
+	public CreateResponseDto create(CreateRequestDto request, AuthenticatedUser authenticatedUser) {
 
-		boolean exists = performanceHallRepository.existsByNameAndAddress(
-			request.getName(), request.getAddress());
+		PerformanceHallValidator.validateAuthorized(authenticatedUser);
 
-		if (exists) {
-			throw new IllegalArgumentException("이미 존재하는 공연장입니다.");
-		}
+		PerformanceHallValidator.createValidateDuplicateHall(request.getName(), request.getAddress(),
+			performanceHallRepository);
 
-		PerformanceHall performanceHall = PerformanceHall.create(request);
+		PerformanceHallValidator.validateDuplicateSeats(request.getSeats());
+
+		PerformanceHall performanceHall = PerformanceHall.create(request, authenticatedUser.getUserId());
 
 		PerformanceHall saved = performanceHallRepository.save(performanceHall);
 
@@ -54,18 +59,27 @@ public class PerformanceHallService {
 		return hallResponseMapper.toPage(pages);
 	}
 
+	@Transactional(readOnly = true)
 	public DetailResponseDto getDetail(UUID id) {
 
 		PerformanceHall performanceHall = performanceHallRepository.findById(id)
-			.orElseThrow(() -> new IllegalArgumentException("공연장 정보를 찾을 수 없습니다"));
+			.orElseThrow(() -> new PerformanceException(ResponseCode.PERFORMANCE_HALL_NOT_FOUND_EXCEPTION));
 
 		return toDetail(performanceHall);
 	}
 
-	public UpdateResponseDto update(UUID id, UpdateRequestDto request) {
+	@Transactional
+	public UpdateResponseDto update(UUID id, UpdateRequestDto request, AuthenticatedUser authenticatedUser) {
+
+		PerformanceHallValidator.validateAuthorized(authenticatedUser);
 
 		PerformanceHall performanceHall = performanceHallRepository.findById(id)
-			.orElseThrow(() -> new IllegalArgumentException("해당 공연장을 찾을 수 없습니다"));
+			.orElseThrow(() -> new PerformanceException(ResponseCode.PERFORMANCE_HALL_NOT_FOUND_EXCEPTION));
+
+		PerformanceHallValidator.updateValidateDuplicateHall(
+			id, request.getName(), request.getAddress(), performanceHallRepository);
+
+		PerformanceHallValidator.validateDuplicateSeats(request.getSeats());
 
 		performanceHall.update(request);
 
@@ -74,12 +88,16 @@ public class PerformanceHallService {
 		return toUpdate(performanceHall);
 	}
 
-	public void delete(UUID id, UUID deletedBy) {
+	@Transactional
+	public void delete(UUID id, AuthenticatedUser authenticatedUser) {
 
-		if (id == null) {
-			throw new IllegalArgumentException("삭제할 공연 ID는 필수입니다");
-		}
+		PerformanceHallValidator.validateAuthorized(authenticatedUser);
 
-		performanceHallRepository.deleteById(id, deletedBy);
+		PerformanceHall performanceHall = performanceHallRepository.findById(id)
+			.orElseThrow(() -> new PerformanceException(ResponseCode.PERFORMANCE_HALL_NOT_FOUND_EXCEPTION,
+				"이미 삭제되었거나 존재하지 않는 공연장입니다."));
+
+		performanceHall.delete(authenticatedUser.getUserId());
+		performanceHallRepository.save(performanceHall);
 	}
 }
