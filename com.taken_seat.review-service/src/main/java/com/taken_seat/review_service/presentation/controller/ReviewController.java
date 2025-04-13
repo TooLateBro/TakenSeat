@@ -20,6 +20,7 @@ import com.taken_seat.review_service.application.dto.request.ReviewRegisterReqDt
 import com.taken_seat.review_service.application.dto.request.ReviewUpdateReqDto;
 import com.taken_seat.review_service.application.dto.response.PageReviewResponseDto;
 import com.taken_seat.review_service.application.dto.response.ReviewDetailResDto;
+import com.taken_seat.review_service.application.service.ReviewLikeService;
 import com.taken_seat.review_service.application.service.ReviewService;
 
 import jakarta.validation.Valid;
@@ -30,7 +31,8 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/reviews")
 public class ReviewController {
 
-	private final ReviewService reviewService;
+	private final ReviewService reviewServices;
+	private final ReviewLikeService reviewLikeService;
 
 	@PostMapping
 	public ResponseEntity<ApiResponseData<ReviewDetailResDto>> registerReview(
@@ -38,14 +40,14 @@ public class ReviewController {
 		AuthenticatedUser authenticatedUser) {
 
 		return ResponseEntity.status(HttpStatus.OK)
-			.body(ApiResponseData.success(reviewService.registerReview(reviewRegisterReqDto, authenticatedUser)));
+			.body(ApiResponseData.success(reviewServices.registerReview(reviewRegisterReqDto, authenticatedUser)));
 
 	}
 
 	@GetMapping("/{id}")
 	public ResponseEntity<ApiResponseData<ReviewDetailResDto>> getReviewDetail(@PathVariable("id") UUID id) {
 		return ResponseEntity.status(HttpStatus.OK)
-			.body(ApiResponseData.success(reviewService.getReviewDetail(id)));
+			.body(ApiResponseData.success(reviewServices.getReviewDetail(id)));
 	}
 
 	@GetMapping("/search")
@@ -58,7 +60,7 @@ public class ReviewController {
 		@RequestParam(defaultValue = "desc") String order) {
 		return ResponseEntity.status(HttpStatus.OK)
 			.body(
-				ApiResponseData.success(reviewService.searchReview(q, category, page, size, sort, order)));
+				ApiResponseData.success(reviewServices.searchReview(q, category, page, size, sort, order)));
 	}
 
 	@PatchMapping("/{id}")
@@ -66,15 +68,25 @@ public class ReviewController {
 		@Valid @RequestBody ReviewUpdateReqDto reviewUpdateReqDto,
 		AuthenticatedUser authenticatedUser) {
 		return ResponseEntity.status(HttpStatus.OK)
-			.body(ApiResponseData.success(reviewService.updateReview(id, reviewUpdateReqDto, authenticatedUser)));
+			.body(ApiResponseData.success(reviewServices.updateReview(id, reviewUpdateReqDto, authenticatedUser)));
 	}
 
 	@DeleteMapping("/{id}")
 	public ResponseEntity<ApiResponseData<Void>> deleteReview(@PathVariable("id") UUID id,
 		AuthenticatedUser authenticatedUser) {
-		reviewService.deleteReview(id, authenticatedUser);
+		reviewServices.deleteReview(id, authenticatedUser);
 		return ResponseEntity.status(HttpStatus.OK)
 			.body(ApiResponseData.success());
 	}
+
+	@PostMapping("/{id}/like")
+	public ResponseEntity<ApiResponseData<Void>> toggleReviewLike(@PathVariable("id") UUID id,
+		AuthenticatedUser authenticatedUser) {
+		reviewLikeService.toggleReviewLike(id, authenticatedUser);
+
+		return ResponseEntity.status(HttpStatus.OK)
+			.body(ApiResponseData.success());
+	}
+
 }
 
