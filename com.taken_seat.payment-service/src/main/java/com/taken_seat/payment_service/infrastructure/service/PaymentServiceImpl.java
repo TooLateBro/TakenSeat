@@ -1,4 +1,4 @@
-package com.taken_seat.payment_service.infrastructure;
+package com.taken_seat.payment_service.infrastructure.service;
 
 import java.util.UUID;
 
@@ -11,8 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.taken_seat.common_service.dto.AuthenticatedUser;
-import com.taken_seat.common_service.exception.customException.PaymentHistoryNotFoundException;
-import com.taken_seat.common_service.exception.customException.PaymentNotFoundException;
+import com.taken_seat.common_service.exception.customException.PaymentException;
+import com.taken_seat.common_service.exception.customException.PaymentHistoryException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.payment_service.application.dto.request.PaymentRegisterReqDto;
 import com.taken_seat.payment_service.application.dto.request.PaymentUpdateReqDto;
@@ -81,7 +81,7 @@ public class PaymentServiceImpl implements PaymentService {
 	 *
 	 * @param id 조회할 결제 ID
 	 * @return 조회된 결제 상세 응답 DTO
-	 * @throws PaymentNotFoundException 결제 ID에 해당하는 정보가 존재하지 않는 경우 예외 발생
+	 * @throws PaymentException 결제 ID에 해당하는 정보가 존재하지 않는 경우 예외 발생
 	 */
 	@Override
 	@Transactional(readOnly = true)
@@ -90,7 +90,7 @@ public class PaymentServiceImpl implements PaymentService {
 
 		Payment payment = paymentRepository.findByIdAndDeletedAtIsNull(id)
 			.orElseThrow(() ->
-				new PaymentNotFoundException(ResponseCode.PAYMENT_NOT_FOUND_EXCEPTION,
+				new PaymentException(ResponseCode.PAYMENT_NOT_FOUND_EXCEPTION,
 					"해당 ID 에 대한 결제 정보를 찾을 수 없습니다 : " + id));
 
 		return PaymentDetailResDto.toResponse(payment);
@@ -141,8 +141,8 @@ public class PaymentServiceImpl implements PaymentService {
 	 * @param authenticatedUser 인증된 사용자 정보 (수정자 ID 포함)
 	 * @return 수정된 결제 응답 DTO
 	 * @throws IllegalArgumentException 결제 금액이 1원 미만인 경우 예외 발생
-	 * @throws PaymentNotFoundException 결제가 존재하지 않는 경우 예외 발생
-	 * @throws PaymentHistoryNotFoundException 결제 이력이 존재하지 않는 경우 예외 발생
+	 * @throws PaymentException 결제가 존재하지 않는 경우 예외 발생
+	 * @throws PaymentHistoryException 결제 이력이 존재하지 않는 경우 예외 발생
 	 */
 	@Override
 	@CachePut(cacheNames = "paymentCache", key = "#id")
@@ -156,12 +156,12 @@ public class PaymentServiceImpl implements PaymentService {
 
 		Payment payment = paymentRepository.findByIdAndDeletedAtIsNull(id)
 			.orElseThrow(() ->
-				new PaymentNotFoundException(ResponseCode.PAYMENT_NOT_FOUND_EXCEPTION,
+				new PaymentException(ResponseCode.PAYMENT_NOT_FOUND_EXCEPTION,
 					"해당 ID 에 대한 결제 정보를 찾을 수 없습니다 : " + id));
 
 		PaymentHistory paymentHistory = paymentHistoryRepository.findByPayment(payment)
 			.orElseThrow(() ->
-				new PaymentHistoryNotFoundException(ResponseCode.PAYMENT_HISTORY_NOT_FOUND_EXCEPTION));
+				new PaymentHistoryException(ResponseCode.PAYMENT_HISTORY_NOT_FOUND_EXCEPTION));
 
 		payment.update(paymentUpdateReqDto.getPrice(), paymentUpdateReqDto.getPaymentStatus(),
 			authenticatedUser);
@@ -180,8 +180,8 @@ public class PaymentServiceImpl implements PaymentService {
 	 *
 	 * @param id 삭제할 결제 ID
 	 * @param authenticatedUser 인증된 사용자 정보 (삭제자 ID 포함)
-	 * @throws PaymentNotFoundException 결제가 존재하지 않는 경우 예외 발생
-	 * @throws PaymentHistoryNotFoundException 결제 이력이 존재하지 않는 경우 예외 발생
+	 * @throws PaymentException 결제가 존재하지 않는 경우 예외 발생
+	 * @throws PaymentHistoryException 결제 이력이 존재하지 않는 경우 예외 발생
 	 */
 	@Override
 	@Caching(evict = {
@@ -191,12 +191,12 @@ public class PaymentServiceImpl implements PaymentService {
 	public void deletePayment(UUID id, AuthenticatedUser authenticatedUser) {
 		Payment payment = paymentRepository.findByIdAndDeletedAtIsNull(id)
 			.orElseThrow(() ->
-				new PaymentNotFoundException(ResponseCode.PAYMENT_NOT_FOUND_EXCEPTION,
+				new PaymentException(ResponseCode.PAYMENT_NOT_FOUND_EXCEPTION,
 					"해당 ID 에 대한 결제 정보를 찾을 수 없습니다 : " + id));
 
 		PaymentHistory paymentHistory = paymentHistoryRepository.findByPayment(payment)
 			.orElseThrow(() ->
-				new PaymentHistoryNotFoundException(ResponseCode.PAYMENT_HISTORY_NOT_FOUND_EXCEPTION));
+				new PaymentHistoryException(ResponseCode.PAYMENT_HISTORY_NOT_FOUND_EXCEPTION));
 
 		payment.delete(authenticatedUser.getUserId());
 		paymentHistory.delete(authenticatedUser.getUserId());

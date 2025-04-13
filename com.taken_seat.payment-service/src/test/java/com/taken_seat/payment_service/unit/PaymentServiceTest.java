@@ -21,7 +21,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
 import com.taken_seat.common_service.dto.AuthenticatedUser;
-import com.taken_seat.common_service.exception.customException.PaymentNotFoundException;
+import com.taken_seat.common_service.exception.customException.PaymentException;
 import com.taken_seat.payment_service.application.dto.request.PaymentRegisterReqDto;
 import com.taken_seat.payment_service.application.dto.request.PaymentUpdateReqDto;
 import com.taken_seat.payment_service.application.dto.response.PagePaymentResponseDto;
@@ -34,7 +34,7 @@ import com.taken_seat.payment_service.domain.model.PaymentHistory;
 import com.taken_seat.payment_service.domain.repository.PaymentHistoryRepository;
 import com.taken_seat.payment_service.domain.repository.PaymentQuerydslRepository;
 import com.taken_seat.payment_service.domain.repository.PaymentRepository;
-import com.taken_seat.payment_service.infrastructure.PaymentServiceImpl;
+import com.taken_seat.payment_service.infrastructure.service.PaymentServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
 public class PaymentServiceTest {
@@ -157,7 +157,7 @@ public class PaymentServiceTest {
 		when(paymentRepository.findByIdAndDeletedAtIsNull(registerTestPaymentId)).thenReturn(Optional.empty());
 
 		// When & Then
-		PaymentNotFoundException exception = assertThrows(PaymentNotFoundException.class, () -> {
+		PaymentException exception = assertThrows(PaymentException.class, () -> {
 			paymentService.getPaymentDetail(registerTestPaymentId);
 		});
 
@@ -256,7 +256,7 @@ public class PaymentServiceTest {
 		when(paymentRepository.findByIdAndDeletedAtIsNull(notExistId)).thenReturn(Optional.empty());
 
 		// When & Then
-		PaymentNotFoundException exception = assertThrows(PaymentNotFoundException.class, () -> {
+		PaymentException exception = assertThrows(PaymentException.class, () -> {
 			paymentService.updatePayment(notExistId, reqDto, authenticatedUser);
 		});
 
@@ -305,7 +305,7 @@ public class PaymentServiceTest {
 		when(paymentRepository.findByIdAndDeletedAtIsNull(any(UUID.class))).thenReturn(Optional.empty());
 
 		// When & Then
-		PaymentNotFoundException exception = assertThrows(PaymentNotFoundException.class, () ->
+		PaymentException exception = assertThrows(PaymentException.class, () ->
 			paymentService.deletePayment(UUID.randomUUID(), authenticatedUser)
 		);
 
