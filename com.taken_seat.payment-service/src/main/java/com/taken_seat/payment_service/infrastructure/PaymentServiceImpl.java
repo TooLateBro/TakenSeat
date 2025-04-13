@@ -138,7 +138,7 @@ public class PaymentServiceImpl implements PaymentService {
 	 *
 	 * @param id 수정할 결제 ID
 	 * @param paymentUpdateReqDto 수정할 결제 정보 DTO
-	 * @param updatedBy 수정자 ID
+	 * @param authenticatedUser 인증된 사용자 정보 (수정자 ID 포함)
 	 * @return 수정된 결제 응답 DTO
 	 * @throws IllegalArgumentException 결제 금액이 1원 미만인 경우 예외 발생
 	 * @throws PaymentNotFoundException 결제가 존재하지 않는 경우 예외 발생
@@ -164,7 +164,7 @@ public class PaymentServiceImpl implements PaymentService {
 				new PaymentHistoryNotFoundException(ResponseCode.PAYMENT_HISTORY_NOT_FOUND_EXCEPTION));
 
 		payment.update(paymentUpdateReqDto.getPrice(), paymentUpdateReqDto.getPaymentStatus(),
-			authenticatedUser.getUserId());
+			authenticatedUser);
 		paymentHistory.update(payment);
 		return PaymentUpdateResDto.toResponse(payment);
 	}
@@ -179,7 +179,7 @@ public class PaymentServiceImpl implements PaymentService {
 	 * 3. 캐시에서 관련 결제 및 검색 캐시 제거
 	 *
 	 * @param id 삭제할 결제 ID
-	 * @param userId 삭제 처리자 ID
+	 * @param authenticatedUser 인증된 사용자 정보 (삭제자 ID 포함)
 	 * @throws PaymentNotFoundException 결제가 존재하지 않는 경우 예외 발생
 	 * @throws PaymentHistoryNotFoundException 결제 이력이 존재하지 않는 경우 예외 발생
 	 */

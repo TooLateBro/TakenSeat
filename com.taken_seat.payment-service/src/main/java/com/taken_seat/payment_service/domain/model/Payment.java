@@ -3,6 +3,7 @@ package com.taken_seat.payment_service.domain.model;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.common_service.entity.BaseTimeEntity;
 import com.taken_seat.payment_service.application.dto.request.PaymentRegisterReqDto;
 import com.taken_seat.payment_service.domain.enums.PaymentStatus;
@@ -61,10 +62,10 @@ public class Payment extends BaseTimeEntity {
 		return payment;
 	}
 
-	public void update(Integer price, PaymentStatus status, UUID updatedBy) {
+	public void update(Integer price, PaymentStatus status, AuthenticatedUser authenticatedUser) {
 		this.price = price;
 		this.paymentStatus = status;
-		this.preUpdate(updatedBy);
+		this.preUpdate(authenticatedUser.getUserId());
 	}
 
 	@Override
