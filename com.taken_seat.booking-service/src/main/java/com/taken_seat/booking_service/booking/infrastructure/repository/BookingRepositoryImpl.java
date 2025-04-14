@@ -24,6 +24,11 @@ public class BookingRepositoryImpl implements BookingRepository {
 	}
 
 	@Override
+	public Optional<Booking> findById(UUID id) {
+		return bookingJpaRepository.findByIdAndDeletedAtIsNull(id);
+	}
+
+	@Override
 	public Optional<Booking> findByIdAndUserId(UUID id, UUID userId) {
 		return bookingJpaRepository.findByIdAndUserIdAndDeletedAtIsNull(id, userId);
 	}
