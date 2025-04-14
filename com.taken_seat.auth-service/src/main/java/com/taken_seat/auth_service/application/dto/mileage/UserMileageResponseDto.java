@@ -18,7 +18,7 @@ public class UserMileageResponseDto {
 
     private UUID userId;
     private UUID mileageId;
-    private Integer count;
+    private Integer mileage;
 
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
@@ -28,7 +28,7 @@ public class UserMileageResponseDto {
         return UserMileageResponseDto.builder()
                 .userId(mileage.getUser().getId())
                 .mileageId(mileage.getId())
-                .count(mileage.getCount())
+                .mileage(mileage.getMileage())
                 .updatedAt(mileage.getUpdatedAt())
                 .build();
     }

@@ -20,20 +20,20 @@ public class Mileage extends BaseTimeEntity {
     @Column(columnDefinition = "BINARY(16)", nullable = false, updatable = false)
     private UUID id;
 
-    @Column(name = "count", nullable = false)
-    private Integer count;
+    @Column(name = "mileage", nullable = false)
+    private Integer mileage;
 
-    public static Mileage create(User user, Integer count){
-        Mileage mileage = Mileage.builder()
+    public static Mileage create(User user, Integer mileage){
+        Mileage mileages = Mileage.builder()
                 .user(user)
-                .count(count)
+                .mileage(mileage)
                 .build();
-        mileage.prePersist(user.getId());
-        return mileage;
+        mileages.prePersist(user.getId());
+        return mileages;
     }
 
-    public void update(Integer count, UUID userId) {
-        this.count = count;
+    public void update(Integer mileage, UUID userId) {
+        this.mileage = mileage;
         this.preUpdate(userId);
     }
 

@@ -28,7 +28,7 @@ public class MileageQueryRepositoryImpl implements MileageQueryRepository {
             throw new IllegalArgumentException("startCount must be less than or equal to endCount");
         }
         QUser user = QUser.user;
-        QMileage mileage = QMileage.mileage;
+        QMileage mileage = QMileage.mileage1;
 
         // 서브쿼리: count 조건을 만족하는 mileage 레코드의 user.id 조회
         JPAQuery<UUID> subQuery = jpaQueryFactory
@@ -78,10 +78,10 @@ public class MileageQueryRepositoryImpl implements MileageQueryRepository {
         }
         BooleanExpression condition = null;
         if (startCount != null) {
-            condition = mileage.count.goe(startCount);
+            condition = mileage.mileage.goe(startCount);
         }
         if (endCount != null) {
-            BooleanExpression endCondition = mileage.count.loe(endCount);
+            BooleanExpression endCondition = mileage.mileage.loe(endCount);
             condition = condition == null ? endCondition : condition.and(endCondition);
         }
         return condition;

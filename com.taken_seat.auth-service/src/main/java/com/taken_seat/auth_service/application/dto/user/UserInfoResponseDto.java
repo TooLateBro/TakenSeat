@@ -47,7 +47,7 @@ public class UserInfoResponseDto {
                 .role(user.getRole())
                 .mileage(user.getMileages().stream()
                         .max(Comparator.comparing(Mileage::getUpdatedAt))
-                        .map(Mileage::getCount)
+                        .map(Mileage::getMileage)
                 .orElse(0))
                 .userCoupons(couponsPage)
                 .build();

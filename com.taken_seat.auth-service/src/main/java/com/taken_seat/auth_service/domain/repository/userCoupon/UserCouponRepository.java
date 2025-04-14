@@ -18,4 +18,6 @@ public interface UserCouponRepository {
     Page<UserCoupon> findCouponIdByUserIdAndIsActiveTrue(UUID id, Pageable pageable);
 
     Optional<UserCoupon> findByCouponId(UUID couponId);
+
+    Optional<UserCoupon> findByCouponIdAndIsActiveTrue(UUID couponId);
 }

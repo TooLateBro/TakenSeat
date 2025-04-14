@@ -48,4 +48,8 @@ public class UserCoupon extends BaseTimeEntity {
         userCoupon.prePersist(user.getId());
         return userCoupon;
     }
+    public void updateActive(boolean isActive, UUID userId) {
+        this.isActive = isActive;
+        this.preUpdate(userId);
+    }
 }

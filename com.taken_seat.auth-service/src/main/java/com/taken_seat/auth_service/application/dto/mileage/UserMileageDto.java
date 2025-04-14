@@ -10,9 +10,9 @@ import lombok.Getter;
 @Builder(access = AccessLevel.PRIVATE)
 public class UserMileageDto {
 
-    private Integer count;
+    private Integer mileage;
 
     public static UserMileageDto create(Integer count) {
-        return UserMileageDto.builder().count(count).build();
+        return UserMileageDto.builder().mileage(count).build();
     }
 }
