@@ -26,13 +26,13 @@ import com.taken_seat.payment_service.application.dto.request.PaymentRegisterReq
 import com.taken_seat.payment_service.application.dto.request.PaymentUpdateReqDto;
 import com.taken_seat.payment_service.application.dto.response.PagePaymentResponseDto;
 import com.taken_seat.payment_service.application.dto.response.PaymentDetailResDto;
+import com.taken_seat.payment_service.application.service.PaymentServiceImpl;
 import com.taken_seat.payment_service.domain.enums.PaymentStatus;
 import com.taken_seat.payment_service.domain.model.Payment;
 import com.taken_seat.payment_service.domain.model.PaymentHistory;
 import com.taken_seat.payment_service.domain.repository.PaymentHistoryRepository;
 import com.taken_seat.payment_service.domain.repository.PaymentQuerydslRepository;
 import com.taken_seat.payment_service.domain.repository.PaymentRepository;
-import com.taken_seat.payment_service.infrastructure.service.PaymentServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
 public class PaymentServiceTest {

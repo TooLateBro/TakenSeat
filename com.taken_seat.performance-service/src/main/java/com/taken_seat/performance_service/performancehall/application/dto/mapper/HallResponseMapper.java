@@ -105,4 +105,10 @@ public class HallResponseMapper {
 			)
 			.build();
 	}
+
+	public static List<SeatDto> toSeatLayout(List<Seat> seats) {
+		return seats.stream()
+			.map(HallResponseMapper::toSeat)
+			.collect(Collectors.toList());
+	}
 }

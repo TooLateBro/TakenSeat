@@ -1,4 +1,4 @@
-package com.taken_seat.payment_service.infrastructure.service;
+package com.taken_seat.payment_service.application.service;
 
 import java.util.UUID;
 
@@ -18,7 +18,6 @@ import com.taken_seat.payment_service.application.dto.request.PaymentRegisterReq
 import com.taken_seat.payment_service.application.dto.request.PaymentUpdateReqDto;
 import com.taken_seat.payment_service.application.dto.response.PagePaymentResponseDto;
 import com.taken_seat.payment_service.application.dto.response.PaymentDetailResDto;
-import com.taken_seat.payment_service.application.service.PaymentService;
 import com.taken_seat.payment_service.domain.model.Payment;
 import com.taken_seat.payment_service.domain.model.PaymentHistory;
 import com.taken_seat.payment_service.domain.repository.PaymentHistoryRepository;

@@ -46,4 +46,9 @@ public class PerformanceHallRepositoryImpl implements PerformanceHallRepository 
 	public boolean existsByNameAndAddressAndIdNot(String name, String address, UUID id) {
 		return performanceHallJpaRepository.existsByNameAndAddressAndIdNot(name, address, id);
 	}
+
+	@Override
+	public Optional<PerformanceHall> findBySeatId(UUID seatId) {
+		return performanceHallJpaRepository.findBySeatId(seatId);
+	}
 }
