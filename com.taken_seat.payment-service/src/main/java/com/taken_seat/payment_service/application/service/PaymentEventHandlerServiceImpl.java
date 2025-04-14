@@ -4,7 +4,7 @@ import org.springframework.stereotype.Service;
 
 import com.taken_seat.common_service.message.PaymentRequestMessage;
 import com.taken_seat.common_service.message.PaymentResultMessage;
-import com.taken_seat.common_service.message.UserBenefitUsageRequestMessage;
+import com.taken_seat.common_service.message.UserBenefitMessage;
 import com.taken_seat.common_service.message.enums.PaymentResultStatus;
 import com.taken_seat.payment_service.application.kafka.producer.PaymentResultProducer;
 import com.taken_seat.payment_service.domain.model.Payment;
@@ -29,8 +29,10 @@ public class PaymentEventHandlerServiceImpl implements PaymentEventHandlerServic
 	public void processPayment(PaymentRequestMessage message) {
 
 		if (isInvalidPrice(message)) {
-			PaymentResultMessage paymentResultMessage = new PaymentResultMessage(message.getBookingId(),
-				message.getUserId(), PaymentResultStatus.INVALID_PRICE);
+			PaymentResultMessage paymentResultMessage = PaymentResultMessage.builder()
+				.bookingId(message.getBookingId())
+				.status(PaymentResultStatus.INVALID_PRICE)
+				.build();
 
 			paymentResultProducer.sendPaymentResult(paymentResultMessage);
 			return;
@@ -50,17 +52,23 @@ public class PaymentEventHandlerServiceImpl implements PaymentEventHandlerServic
 
 		//3. 마일리지나 쿠폰을 사용한 경우 -> 비동기 차감 요청 이벤트 전송
 		if (isUsedCoupon || isUsedMileage) {
-			UserBenefitUsageRequestMessage benefitUsageRequestMessage = new UserBenefitUsageRequestMessage(
-				message.getUserId(),
-				message.getCouponId(),
-				message.getMileage());
+			UserBenefitMessage benefitUsageRequestMessage = UserBenefitMessage.builder()
+				.paymentId(payment.getId())
+				.userId(message.getUserId())
+				.couponId(message.getCouponId())
+				.mileage(message.getMileage())
+				.build();
+
 			userBenefitRequestProducer.sendBenefitUsageRequest(benefitUsageRequestMessage);
 		} else {
 			payment.markAsCompleted(message.getUserId());
 			paymentHistory.markAsCompleted(message.getUserId());
 
-			PaymentResultMessage paymentResultMessage = new PaymentResultMessage(payment.getBookingId(),
-				payment.getId(), PaymentResultStatus.SUCCESS);
+			PaymentResultMessage paymentResultMessage = PaymentResultMessage.builder()
+				.bookingId(message.getBookingId())
+				.paymentId(payment.getId())
+				.status(PaymentResultStatus.SUCCESS)
+				.build();
 
 			paymentResultProducer.sendPaymentResult(paymentResultMessage);
 		}

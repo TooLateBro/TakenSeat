@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
-import com.taken_seat.common_service.message.UserBenefitUsageRequestMessage;
+import com.taken_seat.common_service.message.UserBenefitMessage;
 import com.taken_seat.payment_service.application.kafka.producer.UserBenefitRequestProducer;
 
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ public class UserBenefitRequestProducerImpl implements UserBenefitRequestProduce
 	private String SEND_BENEFIT_USAGE_REQUEST_TOPIC;
 
 	@Override
-	public void sendBenefitUsageRequest(UserBenefitUsageRequestMessage message) {
+	public void sendBenefitUsageRequest(UserBenefitMessage message) {
 		kafkaTemplate.send(SEND_BENEFIT_USAGE_REQUEST_TOPIC, message);
 	}
 }
