@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
 public class PaymentRequestMessage {
 
 	private UUID bookingId;

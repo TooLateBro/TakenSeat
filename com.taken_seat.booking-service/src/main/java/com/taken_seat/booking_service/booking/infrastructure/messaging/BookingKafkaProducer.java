@@ -18,12 +18,12 @@ public class BookingKafkaProducer implements BookingProducer {
 	@Override
 	public void sendPaymentRequestEvent(PaymentRequestMessage message) {
 
-		kafkaTemplate.send("payment.request", message.getBookingId().toString(), message);
+		kafkaTemplate.send("payment.request", message);
 	}
 
 	@Override
 	public void sendPaymentCompleteEvent(TicketRequestMessage message) {
 
-		kafkaTemplate.send("ticket.request", message.getBookingId().toString(), message);
+		kafkaTemplate.send("ticket.request", message);
 	}
 }
