@@ -1,5 +1,6 @@
 package com.taken_seat.performance_service.performance.domain.helper;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -57,18 +58,22 @@ public class PerformanceCreateHelper {
 	// PerformanceSchedule 객체 생성
 	private static PerformanceSchedule createPerformanceSchedule(
 		CreatePerformanceScheduleDto createPerformanceScheduleDto, Performance performance) {
+
+		LocalDateTime saleStartAt = createPerformanceScheduleDto.getSaleStartAt();
+		LocalDateTime saleEndAt = createPerformanceScheduleDto.getSaleEndAt();
+
+		if (saleEndAt == null) {
+			saleEndAt = saleStartAt.minusMinutes(1);
+		}
+
 		return PerformanceSchedule.builder()
 			.performance(performance)
 			.performanceHallId(createPerformanceScheduleDto.getPerformanceHallId())
 			.startAt(createPerformanceScheduleDto.getStartAt())
 			.endAt(createPerformanceScheduleDto.getEndAt())
-			.saleStartAt(createPerformanceScheduleDto.getSaleStartAt())
-			.saleEndAt(createPerformanceScheduleDto.getSaleEndAt())
-			.status(PerformanceScheduleStatus.status(
-				createPerformanceScheduleDto.getSaleStartAt(),
-				createPerformanceScheduleDto.getSaleEndAt(),
-				false
-			))
+			.saleStartAt(saleStartAt)
+			.saleEndAt(saleEndAt)
+			.status(PerformanceScheduleStatus.status(saleStartAt, saleEndAt, false))
 			.build();
 	}
 
