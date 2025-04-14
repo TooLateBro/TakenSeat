@@ -35,8 +35,8 @@ public class Ticket extends BaseEntity {
 	@Column(nullable = false)
 	private UUID bookingId;
 
-	@Column(nullable = false)
-	private UUID performanceScheduleId;
+	@Column(length = 100)
+	private String title;
 
 	@Column(length = 100)
 	private String name;
@@ -47,9 +47,6 @@ public class Ticket extends BaseEntity {
 	private LocalDateTime startAt;
 
 	private LocalDateTime endAt;
-
-	@Column(nullable = false)
-	private UUID seatId;
 
 	@Column(length = 10)
 	private String seatRowNumber;

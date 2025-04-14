@@ -20,5 +20,4 @@ public class PaymentResultMessage {
 	private UUID paymentId;
 
 	private PaymentResultStatus status;
-
 }

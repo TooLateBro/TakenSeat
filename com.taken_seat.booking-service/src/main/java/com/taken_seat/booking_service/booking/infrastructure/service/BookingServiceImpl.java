@@ -1,5 +1,6 @@
 package com.taken_seat.booking_service.booking.infrastructure.service;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -8,20 +9,27 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.taken_seat.booking_service.booking.application.dto.request.BookingCreateRequest;
+import com.taken_seat.booking_service.booking.application.dto.request.BookingPayRequest;
 import com.taken_seat.booking_service.booking.application.dto.response.AdminBookingPageResponse;
 import com.taken_seat.booking_service.booking.application.dto.response.AdminBookingReadResponse;
 import com.taken_seat.booking_service.booking.application.dto.response.BookingCreateResponse;
 import com.taken_seat.booking_service.booking.application.dto.response.BookingPageResponse;
 import com.taken_seat.booking_service.booking.application.dto.response.BookingReadResponse;
-import com.taken_seat.booking_service.booking.application.service.BookingEventProducer;
+import com.taken_seat.booking_service.booking.application.service.BookingProducer;
 import com.taken_seat.booking_service.booking.application.service.BookingService;
 import com.taken_seat.booking_service.booking.application.service.RedissonService;
 import com.taken_seat.booking_service.booking.domain.Booking;
+import com.taken_seat.booking_service.booking.domain.BookingStatus;
 import com.taken_seat.booking_service.booking.domain.repository.BookingAdminRepository;
 import com.taken_seat.booking_service.booking.domain.repository.BookingRepository;
+import com.taken_seat.booking_service.common.message.TicketRequestMessage;
 import com.taken_seat.common_service.dto.AuthenticatedUser;
+import com.taken_seat.common_service.dto.response.BookingSeatClientResponseDto;
 import com.taken_seat.common_service.exception.customException.BookingException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
+import com.taken_seat.common_service.message.PaymentRequestMessage;
+import com.taken_seat.common_service.message.PaymentResultMessage;
+import com.taken_seat.common_service.message.enums.PaymentResultStatus;
 
 import lombok.RequiredArgsConstructor;
 
@@ -32,24 +40,27 @@ public class BookingServiceImpl implements BookingService {
 	private final RedissonService redissonService;
 	private final BookingRepository bookingRepository;
 	private final BookingAdminRepository bookingAdminRepository;
-	private final BookingEventProducer bookingEventProducer;
+	private final BookingProducer bookingProducer;
 
 	@Override
 	@Transactional
 	public BookingCreateResponse createBooking(AuthenticatedUser authenticatedUser, BookingCreateRequest request) {
+
+		BookingSeatClientResponseDto responseDto = redissonService.tryHoldSeat(
+			request.getPerformanceId(),
+			request.getPerformanceScheduleId(),
+			request.getSeatId()
+		);
 
 		Booking booking = Booking.builder()
 			.userId(authenticatedUser.getUserId())
 			.performanceId(request.getPerformanceId())
 			.performanceScheduleId(request.getPerformanceScheduleId())
 			.seatId(request.getSeatId())
+			.price(responseDto.price())
 			.build();
 
-		redissonService.tryHoldSeat(request.getPerformanceId(), request.getPerformanceScheduleId(),
-			request.getSeatId());
-
 		Booking saved = bookingRepository.save(booking);
-		bookingEventProducer.sendBookingCreatedEvent(saved, 10000);
 
 		return BookingCreateResponse.toDto(saved);
 	}
@@ -132,6 +143,48 @@ public class BookingServiceImpl implements BookingService {
 		Page<Booking> page = bookingAdminRepository.findAll(pageable);
 
 		return AdminBookingPageResponse.toDto(page);
+	}
+
+	@Override
+	public void createPayment(AuthenticatedUser authenticatedUser, UUID id, BookingPayRequest request) {
+
+		Booking booking = findBookingByIdAndUserId(id, authenticatedUser.getUserId());
+
+		PaymentRequestMessage message = PaymentRequestMessage.builder()
+			.bookingId(id)
+			.userId(authenticatedUser.getUserId())
+			.couponId(request.getCouponId())
+			.mileage(request.getMileage())
+			.price(booking.getPrice())
+			.build();
+
+		bookingProducer.sendPaymentRequestEvent(message);
+	}
+
+	@Override
+	public void updateBooking(PaymentResultMessage message) {
+
+		PaymentResultStatus status = message.getStatus();
+		if (status == PaymentResultStatus.SUCCESS) {
+			Booking booking = bookingRepository.findById(message.getBookingId())
+				.orElseThrow(() -> new BookingException(ResponseCode.BOOKING_NOT_FOUND_EXCEPTION));
+
+			Booking updated = booking.toBuilder()
+				.bookingStatus(BookingStatus.COMPLETED)
+				.paymentId(message.getPaymentId())
+				.bookedAt(LocalDateTime.now())
+				.build();
+
+			bookingRepository.save(updated);
+			bookingProducer.sendPaymentCompleteEvent(
+				TicketRequestMessage.builder()
+					.userId(booking.getUserId())
+					.bookingId(booking.getId())
+					.build()
+			);
+		} else {
+			throw new BookingException(ResponseCode.BOOKING_PAYMENT_FAILED_EXCEPTION);
+		}
 	}
 
 	private Booking findBookingByIdAndUserId(UUID id, UUID userId) {

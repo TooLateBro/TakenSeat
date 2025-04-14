@@ -13,12 +13,11 @@ import lombok.Getter;
 public class TicketReadResponse {
 	private UUID id;
 	private UUID bookingId;
-	private UUID performanceScheduleId;
+	private String title;
 	private String name;
 	private String address;
 	private LocalDateTime startAt;
 	private LocalDateTime endAt;
-	private UUID seatId;
 	private String seatRowNumber;
 	private String seatNumber;
 	private String seatType;
@@ -27,12 +26,11 @@ public class TicketReadResponse {
 		return TicketReadResponse.builder()
 			.id(ticket.getId())
 			.bookingId(ticket.getBookingId())
-			.performanceScheduleId(ticket.getPerformanceScheduleId())
+			.title(ticket.getTitle())
 			.name(ticket.getName())
 			.address(ticket.getAddress())
 			.startAt(ticket.getStartAt())
 			.endAt(ticket.getEndAt())
-			.seatId(ticket.getSeatId())
 			.seatRowNumber(ticket.getSeatRowNumber())
 			.seatNumber(ticket.getSeatNumber())
 			.seatType(ticket.getSeatType())

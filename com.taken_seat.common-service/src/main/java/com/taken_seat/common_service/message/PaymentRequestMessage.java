@@ -8,9 +8,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
 public class PaymentRequestMessage {
 
 	private UUID bookingId;
@@ -22,5 +22,4 @@ public class PaymentRequestMessage {
 	private Integer mileage;
 
 	private Integer price; // 좌석 금액( 원본 )
-
 }
