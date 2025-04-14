@@ -9,15 +9,16 @@ public enum PerformanceScheduleStatus {
 	CLOSED,
 	SOLDOUT;
 
-	public static PerformanceScheduleStatus status(LocalDateTime startAt, LocalDateTime endAt, boolean isSoldOut) {
+	public static PerformanceScheduleStatus status(LocalDateTime saleStartAt, LocalDateTime saleEndAt,
+		boolean isSoldOut) {
 
 		LocalDateTime now = LocalDateTime.now();
 
-		if (now.isBefore(startAt)) {
+		if (now.isBefore(saleStartAt)) {
 			return PENDING;
 		}
 
-		if (!now.isAfter(endAt)) {
+		if (!now.isAfter(saleEndAt)) {
 			return isSoldOut ? SOLDOUT : ONSALE;
 		}
 
