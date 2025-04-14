@@ -17,5 +17,5 @@ public interface MileageRepository {
 
     Optional<Mileage> findByIdAndDeletedAtIsNull(UUID mileageId);
 
-    Optional<Mileage> findByUserId(UUID userId);
+    Optional<Mileage> findTopByUserIdOrderByUpdatedAtDesc(UUID userId);
 }

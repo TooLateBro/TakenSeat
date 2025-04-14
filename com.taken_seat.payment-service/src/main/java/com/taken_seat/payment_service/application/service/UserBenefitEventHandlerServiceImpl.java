@@ -45,7 +45,7 @@ public class UserBenefitEventHandlerServiceImpl implements UserBenefitEventHandl
 			double discountAmount = price * (message.getDiscount() / 100.0);  // 할인 금액 계산
 			price = (int)(price - discountAmount); // 할인된 가격 계산
 
-			if (validPrice(price)) {
+			if (!validPrice(price)) {
 				throw new PaymentException(ResponseCode.INVALID_COUPON);
 			}
 		}
@@ -53,12 +53,13 @@ public class UserBenefitEventHandlerServiceImpl implements UserBenefitEventHandl
 		if (message.getMileage() != null) {
 			price -= message.getMileage();
 
-			if (validPrice(price)) {
+			if (!validPrice(price)) {
 				throw new PaymentException(ResponseCode.INVALID_MILEAGE);
 			}
 		}
 
 		payment.updatePrice(price);
+		payment.markAsCompleted(payment.getUserId());
 
 		PaymentResultMessage paymentResultMessage = PaymentResultMessage.builder()
 			.bookingId(payment.getBookingId())
