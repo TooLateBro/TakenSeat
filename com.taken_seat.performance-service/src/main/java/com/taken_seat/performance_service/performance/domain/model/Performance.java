@@ -113,4 +113,8 @@ public class Performance extends BaseTimeEntity {
 			.findFirst()
 			.orElseThrow(() -> new PerformanceException(ResponseCode.SEAT_PRICE_NOT_FOUND_EXCEPTION));
 	}
+
+	public void updateStatus(PerformanceStatus newStatus) {
+		this.status = newStatus;
+	}
 }
