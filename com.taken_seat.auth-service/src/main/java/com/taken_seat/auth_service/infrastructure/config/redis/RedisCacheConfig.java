@@ -28,11 +28,11 @@ public class RedisCacheConfig {
                         // pageable 이 json serializer 와 잘 맞지 않아서 java 로 함
                         RedisSerializationContext.SerializationPair.fromSerializer(RedisSerializer.json()));
 
-        RedisCacheConfiguration getUserDetails = RedisCacheConfiguration
+        RedisCacheConfiguration userCache = RedisCacheConfiguration
                 .defaultCacheConfig()
                 .disableCachingNullValues()
                 .entryTtl(Duration.ofSeconds(600))
-                .computePrefixWith(cacheName -> "userDetails : " + cacheName + "::")
+                .computePrefixWith(cacheName -> "userCache : " + cacheName + "::")
                 .serializeValuesWith(
                         RedisSerializationContext.SerializationPair.fromSerializer(RedisSerializer.json())
                 );
@@ -55,21 +55,23 @@ public class RedisCacheConfig {
                         RedisSerializationContext.SerializationPair.fromSerializer(RedisSerializer.json())
                 );
 
-        RedisCacheConfiguration searchCache = RedisCacheConfiguration
+        RedisCacheConfiguration searchMileage = RedisCacheConfiguration
                 .defaultCacheConfig()
                 .disableCachingNullValues()
                 .entryTtl(Duration.ofSeconds(600))
-                .computePrefixWith(cacheName -> "searchCache : " + cacheName + "::")
+                .computePrefixWith(cacheName -> "searchMileage : " + cacheName + "::")
                 .serializeValuesWith(
                         RedisSerializationContext.SerializationPair.fromSerializer(RedisSerializer.json())
                 );
+
+
         
         return RedisCacheManager.builder(redisConnectionFactory)
                 .cacheDefaults(defaultConfig)
-                .withCacheConfiguration("userDetails", getUserDetails)
+                .withCacheConfiguration("userCache", userCache)
                 .withCacheConfiguration("searchUser", searchUser)
                 .withCacheConfiguration("mileageCache", mileageCache)
-                .withCacheConfiguration("searchCache", searchCache)
+                .withCacheConfiguration("searchMileage", searchMileage)
                 .build();
     }
 

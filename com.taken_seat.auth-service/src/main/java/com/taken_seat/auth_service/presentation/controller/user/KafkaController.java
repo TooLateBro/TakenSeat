@@ -18,8 +18,7 @@ public class KafkaController {
     private static final String RESPONSE_TOPIC_REPLY = "Issuance-of-coupons-reply";
 
     @KafkaListener(groupId = "couponFIFO", topics = RESPONSE_TOPIC_REPLY)
-    public KafkaUserInfoMessage consume(@Payload KafkaUserInfoMessage message) {
-        KafkaUserInfoMessage info = kafkaService.createUserCoupon(message);
-        return info;
+    public void consume(@Payload KafkaUserInfoMessage message) {
+        kafkaService.createUserCoupon(message);
     }
 }

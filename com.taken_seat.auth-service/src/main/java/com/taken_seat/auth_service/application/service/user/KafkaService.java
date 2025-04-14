@@ -5,9 +5,9 @@ import com.taken_seat.auth_service.domain.entity.user.UserCoupon;
 import com.taken_seat.auth_service.domain.repository.user.UserRepository;
 import com.taken_seat.auth_service.domain.repository.userCoupon.UserCouponRepository;
 import com.taken_seat.common_service.message.KafkaUserInfoMessage;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class KafkaService {
@@ -37,8 +37,8 @@ public class KafkaService {
         }
     }
 
-    public KafkaUserInfoMessage createUserCoupon(KafkaUserInfoMessage message) {
-
+    @CacheEvict(cacheNames = "searchCache", allEntries = true)
+    public void createUserCoupon(KafkaUserInfoMessage message) {
         userCouponRepository.findByUserIdAndCouponIdAndDeletedAtIsNull(message.getUserId(), message.getCouponId())
                 .ifPresent(coupon -> {
                     throw new IllegalArgumentException("이미 등록된 쿠폰입니다.");
@@ -47,10 +47,10 @@ public class KafkaService {
         User user = userRepository.findByIdAndDeletedAtIsNull(message.getUserId())
                 .orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다."));
 
-        UserCoupon u_c = UserCoupon.create(user, message.getCouponId());
+        if (message.getStatus() == KafkaUserInfoMessage.Status.SUCCEEDED) {
+            UserCoupon u_c = UserCoupon.create(user, message.getCouponId());
 
-        userCouponRepository.save(u_c);
-
-        return message;
+            userCouponRepository.save(u_c);
+        }
     }
 }

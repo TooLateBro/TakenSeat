@@ -35,7 +35,7 @@ public class MileageService {
     }
 
     @Transactional
-    @CachePut(cacheNames = "mileageCache", key = "#result.mileageId")
+    @CacheEvict(cacheNames = "searchMileage", allEntries = true)
     public UserMileageResponseDto createMileageUser(UUID userId, UserMileageDto dto) {
         User user = userRepository.findByIdAndDeletedAtIsNull(userId)
                 .orElseThrow(()-> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
@@ -60,7 +60,7 @@ public class MileageService {
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(cacheNames = "searchCache", key = "#userId + '-' + #page + '-' + #size")
+    @Cacheable(cacheNames = "searchMileage", key = "#userId + '-' + #page + '-' + #size")
     public PageResponseDto<UserMileageResponseDto> getMileageHistoryUser(UUID userId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "updatedAt"));
         Page<Mileage> mileage = mileageRepository.findByUserIdAndDeletedAtIsNull(userId, pageable);
@@ -71,7 +71,7 @@ public class MileageService {
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(cacheNames = "searchCache", key = "#startCount + '-' +#endCount +'-'+ #page + '-' + #size")
+    @Cacheable(cacheNames = "searchMileage", key = "#startCount + '-' +#endCount +'-'+ #page + '-' + #size")
     public PageResponseDto<UserMileageResponseDto> searchMileageUser(
             Integer startCount, Integer endCount, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "updatedAt"));
@@ -83,7 +83,7 @@ public class MileageService {
 
     @Transactional
     @CachePut(cacheNames = "mileageCache", key = "#result.mileageId")
-    @CacheEvict(cacheNames = "searchCache", allEntries = true)
+    @CacheEvict(cacheNames = "searchMileage", allEntries = true)
     public UserMileageResponseDto updateMileageUser(UUID mileageId, UUID userId, UserMileageDto dto) {
         Mileage mileage = mileageRepository.findByIdAndDeletedAtIsNull(mileageId)
                 .orElseThrow(()-> new IllegalArgumentException("마일리지를 찾을 수 없습니다."));
@@ -96,7 +96,7 @@ public class MileageService {
     @Transactional
     @Caching(evict = {
             @CacheEvict(cacheNames = "mileageCache", allEntries = true),
-            @CacheEvict(cacheNames = "searchCache", allEntries = true)
+            @CacheEvict(cacheNames = "searchMileage", allEntries = true)
     })
     public void deleteMileageUser(UUID mileageId, UUID userId) {
         Mileage mileage = mileageRepository.findByIdAndDeletedAtIsNull(mileageId)

@@ -15,10 +15,10 @@ public class RedisTemplateConfig {
         RedisTemplate<String, Long> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(redisConnectionFactory);
 
-        // key, hashKey는 String 타입으로 저장
+        // key
         redisTemplate.setKeySerializer(new StringRedisSerializer());
 
-        // value, hashValue는 JSON 직렬화로 저장
+        // value
         redisTemplate.setValueSerializer(new GenericToStringSerializer<>(Long.class));
 
         return redisTemplate;

@@ -28,10 +28,10 @@ public class KafkaProducerService {
             Coupon coupon = couponRepository.findByIdAndDeletedAtIsNull(message.getCouponId())
                     .orElseThrow(() -> new IllegalArgumentException("쿠폰이 존재하지 않습니다."));
 
-            String redisKey = "coupon_" + message.getCouponId() + ":quantity";
+            String redisKey = "couponId:" + message.getCouponId();
             // hasKey 로 키 존재 여부 확인 후 set 으로 저장
             Boolean exists = redisTemplate.hasKey(redisKey); // 데이터 초기화
-            if (!exists) {
+            if (exists== null || !exists) {
                 redisTemplate.opsForValue().set(redisKey, coupon.getQuantity());
             }
 
@@ -52,7 +52,6 @@ public class KafkaProducerService {
 
         } catch (RuntimeException e) {
             message.setStatus(KafkaUserInfoMessage.Status.FAILED);
-            throw new CouponException(ResponseCode.COUPON_QUANTITY_EXCEPTION, e.getMessage());
         }
         return message;
     }
