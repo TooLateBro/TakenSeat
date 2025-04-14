@@ -28,6 +28,7 @@ import com.taken_seat.performance_service.performancehall.application.dto.reques
 import com.taken_seat.performance_service.performancehall.application.dto.response.CreateResponseDto;
 import com.taken_seat.performance_service.performancehall.application.dto.response.DetailResponseDto;
 import com.taken_seat.performance_service.performancehall.application.dto.response.PageResponseDto;
+import com.taken_seat.performance_service.performancehall.application.dto.response.SeatLayoutResponseDto;
 import com.taken_seat.performance_service.performancehall.application.dto.response.UpdateResponseDto;
 import com.taken_seat.performance_service.performancehall.application.service.PerformanceHallService;
 
@@ -99,4 +100,11 @@ public class PerformanceHallController {
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
 	}
 
+	@GetMapping("/seats/{performanceScheduleId}")
+	public ResponseEntity<ApiResponseData<SeatLayoutResponseDto>> getSeatLayout(
+		@PathVariable("performanceScheduleId") UUID performanceScheduleId) {
+
+		SeatLayoutResponseDto response = performanceHallService.getSeatLayout(performanceScheduleId);
+		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
+	}
 }
