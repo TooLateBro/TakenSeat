@@ -3,28 +3,27 @@ package com.taken_seat.booking_service.booking.infrastructure.messaging;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
-import com.taken_seat.booking_service.booking.application.service.BookingEventProducer;
-import com.taken_seat.booking_service.booking.domain.Booking;
-import com.taken_seat.common_service.dto.event.BookingCreatedEvent;
+import com.taken_seat.booking_service.booking.application.service.BookingProducer;
+import com.taken_seat.booking_service.common.message.TicketRequestMessage;
+import com.taken_seat.common_service.message.PaymentRequestMessage;
 
 import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class BookingKafkaProducer implements BookingEventProducer {
+public class BookingKafkaProducer implements BookingProducer {
 
 	private final KafkaTemplate<String, Object> kafkaTemplate;
 
 	@Override
-	public void sendBookingCreatedEvent(Booking booking, int price) {
-		BookingCreatedEvent event = new BookingCreatedEvent(
-			booking.getId(),
-			booking.getUserId(),
-			booking.getPerformanceId(),
-			booking.getPerformanceScheduleId(),
-			price
-		);
+	public void sendPaymentRequestEvent(PaymentRequestMessage message) {
 
-		kafkaTemplate.send("booking-created", booking.getId().toString(), event);
+		kafkaTemplate.send("payment.request", message.getBookingId().toString(), message);
+	}
+
+	@Override
+	public void sendPaymentCompleteEvent(TicketRequestMessage message) {
+
+		kafkaTemplate.send("ticket.request", message.getBookingId().toString(), message);
 	}
 }
