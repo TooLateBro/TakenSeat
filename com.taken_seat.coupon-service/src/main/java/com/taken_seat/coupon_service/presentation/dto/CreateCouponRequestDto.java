@@ -20,7 +20,7 @@ public class CreateCouponRequestDto {
 
     private String code;
 
-    private Integer quantity;
+    private Long quantity;
 
     private Integer discount;
 

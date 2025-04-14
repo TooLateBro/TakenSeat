@@ -16,13 +16,13 @@ public class CouponDto {
 
     private String code;
 
-    private Integer quantity;
+    private Long quantity;
 
     private Integer discount;
 
     private LocalDateTime expiredAt;
 
-    public static CouponDto create(String name, String code, Integer quantity, Integer discount, LocalDateTime expiredAt) {
+    public static CouponDto create(String name, String code, Long quantity, Integer discount, LocalDateTime expiredAt) {
         return CouponDto.builder()
                 .name(name)
                 .code(code)
