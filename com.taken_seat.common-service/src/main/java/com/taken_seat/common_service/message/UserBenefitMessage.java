@@ -11,7 +11,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class PaymentAuthMessage {
+public class UserBenefitMessage {
 
     private UUID userId;
     private UUID couponId;
