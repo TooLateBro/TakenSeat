@@ -54,6 +54,8 @@ public class Booking extends BaseEntity {
 
 	private UUID paymentId;
 
+	private int price;
+
 	@Builder.Default
 	@Enumerated(EnumType.STRING)
 	private BookingStatus bookingStatus = BookingStatus.PENDING;

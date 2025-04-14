@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.taken_seat.booking_service.booking.application.dto.request.BookingCreateRequest;
+import com.taken_seat.booking_service.booking.application.dto.request.BookingPayRequest;
 import com.taken_seat.booking_service.booking.application.dto.response.BookingCreateResponse;
 import com.taken_seat.booking_service.booking.application.dto.response.BookingPageResponse;
 import com.taken_seat.booking_service.booking.application.dto.response.BookingReadResponse;
@@ -68,6 +69,15 @@ public class BookingController {
 	public ResponseEntity<ApiResponseData<Void>> deleteBooking(AuthenticatedUser authenticatedUser,
 		@PathVariable("id") UUID id) {
 		bookingService.deleteBooking(authenticatedUser, id);
+
+		return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseData.success());
+	}
+
+	@PostMapping("/{id}/payment")
+	public ResponseEntity<ApiResponseData<Void>> createPayment(AuthenticatedUser authenticatedUser,
+		@PathVariable("id") UUID id,
+		@RequestBody BookingPayRequest request) {
+		bookingService.createPayment(authenticatedUser, id, request);
 
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseData.success());
 	}
