@@ -1,6 +1,7 @@
 package com.taken_seat.payment_service.application.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.taken_seat.common_service.message.PaymentRequestMessage;
 import com.taken_seat.common_service.message.PaymentResultMessage;
@@ -17,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class PaymentEventHandlerServiceImpl implements PaymentEventHandlerService {
 
 	private final PaymentRepository paymentRepository;
