@@ -38,6 +38,9 @@ public class Payment extends BaseTimeEntity {
 	private UUID bookingId;
 
 	@Column(nullable = false)
+	private UUID userId;
+
+	@Column(nullable = false)
 	private Integer price;
 
 	@Column(nullable = false)
