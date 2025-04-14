@@ -162,7 +162,7 @@ public class PaymentServiceImpl implements PaymentService {
 
 		payment.update(paymentUpdateReqDto.getPrice(), paymentUpdateReqDto.getPaymentStatus(),
 			authenticatedUser);
-		paymentHistory.update(payment);
+		paymentHistory.updateHistory(payment);
 		return PaymentDetailResDto.toResponse(payment);
 	}
 
