@@ -28,6 +28,14 @@ public class PaymentEventHandlerServiceImpl implements PaymentEventHandlerServic
 	@Override
 	public void processPayment(PaymentRequestMessage message) {
 
+		if (isInvalidPrice(message)) {
+			PaymentResultMessage paymentResultMessage = new PaymentResultMessage(message.getBookingId(),
+				message.getUserId(), PaymentResultStatus.INVALID_PRICE);
+
+			paymentResultProducer.sendPaymentResult(paymentResultMessage);
+			return;
+		}
+
 		// 1. 결제 요청 메시지에 마일리지 또는 쿠폰 사용 여부 확인
 		boolean isUsedCoupon = message.getCouponId() != null;
 		boolean isUsedMileage = message.getMileage() != null && message.getMileage() > 0;
@@ -57,6 +65,10 @@ public class PaymentEventHandlerServiceImpl implements PaymentEventHandlerServic
 			paymentResultProducer.sendPaymentResult(paymentResultMessage);
 		}
 
+	}
+
+	private boolean isInvalidPrice(PaymentRequestMessage message) {
+		return message.getPrice() == null || message.getPrice() <= 0;
 	}
 
 }
