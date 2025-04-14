@@ -3,10 +3,12 @@ package com.taken_seat.common_service.message;
 import java.util.UUID;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class PaymentRequestMessage {
@@ -20,5 +22,4 @@ public class PaymentRequestMessage {
 	private Integer mileage;
 
 	private Integer price; // 좌석 금액( 원본 )
-
 }
