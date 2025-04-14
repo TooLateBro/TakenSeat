@@ -5,6 +5,8 @@ import java.util.UUID;
 
 import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.common_service.entity.BaseTimeEntity;
+import com.taken_seat.common_service.exception.customException.PaymentException;
+import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.common_service.message.PaymentRequestMessage;
 import com.taken_seat.payment_service.application.dto.request.PaymentRegisterReqDto;
 import com.taken_seat.payment_service.domain.enums.PaymentStatus;
@@ -96,5 +98,14 @@ public class Payment extends BaseTimeEntity {
 		this.paymentStatus = PaymentStatus.COMPLETED;
 		this.approvedAt = LocalDateTime.now();
 		this.preUpdate(userId);
+	}
+
+	public void updatePrice(int price) {
+
+		if (price < 0) {
+			throw new PaymentException(ResponseCode.ILLEGAL_ARGUMENT, "결제 금액은 0보다 작은 값으로 설정할 수 없습니다. 올바른 값을 입력해 주세요.");
+		}
+
+		this.price = price;
 	}
 }
