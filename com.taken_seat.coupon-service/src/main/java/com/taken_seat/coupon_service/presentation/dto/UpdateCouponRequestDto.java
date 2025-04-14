@@ -20,7 +20,7 @@ public class UpdateCouponRequestDto {
 
     private Optional<String> code;
 
-    private Optional<Integer> quantity;
+    private Optional<Long> quantity;
 
     private Optional<Integer> discount;
 

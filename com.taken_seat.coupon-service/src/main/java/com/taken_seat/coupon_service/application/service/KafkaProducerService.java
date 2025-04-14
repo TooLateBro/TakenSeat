@@ -1,36 +1,62 @@
 package com.taken_seat.coupon_service.application.service;
 
+import com.taken_seat.common_service.exception.customException.CouponException;
+import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.common_service.message.KafkaUserInfoMessage;
 import com.taken_seat.coupon_service.domain.entity.Coupon;
 import com.taken_seat.coupon_service.domain.repository.CouponRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
 public class KafkaProducerService {
 
     private final CouponRepository couponRepository;
+    private final RedisTemplate<String, Long> redisTemplate;
 
-    public KafkaProducerService(CouponRepository couponRepository) {
+    public KafkaProducerService(CouponRepository couponRepository, RedisTemplate<String, Long> redisTemplate) {
         this.couponRepository = couponRepository;
+        this.redisTemplate = redisTemplate;
     }
 
+    @Transactional
     public KafkaUserInfoMessage producerMessage(KafkaUserInfoMessage message) {
         try {
             Coupon coupon = couponRepository.findByIdAndDeletedAtIsNull(message.getCouponId())
                     .orElseThrow(() -> new IllegalArgumentException("쿠폰이 존재하지 않습니다."));
 
-            message.setStatus(KafkaUserInfoMessage.Status.SUCCEEDED);
-            // 쿠폰 처리 로직 추가
-            log.info("Processed coupon: {}", coupon);
+            String redisKey = "couponId:" + message.getCouponId();
+            // hasKey 로 키 존재 여부 확인 후 set 으로 저장
+            Boolean exists = redisTemplate.hasKey(redisKey); // 데이터 초기화
+            if (exists== null || !exists) {
+                redisTemplate.opsForValue().set(redisKey, coupon.getQuantity());
+            }
 
-        } catch (IllegalArgumentException e) {
-            log.error("Coupon not found: {}", message.getCouponId());
-            // 예외 처리 로직 추가
-        } catch (Exception e) {
-            log.error("Error processing coupon: {}", message.getCouponId(), e);
-            // 예외 처리 로직 추가
+            Long currentQuantity = redisTemplate.opsForValue().get(redisKey);
+
+            if (currentQuantity == null || currentQuantity == 0) {
+                throw new CouponException(ResponseCode.COUPON_QUANTITY_EXCEPTION);
+            }
+
+            Long updatedQuantity = redisTemplate.opsForValue().decrement(redisKey);
+
+            if (updatedQuantity == 0 || 0 == coupon.getQuantity()) {
+                throw new CouponException(ResponseCode.COUPON_QUANTITY_EXCEPTION);
+            }
+            
+            coupon.updateQuantity(updatedQuantity, message.getUserId(), coupon);
+            redisTemplate.delete(redisKey);
+            message.success(
+                    message.getUserId(), message.getCouponId(), coupon.getDiscount(),
+                    coupon.getExpiredAt(), KafkaUserInfoMessage.Status.SUCCEEDED
+            );
+        } catch (RuntimeException e) {
+            message.failed(
+                    message.getUserId(), message.getCouponId(), KafkaUserInfoMessage.Status.FAILED
+            );
         }
         return message;
     }
