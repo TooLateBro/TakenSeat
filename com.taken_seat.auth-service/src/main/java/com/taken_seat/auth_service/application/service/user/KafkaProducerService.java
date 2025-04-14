@@ -66,46 +66,56 @@ public class KafkaProducerService {
 
     @Transactional
     public UserBenefitMessage benefitUsage(UserBenefitMessage message) {
-        User user = userRepository.findByIdAndDeletedAtIsNull(message.getUserId())
-                .orElseThrow(() -> new AuthException(ResponseCode.USER_NOT_FOUND));
+        try {
+            User user = userRepository.findByIdAndDeletedAtIsNull(message.getUserId())
+                    .orElseThrow(() -> new AuthException(ResponseCode.USER_NOT_FOUND));
 
-        Integer couponDiscount = 0;
-        Integer usedMileage = 0;
+            Integer couponDiscount = null;
+            Integer usedMileage = null;
 
-        if (message.getCouponId() != null) {
-            UserCoupon userCoupon = userCouponRepository.findByCouponIdAndIsActiveTrue(message.getCouponId())
-                    .orElseThrow(()->new CouponException(ResponseCode.COUPON_NOT_FOUND));
-            if (userCoupon != null) {
-                couponDiscount = userCoupon.getDiscount();
-                userCoupon.updateActive(false, user.getId());
-            }
-        }
-        if (message.getMileage() != null && message.getMileage() > 0) {
-            Mileage mileages = mileageRepository.findByUserId(message.getUserId())
-                    .orElseThrow(()->new MileageException(ResponseCode.MILEAGE_NOT_FOUND));
-
-            if (mileages != null) {
-                Integer currentMileage = mileages.getMileage() - message.getMileage();
-                if (currentMileage < 0) {
-                    throw new IllegalArgumentException("사용 가능한 마일리지가 부족합니다.");
+            if (message.getCouponId() != null) {
+                UserCoupon userCoupon = userCouponRepository.findByCouponIdAndIsActiveTrue(message.getCouponId())
+                        .orElseThrow(()->new CouponException(ResponseCode.COUPON_NOT_FOUND));
+                if (userCoupon != null) {
+                    couponDiscount = userCoupon.getDiscount();
+                    userCoupon.updateActive(false, user.getId());
                 }
-                Mileage mileage = Mileage.create(
-                        user, currentMileage
-                );
-                if (mileage.getCreatedBy() != null){
-                    mileage.preUpdate(user.getId());
-                }
-                mileageRepository.save(mileage);
-                usedMileage = message.getMileage();
             }
+            if (message.getMileage() != null && message.getMileage() > 0) {
+                Mileage mileages = mileageRepository.findTopByUserIdOrderByUpdatedAtDesc(message.getUserId())
+                        .orElseThrow(()->new MileageException(ResponseCode.MILEAGE_NOT_FOUND));
+
+                if (mileages != null) {
+                    Integer currentMileage = mileages.getMileage() - message.getMileage();
+                    if (currentMileage < 0) {
+                        throw new IllegalArgumentException("사용 가능한 마일리지가 부족합니다.");
+                    }
+                    Mileage mileage = Mileage.create(
+                            user, currentMileage
+                    );
+                    if (mileage.getCreatedBy() != null){
+                        mileage.preUpdate(user.getId());
+                    }
+                    mileageRepository.save(mileage);
+                    usedMileage = message.getMileage();
+                }
+            }
+            return UserBenefitMessage.builder()
+                    .paymentId(message.getPaymentId())
+                    .userId(user.getId())
+                    .couponId(message.getCouponId())
+                    .mileage(usedMileage)
+                    .discount(couponDiscount)
+                    .status(UserBenefitMessage.UserBenefitStatus.SUCCESS)
+                    .build();
+        } catch (Exception e) {
+            return UserBenefitMessage.builder()
+                    .paymentId(message.getPaymentId())
+                    .userId(message.getUserId())
+                    .couponId(message.getCouponId())
+                    .mileage(message.getMileage())
+                    .status(UserBenefitMessage.UserBenefitStatus.FAIL)
+                    .build();
         }
-        return UserBenefitMessage.builder()
-                .paymentId(message.getPaymentId())
-                .userId(user.getId())
-                .couponId(message.getCouponId())
-                .mileage(usedMileage)
-                .discount(couponDiscount)
-                .status(UserBenefitMessage.UserBenefitStatus.SUCCESS)
-                .build();
     }
 }
