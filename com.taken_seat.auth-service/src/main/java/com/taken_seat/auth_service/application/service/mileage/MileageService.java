@@ -8,6 +8,8 @@ import com.taken_seat.auth_service.domain.entity.user.User;
 import com.taken_seat.auth_service.domain.repository.mileage.MileageQueryRepository;
 import com.taken_seat.auth_service.domain.repository.mileage.MileageRepository;
 import com.taken_seat.auth_service.domain.repository.user.UserRepository;
+import com.taken_seat.common_service.exception.customException.AuthException;
+import com.taken_seat.common_service.exception.enums.ResponseCode;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
@@ -38,7 +40,7 @@ public class MileageService {
     @CacheEvict(cacheNames = "searchMileage", allEntries = true)
     public UserMileageResponseDto createMileageUser(UUID userId, UserMileageDto dto) {
         User user = userRepository.findByIdAndDeletedAtIsNull(userId)
-                .orElseThrow(()-> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(()-> new AuthException(ResponseCode.USER_NOT_FOUND));
 
         Mileage mileage = Mileage.create(user, dto.getCount());
 
@@ -54,7 +56,7 @@ public class MileageService {
     @Transactional(readOnly = true)
     public UserMileageResponseDto getMileageUser(UUID mileageId) {
         Mileage mileage = mileageRepository.findByIdAndDeletedAtIsNull(mileageId)
-                .orElseThrow(()-> new IllegalArgumentException("마일리지를 찾을 수 없습니다."));
+                .orElseThrow(()-> new AuthException(ResponseCode.MILEAGE_NOT_FOUND));
 
         return UserMileageResponseDto.of(mileage);
     }
@@ -86,7 +88,7 @@ public class MileageService {
     @CacheEvict(cacheNames = "searchMileage", allEntries = true)
     public UserMileageResponseDto updateMileageUser(UUID mileageId, UUID userId, UserMileageDto dto) {
         Mileage mileage = mileageRepository.findByIdAndDeletedAtIsNull(mileageId)
-                .orElseThrow(()-> new IllegalArgumentException("마일리지를 찾을 수 없습니다."));
+                .orElseThrow(()-> new AuthException(ResponseCode.MILEAGE_NOT_FOUND));
 
         mileage.update(dto.getCount(), userId);
 
@@ -100,7 +102,7 @@ public class MileageService {
     })
     public void deleteMileageUser(UUID mileageId, UUID userId) {
         Mileage mileage = mileageRepository.findByIdAndDeletedAtIsNull(mileageId)
-                .orElseThrow(()-> new IllegalArgumentException("마일리지를 찾을 수 없습니다."));
+                .orElseThrow(()-> new AuthException(ResponseCode.MILEAGE_NOT_FOUND));
 
         mileage.delete(userId);
     }
