@@ -3,12 +3,14 @@ package com.taken_seat.common_service.message;
 import java.util.UUID;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class PaymentRequestMessage {
 
 	private UUID bookingId;
