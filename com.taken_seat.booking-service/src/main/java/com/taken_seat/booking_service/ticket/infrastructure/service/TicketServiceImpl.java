@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.taken_seat.booking_service.common.message.TicketRequestMessage;
 import com.taken_seat.booking_service.ticket.application.dto.request.TicketCreateRequest;
 import com.taken_seat.booking_service.ticket.application.dto.response.TicketCreateResponse;
 import com.taken_seat.booking_service.ticket.application.dto.response.TicketPageResponse;
@@ -55,5 +56,17 @@ public class TicketServiceImpl implements TicketService {
 		Page<Ticket> page = ticketRepository.findAllByUserIdAndDeletedAtIsNull(pageable, authenticatedUser.getUserId());
 
 		return TicketPageResponse.toDto(page);
+	}
+
+	@Override
+	@Transactional
+	public void createTicket(TicketRequestMessage message) {
+
+		Ticket ticket = Ticket.builder()
+			.userId(message.getUserId())
+			.bookingId(message.getBookingId())
+			.build();
+
+		ticketRepository.save(ticket);
 	}
 }
