@@ -20,6 +20,6 @@ public class PaymentResultProducerImpl implements PaymentResultProducer {
 
 	@Override
 	public void sendPaymentResult(PaymentResultMessage message) {
-		kafkaTemplate.send(SEND_PAYMENT_RESULT_TOPIC, message);
+		kafkaTemplate.send(SEND_PAYMENT_RESULT_TOPIC, message.getPaymentId().toString(), message);
 	}
 }
