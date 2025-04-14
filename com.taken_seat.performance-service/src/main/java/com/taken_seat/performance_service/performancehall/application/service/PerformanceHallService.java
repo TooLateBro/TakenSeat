@@ -10,8 +10,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.taken_seat.common_service.dto.AuthenticatedUser;
+import com.taken_seat.common_service.dto.request.BookingSeatClientRequestDto;
+import com.taken_seat.common_service.dto.response.BookingSeatClientResponseDto;
 import com.taken_seat.common_service.exception.customException.PerformanceException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
+import com.taken_seat.performance_service.performance.domain.model.Performance;
+import com.taken_seat.performance_service.performance.domain.repository.PerformanceRepository;
 import com.taken_seat.performance_service.performancehall.application.dto.mapper.HallResponseMapper;
 import com.taken_seat.performance_service.performancehall.application.dto.request.CreateRequestDto;
 import com.taken_seat.performance_service.performancehall.application.dto.request.SearchFilterParam;
@@ -21,6 +25,8 @@ import com.taken_seat.performance_service.performancehall.application.dto.respon
 import com.taken_seat.performance_service.performancehall.application.dto.response.PageResponseDto;
 import com.taken_seat.performance_service.performancehall.application.dto.response.UpdateResponseDto;
 import com.taken_seat.performance_service.performancehall.domain.model.PerformanceHall;
+import com.taken_seat.performance_service.performancehall.domain.model.Seat;
+import com.taken_seat.performance_service.performancehall.domain.model.SeatStatus;
 import com.taken_seat.performance_service.performancehall.domain.repository.PerformanceHallRepository;
 import com.taken_seat.performance_service.performancehall.domain.validation.PerformanceHallValidator;
 
@@ -33,6 +39,8 @@ public class PerformanceHallService {
 	public final PerformanceHallRepository performanceHallRepository;
 
 	public final HallResponseMapper hallResponseMapper;
+
+	public final PerformanceRepository performanceRepository;
 
 	@Transactional
 	public CreateResponseDto create(CreateRequestDto request, AuthenticatedUser authenticatedUser) {
@@ -99,5 +107,45 @@ public class PerformanceHallService {
 
 		performanceHall.delete(authenticatedUser.getUserId());
 		performanceHallRepository.save(performanceHall);
+	}
+
+	@Transactional
+	public BookingSeatClientResponseDto updateSeatStatus(BookingSeatClientRequestDto request) {
+
+		PerformanceHall performanceHall = performanceHallRepository.findBySeatId(request.getSeatId())
+			.orElseThrow(() -> new PerformanceException(ResponseCode.PERFORMANCE_HALL_NOT_FOUND_EXCEPTION));
+
+		Seat seat = performanceHall.getSeatById(request.getSeatId());
+
+		if (seat.getStatus() == SeatStatus.SOLDOUT) {
+			return new BookingSeatClientResponseDto(null, false, "이미 선점된 좌석입니다.");
+		}
+
+		seat.updateStatus(SeatStatus.SOLDOUT);
+
+		Performance performance = performanceRepository.findById(request.getPerformanceId())
+			.orElseThrow(() -> new PerformanceException(ResponseCode.PERFORMANCE_NOT_FOUND_EXCEPTION));
+
+		Integer price = performance.findPriceByScheduleAndSeatType(request.getPerformanceScheduleId(),
+			seat.getSeatType());
+
+		return new BookingSeatClientResponseDto(price, true, "좌석 선점에 성공했습니다.");
+	}
+
+	@Transactional
+	public BookingSeatClientResponseDto cancelSeatStatus(BookingSeatClientRequestDto request) {
+
+		PerformanceHall performanceHall = performanceHallRepository.findBySeatId(request.getSeatId())
+			.orElseThrow(() -> new PerformanceException(ResponseCode.PERFORMANCE_HALL_NOT_FOUND_EXCEPTION));
+
+		Seat seat = performanceHall.getSeatById(request.getSeatId());
+
+		if (seat.getStatus() == SeatStatus.DISABLED) {
+			throw new PerformanceException(ResponseCode.SEAT_STATUS_CHANGE_NOT_ALLOWED);
+		}
+
+		seat.updateStatus(SeatStatus.AVAILABLE);
+
+		return new BookingSeatClientResponseDto(null, false, "좌석 선점이 취소되었습니다.");
 	}
 }

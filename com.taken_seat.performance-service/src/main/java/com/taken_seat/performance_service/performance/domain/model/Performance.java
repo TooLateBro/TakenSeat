@@ -6,10 +6,13 @@ import java.util.List;
 import java.util.UUID;
 
 import com.taken_seat.common_service.entity.BaseTimeEntity;
+import com.taken_seat.common_service.exception.customException.PerformanceException;
+import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.performance_service.performance.application.dto.request.CreateRequestDto;
 import com.taken_seat.performance_service.performance.application.dto.request.UpdateRequestDto;
 import com.taken_seat.performance_service.performance.domain.helper.PerformanceCreateHelper;
 import com.taken_seat.performance_service.performance.domain.helper.PerformanceUpdateHelper;
+import com.taken_seat.performance_service.performancehall.domain.model.SeatType;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -99,5 +102,15 @@ public class Performance extends BaseTimeEntity {
 			.filter(performanceSchedule -> performanceSchedule.getId().equals(performanceScheduleId))
 			.findFirst()
 			.orElseThrow(() -> new IllegalArgumentException("공연 회차가 존재하지 않습니다"));
+	}
+
+	public Integer findPriceByScheduleAndSeatType(UUID performanceScheduleId, SeatType seatType) {
+		return this.schedules.stream()
+			.filter(performanceSchedule -> performanceSchedule.getId().equals(performanceScheduleId))
+			.flatMap(performanceSchedule -> performanceSchedule.getSeatPrices().stream())
+			.filter(performanceSeatPrice -> performanceSeatPrice.getSeatType().equals(seatType))
+			.map(PerformanceSeatPrice::getPrice)
+			.findFirst()
+			.orElseThrow(() -> new PerformanceException(ResponseCode.SEAT_PRICE_NOT_FOUND_EXCEPTION));
 	}
 }
