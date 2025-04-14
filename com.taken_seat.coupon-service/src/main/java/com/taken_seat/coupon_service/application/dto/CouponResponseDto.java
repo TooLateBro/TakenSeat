@@ -19,7 +19,7 @@ public class CouponResponseDto {
     private UUID id;
     private String name;
     private String code;
-    private Integer quantity;
+    private Long quantity;
     private Integer discount;
 
     @JsonSerialize(using = LocalDateTimeSerializer.class)

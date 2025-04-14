@@ -5,6 +5,7 @@ import com.taken_seat.auth_service.application.dto.mileage.UserMileageResponseDt
 import com.taken_seat.auth_service.application.service.mileage.MileageService;
 import com.taken_seat.auth_service.presentation.dto.mileage.UserMileageRequestDto;
 import com.taken_seat.common_service.dto.ApiResponseData;
+import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +25,7 @@ public class MileageController {
 
     @PostMapping("/{userId}")
     public ResponseEntity<ApiResponseData<UserMileageResponseDto>> createMileageToUser(@RequestHeader("X-Role") String role,
+                                                                                       AuthenticatedUser authenticatedUser,
                                                                                        @PathVariable UUID userId,
                                                                                        @RequestBody UserMileageRequestDto requestDto) {
          if (role == null || !(role.equals("ADMIN") || role.equals("MANAGER"))) {

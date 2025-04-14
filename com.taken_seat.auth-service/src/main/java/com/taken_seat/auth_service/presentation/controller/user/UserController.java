@@ -29,6 +29,13 @@ public class UserController {
         return ResponseEntity.ok(ApiResponseData.success(userInfo));
     }
 
+    // 쿠폰 발급에 성공한 쿠폰인지 아닌지 확인하는 API
+    @GetMapping("/status/{couponId}")
+    public ResponseEntity<ApiResponseData<String>> getCoupon(@PathVariable UUID couponId) {
+        String result = userService.getCoupon(couponId);
+        return ResponseEntity.ok(ApiResponseData.success(result));
+    }
+
     @GetMapping("/details/{userId}")
     public ResponseEntity<ApiResponseData<UserInfoResponseDto>> getUserDetails(@PathVariable UUID userId,
                                                                                @RequestParam(defaultValue = "0") int page,

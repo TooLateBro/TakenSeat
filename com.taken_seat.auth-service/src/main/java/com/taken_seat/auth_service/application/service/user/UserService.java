@@ -8,6 +8,8 @@ import com.taken_seat.auth_service.domain.entity.user.UserCoupon;
 import com.taken_seat.auth_service.domain.repository.user.UserQueryRepository;
 import com.taken_seat.auth_service.domain.repository.user.UserRepository;
 import com.taken_seat.auth_service.domain.repository.userCoupon.UserCouponRepository;
+import com.taken_seat.common_service.exception.customException.AuthException;
+import com.taken_seat.common_service.exception.enums.ResponseCode;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
@@ -35,32 +37,32 @@ public class UserService {
     @Transactional(readOnly = true)
     public UserInfoResponseDto getUser(UUID userId) {
         User user = userRepository.findByIdAndDeletedAtIsNull(userId)
-                .orElseThrow(()-> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(()-> new AuthException(ResponseCode.USER_NOT_FOUND));
 
         return UserInfoResponseDto.of(user);
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(cacheNames = "searchCache", key = "#userId + '-' + #page+'-'+#size")
+    @Cacheable(cacheNames = "searchUser", key = "#userId + '-' + #page+'-'+#size")
     public UserInfoResponseDto getUserDetails(UUID userId, int page, int size) {
         User user = userRepository.findByIdAndDeletedAtIsNull(userId)
-                .orElseThrow(()-> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(()-> new AuthException(ResponseCode.USER_NOT_FOUND));
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        Page<UserCoupon> userCoupons = userCouponRepository.findByUserIdAndIsActiveFalse(user.getId(), pageable);
+        Page<UserCoupon> userCoupons = userCouponRepository.findCouponIdByUserIdAndIsActiveTrue(user.getId(), pageable);
 
         return UserInfoResponseDto.listOf(user, userCoupons);
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(cacheNames = "searchCache", key = "#q + '-' + #role + '-' + #page + '-' + #size")
+    @Cacheable(cacheNames = "searchUser", key = "#q + '-' + #role + '-' + #page + '-' + #size")
     public PageResponseDto<UserInfoResponseDto> searchUser(String q, String role, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<User> userInfos = userQueryRepository.findAllByDeletedAtIsNull(q, role, pageable);
 
         Page<UserInfoResponseDto> userInfoPage = userInfos.map(user -> {
             List<UserCoupon> coupons = user.getUserCoupons();
-            Page<UserCoupon> userCouponsPage = new PageImpl<>(coupons, PageRequest.of(page, size), coupons.size());
+            Page<UserCoupon> userCouponsPage = new PageImpl<>(coupons, pageable, coupons.size());
             return UserInfoResponseDto.listOf(user, userCouponsPage);
         });
 
@@ -69,13 +71,13 @@ public class UserService {
 
     @Transactional
     @CachePut(cacheNames = "userCache", key = "#result.userId")
-    @CacheEvict(cacheNames = "searchCache", allEntries = true)
+    @CacheEvict(cacheNames = "searchUser", allEntries = true)
     public UserInfoResponseDto updateUser(UUID userId, UserUpdateDto dto) {
         User user = userRepository.findByIdAndDeletedAtIsNull(userId)
-                .orElseThrow(()-> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(()-> new AuthException(ResponseCode.USER_NOT_FOUND));
 
         if(userRepository.findByEmail(String.valueOf(dto.getEmail())).isPresent()){
-            throw new IllegalArgumentException("이미 사용 중인 이메일 입니다.");
+            throw new AuthException(ResponseCode.USER_BAD_EMAIL);
         }
         user.update(
                 dto.getUsername(),
@@ -91,12 +93,19 @@ public class UserService {
     @Transactional
     @Caching(evict = {
             @CacheEvict(cacheNames = "userCache", allEntries = true),
-            @CacheEvict(cacheNames = "searchCache", allEntries = true)
+            @CacheEvict(cacheNames = "searchUser", allEntries = true)
     })
     public void deleteUser(UUID userId) {
         User user = userRepository.findByIdAndDeletedAtIsNull(userId)
-                .orElseThrow(()-> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(()-> new AuthException(ResponseCode.USER_NOT_FOUND));
 
         user.delete(userId);
+    }
+
+    @Transactional(readOnly = true)
+    public String getCoupon(UUID couponId) {
+        UserCoupon userCoupon = userCouponRepository.findByCouponId(couponId)
+                .orElseThrow(()-> new IllegalArgumentException("쿠폰이 소진되어 수령에 실패했습니다."));
+        return "축하합니다!";
     }
 }

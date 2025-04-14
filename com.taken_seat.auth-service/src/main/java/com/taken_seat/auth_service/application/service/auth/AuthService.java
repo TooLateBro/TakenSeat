@@ -2,17 +2,18 @@ package com.taken_seat.auth_service.application.service.auth;
 
 import com.taken_seat.auth_service.application.dto.auth.AuthLoginDto;
 import com.taken_seat.auth_service.application.dto.auth.AuthLoginResponseDto;
-import com.taken_seat.auth_service.application.dto.auth.AuthSignUpResponseDto;
 import com.taken_seat.auth_service.application.dto.auth.AuthSignUpDto;
+import com.taken_seat.auth_service.application.dto.auth.AuthSignUpResponseDto;
 import com.taken_seat.auth_service.domain.entity.user.User;
 import com.taken_seat.auth_service.domain.repository.user.UserRepository;
 import com.taken_seat.auth_service.infrastructure.util.JwtUtil;
+import com.taken_seat.common_service.exception.customException.AuthException;
+import com.taken_seat.common_service.exception.enums.ResponseCode;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -33,7 +34,7 @@ public class AuthService {
     @Transactional
     public AuthSignUpResponseDto signUp(AuthSignUpDto dto) {
         if(userRepository.findByEmail(dto.getEmail()).isPresent()){
-            throw new IllegalArgumentException("이미 사용 중인 이메일 입니다.");
+            throw new AuthException(ResponseCode.USER_BAD_EMAIL);
         }
         User user = User.create(
                 dto.getUsername(), dto.getEmail(),
@@ -48,10 +49,10 @@ public class AuthService {
     @Transactional(readOnly = true)
     public AuthLoginResponseDto login(AuthLoginDto dto) {
         User user = userRepository.findByEmail(dto.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("이메일이 존재하지 않습니다."));
+                .orElseThrow(() -> new AuthException(ResponseCode.USER_NOT_FOUND));
 
         if (!bCryptPasswordEncoder.matches(dto.getPassword(), user.getPassword())) {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+            throw new AuthException(ResponseCode.USER_BAD_PASSWORD);
         }
 
         String accessToken = jwtUtil.createToken(user);

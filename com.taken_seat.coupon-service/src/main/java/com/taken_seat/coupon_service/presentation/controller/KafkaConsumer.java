@@ -27,8 +27,8 @@ public class KafkaConsumer {
         try {
             return kafkaProducerService.producerMessage(message);
         } catch (Exception e) {
-            log.error("Error processing message: {}", message, e);
+            log.error(e.getMessage(), e);
         }
-        return null;
+        return message;
     }
 }
