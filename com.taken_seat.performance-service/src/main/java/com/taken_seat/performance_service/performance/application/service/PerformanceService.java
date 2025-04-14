@@ -24,8 +24,13 @@ import com.taken_seat.performance_service.performance.application.dto.response.P
 import com.taken_seat.performance_service.performance.application.dto.response.UpdateResponseDto;
 import com.taken_seat.performance_service.performance.domain.model.Performance;
 import com.taken_seat.performance_service.performance.domain.model.PerformanceSchedule;
+import com.taken_seat.performance_service.performance.domain.model.PerformanceScheduleStatus;
+import com.taken_seat.performance_service.performance.domain.model.PerformanceStatus;
 import com.taken_seat.performance_service.performance.domain.repository.PerformanceRepository;
 import com.taken_seat.performance_service.performance.domain.validator.PerformanceValidator;
+import com.taken_seat.performance_service.performancehall.domain.model.PerformanceHall;
+import com.taken_seat.performance_service.performancehall.domain.model.SeatStatus;
+import com.taken_seat.performance_service.performancehall.domain.repository.PerformanceHallRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +42,7 @@ public class PerformanceService {
 
 	private final PerformanceRepository performanceRepository;
 	private final ResponseMapper responseMapper;
+	private final PerformanceHallRepository performanceHallRepository;
 
 	@Transactional
 	public CreateResponseDto create(CreateRequestDto request, AuthenticatedUser authenticatedUser) {
@@ -123,5 +129,43 @@ public class PerformanceService {
 
 		String role = authenticatedUser.getRole();
 		return role.equals("ADMIN") || role.equals("MANAGER") || role.equals("PRODUCER");
+	}
+
+	@Transactional
+	public void updateStatus(UUID id, AuthenticatedUser authenticatedUser) {
+
+		if (!isAuthorized(authenticatedUser)) {
+			throw new PerformanceException(ResponseCode.ACCESS_DENIED_EXCEPTION, "접근 권한이 없습니다");
+		}
+
+		Performance performance = performanceRepository.findById(id)
+			.orElseThrow(() -> new PerformanceException(ResponseCode.PERFORMANCE_NOT_FOUND_EXCEPTION));
+
+		PerformanceStatus newPerformanceStatus = PerformanceStatus.status(
+			performance.getStartAt(), performance.getEndAt());
+
+		if (!performance.getStatus().equals(newPerformanceStatus)) {
+			performance.updateStatus(newPerformanceStatus);
+		}
+
+		for (PerformanceSchedule schedule : performance.getSchedules()) {
+
+			UUID performanceHallId = schedule.getPerformanceHallId();
+
+			PerformanceHall performanceHall = performanceHallRepository.findById(performanceHallId)
+				.orElseThrow(() -> new PerformanceException(ResponseCode.PERFORMANCE_HALL_NOT_FOUND_EXCEPTION));
+
+			boolean isSoldOut = performanceHall.getSeats().stream()
+				.noneMatch(seat -> seat.getStatus() == SeatStatus.AVAILABLE);
+
+			PerformanceScheduleStatus newPerformanceScheduleStatus =
+				PerformanceScheduleStatus.status(schedule.getSaleStartAt(), schedule.getSaleEndAt(), isSoldOut);
+
+			if (!schedule.getStatus().equals(newPerformanceScheduleStatus)) {
+				schedule.updateStatus(newPerformanceScheduleStatus);
+				schedule.preUpdate(authenticatedUser.getUserId());
+			}
+		}
+		performanceRepository.save(performance);
 	}
 }
