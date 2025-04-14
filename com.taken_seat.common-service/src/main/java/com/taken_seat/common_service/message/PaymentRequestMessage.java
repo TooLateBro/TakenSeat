@@ -2,16 +2,23 @@ package com.taken_seat.common_service.message;
 
 import java.util.UUID;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
 public class PaymentRequestMessage {
 
 	private UUID bookingId;
 
 	private UUID userId;
 
-	private UUID performanceId;
+	private UUID couponId;
 
-	private UUID performanceScheduleId;
+	private Integer mileage;
 
-	private Integer price;
-	
+	private Integer price; // 좌석 금액( 원본 )
+
 }
