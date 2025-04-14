@@ -13,6 +13,7 @@ import java.util.UUID;
 @Builder
 public class UserBenefitMessage {
 
+    private UUID paymentId;
     private UUID userId;
     private UUID couponId;
     private Integer count;
