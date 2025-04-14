@@ -16,4 +16,6 @@ public interface MileageRepository {
     Page<Mileage> findByUserIdAndDeletedAtIsNull(UUID userId, Pageable pageable);
 
     Optional<Mileage> findByIdAndDeletedAtIsNull(UUID mileageId);
+
+    Optional<Mileage> findByUserId(UUID userId);
 }

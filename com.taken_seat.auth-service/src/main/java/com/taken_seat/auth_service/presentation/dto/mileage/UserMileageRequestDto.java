@@ -12,9 +12,9 @@ import lombok.NoArgsConstructor;
 @Builder
 public class UserMileageRequestDto {
 
-    private Integer count;
+    private Integer mileage;
 
     public UserMileageDto toDto() {
-        return UserMileageDto.create(this.count);
+        return UserMileageDto.create(this.mileage);
     }
 }

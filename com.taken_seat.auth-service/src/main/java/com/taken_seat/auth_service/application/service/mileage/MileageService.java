@@ -42,7 +42,7 @@ public class MileageService {
         User user = userRepository.findByIdAndDeletedAtIsNull(userId)
                 .orElseThrow(()-> new AuthException(ResponseCode.USER_NOT_FOUND));
 
-        Mileage mileage = Mileage.create(user, dto.getCount());
+        Mileage mileage = Mileage.create(user, dto.getMileage());
 
         if (mileage.getCreatedBy() != null){
             mileage.preUpdate(userId);
@@ -90,7 +90,7 @@ public class MileageService {
         Mileage mileage = mileageRepository.findByIdAndDeletedAtIsNull(mileageId)
                 .orElseThrow(()-> new AuthException(ResponseCode.MILEAGE_NOT_FOUND));
 
-        mileage.update(dto.getCount(), userId);
+        mileage.update(dto.getMileage(), userId);
 
         return UserMileageResponseDto.of(mileage);
     }

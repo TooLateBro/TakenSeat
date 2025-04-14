@@ -26,7 +26,7 @@ public class UserQueryRepositoryImpl implements UserQueryRepository {
     @Override
     public Page<User> findAllByDeletedAtIsNull(String q, String role, Pageable pageable) {
         QUser user = QUser.user;
-        QMileage mileage = QMileage.mileage;
+        QMileage mileage = QMileage.mileage1;
 
         // 컨텐츠 조회
         List<User> content = jpaQueryFactory
