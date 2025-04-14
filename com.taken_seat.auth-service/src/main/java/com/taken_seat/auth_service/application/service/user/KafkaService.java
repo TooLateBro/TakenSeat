@@ -48,7 +48,7 @@ public class KafkaService {
                 .orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다."));
 
         if (message.getStatus() == KafkaUserInfoMessage.Status.SUCCEEDED) {
-            UserCoupon u_c = UserCoupon.create(user, message.getCouponId());
+            UserCoupon u_c = UserCoupon.create(user, message);
 
             userCouponRepository.save(u_c);
         }

@@ -46,12 +46,17 @@ public class KafkaProducerService {
             if (updatedQuantity == 0 || 0 == coupon.getQuantity()) {
                 throw new CouponException(ResponseCode.COUPON_QUANTITY_EXCEPTION);
             }
-            coupon.updateQuantity(updatedQuantity, message.getUserId());
+            
+            coupon.updateQuantity(updatedQuantity, message.getUserId(), coupon);
             redisTemplate.delete(redisKey);
-            message.setStatus(KafkaUserInfoMessage.Status.SUCCEEDED);
-
+            message.success(
+                    message.getUserId(), message.getCouponId(), coupon.getDiscount(),
+                    coupon.getExpiredAt(), KafkaUserInfoMessage.Status.SUCCEEDED
+            );
         } catch (RuntimeException e) {
-            message.setStatus(KafkaUserInfoMessage.Status.FAILED);
+            message.failed(
+                    message.getUserId(), message.getCouponId(), KafkaUserInfoMessage.Status.FAILED
+            );
         }
         return message;
     }

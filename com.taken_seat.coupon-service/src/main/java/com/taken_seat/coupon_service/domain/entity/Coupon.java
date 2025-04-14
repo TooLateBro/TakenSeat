@@ -61,8 +61,10 @@ public class Coupon extends BaseTimeEntity{
         this.preUpdate(userId);
     }
 
-    public void updateQuantity(Long quantity, UUID userId) {
+    public void updateQuantity(Long quantity, UUID userId, Coupon coupon) {
         this.quantity = quantity;
+        this.discount = coupon.getDiscount();
+        this.expiredAt = coupon.getExpiredAt();
         this.preUpdate(userId);
     }
 }

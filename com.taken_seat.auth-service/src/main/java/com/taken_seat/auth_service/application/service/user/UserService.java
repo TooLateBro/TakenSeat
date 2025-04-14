@@ -99,4 +99,11 @@ public class UserService {
 
         user.delete(userId);
     }
+
+    @Transactional(readOnly = true)
+    public String getCoupon(UUID couponId) {
+        UserCoupon userCoupon = userCouponRepository.findByCouponId(couponId)
+                .orElseThrow(()-> new IllegalArgumentException("쿠폰이 소진되어 수령에 실패했습니다."));
+        return "축하합니다!";
+    }
 }

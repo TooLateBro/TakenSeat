@@ -1,9 +1,11 @@
 package com.taken_seat.auth_service.domain.entity.user;
 
 import com.taken_seat.common_service.entity.BaseTimeEntity;
+import com.taken_seat.common_service.message.KafkaUserInfoMessage;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Getter
@@ -29,10 +31,18 @@ public class UserCoupon extends BaseTimeEntity {
     @Column(name = "is_active")
     private boolean isActive;
 
-    public static UserCoupon create(User user, UUID couponId) {
+    @Column(name = "discount", nullable = false)
+    private Integer discount;
+
+    @Column(name = "expired_at", nullable = false)
+    private LocalDateTime expiredAt;
+
+    public static UserCoupon create(User user, KafkaUserInfoMessage message) {
         UserCoupon userCoupon = UserCoupon.builder()
                 .user(user)
-                .couponId(couponId)
+                .couponId(message.getCouponId())
+                .discount(message.getDiscount())
+                .expiredAt(message.getExpiredAt())
                 .isActive(true)
                 .build();
         userCoupon.prePersist(user.getId());
