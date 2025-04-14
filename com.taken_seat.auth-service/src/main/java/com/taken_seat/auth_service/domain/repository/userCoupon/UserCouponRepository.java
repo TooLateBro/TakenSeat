@@ -5,10 +5,17 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
 public interface UserCouponRepository {
 
-    Page<UserCoupon> findByUserIdAndIsActiveFalse(UUID id, Pageable pageable);
+    UserCoupon save(UserCoupon userCoupon);
+
+    Optional<UserCoupon> findByUserIdAndCouponIdAndDeletedAtIsNull(UUID userId, UUID couponId);
+
+    Page<UserCoupon> findCouponIdByUserIdAndIsActiveTrue(UUID id, Pageable pageable);
+
+    Optional<UserCoupon> findByCouponId(UUID couponId);
 }

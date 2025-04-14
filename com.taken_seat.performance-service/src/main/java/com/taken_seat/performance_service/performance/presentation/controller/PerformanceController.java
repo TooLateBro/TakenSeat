@@ -93,4 +93,13 @@ public class PerformanceController {
 		PerformanceEndTimeDto response = performanceService.getPerformanceEndTime(performanceId, performanceScheduleId);
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
 	}
+
+	@PatchMapping("/{id}/status")
+	public ResponseEntity<ApiResponseData<Void>> updateStatus(
+		@PathVariable("id") UUID id,
+		AuthenticatedUser authenticatedUser) {
+
+		performanceService.updateStatus(id, authenticatedUser);
+		return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseData.success());
+	}
 }

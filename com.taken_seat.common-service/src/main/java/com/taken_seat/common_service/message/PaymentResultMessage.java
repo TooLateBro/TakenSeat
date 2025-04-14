@@ -5,12 +5,14 @@ import java.util.UUID;
 import com.taken_seat.common_service.message.enums.PaymentResultStatus;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class PaymentResultMessage {
 
 	private UUID bookingId;

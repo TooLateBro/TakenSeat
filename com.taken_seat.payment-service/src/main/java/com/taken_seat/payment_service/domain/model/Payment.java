@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.common_service.entity.BaseTimeEntity;
+import com.taken_seat.common_service.message.PaymentRequestMessage;
 import com.taken_seat.payment_service.application.dto.request.PaymentRegisterReqDto;
 import com.taken_seat.payment_service.domain.enums.PaymentStatus;
 
@@ -56,12 +57,25 @@ public class Payment extends BaseTimeEntity {
 	public static Payment register(PaymentRegisterReqDto paymentRegisterReqDto, AuthenticatedUser authenticatedUser) {
 		Payment payment = Payment.builder()
 			.bookingId(paymentRegisterReqDto.getBookingId())
+			.userId(authenticatedUser.getUserId())
 			.price(paymentRegisterReqDto.getPrice())
 			.paymentStatus(PaymentStatus.COMPLETED)
-			.approvedAt(LocalDateTime.now())
 			.build();
 
 		payment.prePersist(authenticatedUser.getUserId());
+
+		return payment;
+	}
+
+	public static Payment register(PaymentRequestMessage message) {
+		Payment payment = Payment.builder()
+			.bookingId(message.getBookingId())
+			.userId(message.getUserId())
+			.price(message.getPrice())
+			.paymentStatus(PaymentStatus.CREATED)
+			.build();
+
+		payment.prePersist(message.getUserId());
 
 		return payment;
 	}
@@ -76,5 +90,11 @@ public class Payment extends BaseTimeEntity {
 	public void delete(UUID deleteBy) {
 		super.delete(deleteBy);
 		this.paymentStatus = PaymentStatus.DELETED;
+	}
+
+	public void markAsCompleted(UUID userId) {
+		this.paymentStatus = PaymentStatus.COMPLETED;
+		this.approvedAt = LocalDateTime.now();
+		this.preUpdate(userId);
 	}
 }

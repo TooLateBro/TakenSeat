@@ -74,4 +74,8 @@ public class PerformanceSchedule extends BaseTimeEntity {
 		this.saleEndAt = dto.getSaleEndAt();
 		this.status = dto.getStatus();
 	}
+
+	public void updateStatus(PerformanceScheduleStatus newStatus) {
+		this.status = newStatus;
+	}
 }

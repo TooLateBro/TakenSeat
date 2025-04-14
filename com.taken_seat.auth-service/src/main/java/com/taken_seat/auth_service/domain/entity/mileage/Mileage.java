@@ -21,7 +21,7 @@ public class Mileage extends BaseTimeEntity {
     private UUID id;
 
     @Column(name = "count", nullable = false)
-    private Integer count = 0;
+    private Integer count;
 
     public static Mileage create(User user, Integer count){
         Mileage mileage = Mileage.builder()

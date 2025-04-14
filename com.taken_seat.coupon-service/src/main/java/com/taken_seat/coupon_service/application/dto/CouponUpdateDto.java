@@ -17,14 +17,14 @@ public class CouponUpdateDto {
 
     private Optional<String> code;
 
-    private Optional<Integer> quantity;
+    private Optional<Long> quantity;
 
     private Optional<Integer> discount;
 
     private Optional<LocalDateTime> expiredAt;
 
     public static CouponUpdateDto update(Optional<String> name, Optional<String> code,
-                                         Optional<Integer> quantity, Optional<Integer> discount,
+                                         Optional<Long> quantity, Optional<Integer> discount,
                                          Optional<LocalDateTime> expiredAt) {
         return CouponUpdateDto.builder()
                 .name(name)
