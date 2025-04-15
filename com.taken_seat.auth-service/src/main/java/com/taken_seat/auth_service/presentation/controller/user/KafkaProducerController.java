@@ -23,6 +23,5 @@ public class KafkaProducerController {
         } catch (Exception e) {
             throw new CouponException(ResponseCode.COUPON_QUANTITY_EXCEPTION);
         }
-
     }
 }
