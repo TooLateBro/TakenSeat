@@ -12,7 +12,6 @@ import com.taken_seat.booking_service.booking.application.dto.response.BookingCr
 import com.taken_seat.booking_service.booking.application.dto.response.BookingPageResponse;
 import com.taken_seat.booking_service.booking.application.dto.response.BookingReadResponse;
 import com.taken_seat.common_service.dto.AuthenticatedUser;
-import com.taken_seat.common_service.message.PaymentResultMessage;
 
 public interface BookingService {
 	BookingCreateResponse createBooking(AuthenticatedUser authenticatedUser, BookingCreateRequest request);

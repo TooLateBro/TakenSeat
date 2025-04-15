@@ -5,7 +5,7 @@ import java.util.UUID;
 
 import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.common_service.entity.BaseTimeEntity;
-import com.taken_seat.common_service.message.PaymentRequestMessage;
+import com.taken_seat.common_service.message.PaymentMessage;
 import com.taken_seat.payment_service.application.dto.request.PaymentRegisterReqDto;
 import com.taken_seat.payment_service.domain.enums.PaymentStatus;
 
@@ -67,7 +67,7 @@ public class Payment extends BaseTimeEntity {
 		return payment;
 	}
 
-	public static Payment register(PaymentRequestMessage message) {
+	public static Payment register(PaymentMessage message) {
 		Payment payment = Payment.builder()
 			.bookingId(message.getBookingId())
 			.userId(message.getUserId())

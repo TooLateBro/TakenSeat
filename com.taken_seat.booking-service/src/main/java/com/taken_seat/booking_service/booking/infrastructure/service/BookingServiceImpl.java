@@ -27,8 +27,6 @@ import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.common_service.dto.response.BookingSeatClientResponseDto;
 import com.taken_seat.common_service.exception.customException.BookingException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
-import com.taken_seat.common_service.message.PaymentRequestMessage;
-import com.taken_seat.common_service.message.PaymentResultMessage;
 import com.taken_seat.common_service.message.enums.PaymentResultStatus;
 
 import lombok.RequiredArgsConstructor;

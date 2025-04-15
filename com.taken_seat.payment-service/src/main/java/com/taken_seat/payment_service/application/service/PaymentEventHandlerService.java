@@ -1,8 +1,8 @@
 package com.taken_seat.payment_service.application.service;
 
-import com.taken_seat.common_service.message.PaymentRequestMessage;
+import com.taken_seat.common_service.message.PaymentMessage;
 
 public interface PaymentEventHandlerService {
 
-	void processPayment(PaymentRequestMessage message);
+	void processPayment(PaymentMessage message);
 }
