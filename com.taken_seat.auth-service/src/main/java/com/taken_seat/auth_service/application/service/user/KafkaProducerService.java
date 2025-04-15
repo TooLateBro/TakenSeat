@@ -12,11 +12,13 @@ import com.taken_seat.common_service.exception.customException.MileageException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.common_service.message.KafkaUserInfoMessage;
 import com.taken_seat.common_service.message.UserBenefitMessage;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 public class KafkaProducerService {
 
@@ -40,27 +42,33 @@ public class KafkaProducerService {
         userRepository.findByIdAndDeletedAtIsNull(message.getUserId())
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
-        try {
-            kafkaTemplate.send(REQUEST_TOPIC, REQUEST_KEY, message);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        kafkaTemplate.send(REQUEST_TOPIC, REQUEST_KEY, message)
+                .thenAccept(sendResult -> {
+                    log.info("쿠폰 발급 요청에 성공했습니다!");
+                }).exceptionally(exception -> {
+                    log.error("메시지 전송에 실패했습니다.", exception);
+                    return null;
+                });
+
     }
 
     @CacheEvict(cacheNames = "searchCache", allEntries = true)
     public void createUserCoupon(KafkaUserInfoMessage message) {
         userCouponRepository.findByUserIdAndCouponIdAndDeletedAtIsNull(message.getUserId(), message.getCouponId())
                 .ifPresent(coupon -> {
-                    throw new IllegalArgumentException("이미 등록된 쿠폰입니다.");
+                    throw new CouponException(ResponseCode.COUPON_HAS_USER);
                 });
 
         User user = userRepository.findByIdAndDeletedAtIsNull(message.getUserId())
-                .orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다."));
+                .orElseThrow(() -> new AuthException(ResponseCode.USER_NOT_FOUND));
 
         if (message.getStatus() == KafkaUserInfoMessage.Status.SUCCEEDED) {
             UserCoupon u_c = UserCoupon.create(user, message);
 
             userCouponRepository.save(u_c);
+            log.info("쿠폰 발급에 성공하였습니다! 마이페이지에서 확인해주세요.");
+        }else{
+            log.error("쿠폰이 모두 소진되었습니다.");
         }
     }
 
