@@ -17,6 +17,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class BookingReadResponse {
 	private UUID id;
+	private UUID performanceId;
 	private UUID performanceScheduleId;
 	private UUID seatId;
 	private UUID paymentId;
@@ -27,6 +28,7 @@ public class BookingReadResponse {
 	public static BookingReadResponse toDto(Booking booking) {
 		return BookingReadResponse.builder()
 			.id(booking.getId())
+			.performanceId(booking.getPerformanceId())
 			.performanceScheduleId(booking.getPerformanceScheduleId())
 			.seatId(booking.getSeatId())
 			.paymentId(booking.getPaymentId())
