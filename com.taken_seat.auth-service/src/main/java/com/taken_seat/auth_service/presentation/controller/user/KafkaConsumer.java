@@ -18,7 +18,9 @@ public class KafkaConsumer {
     }
 
     private static final String RESPONSE_TOPIC = "benefit.usage.response";
+    private static final String RESPONSE_CANCEL_TOPIC = "benefit.refund.response";
     private static final String RESPONSE_TOPIC_REPLY = "Issuance-of-coupons-reply";
+
 
     @KafkaListener(groupId = "couponFIFO", topics = RESPONSE_TOPIC_REPLY)
     public void consume(@Payload KafkaUserInfoMessage message) {
@@ -30,5 +32,10 @@ public class KafkaConsumer {
     public UserBenefitMessage paymentConsume(@Payload UserBenefitMessage message) {
         UserBenefitMessage userBenefitMessage = kafkaProducerService.benefitUsage(message);
         return userBenefitMessage;
+    }
+
+    @KafkaListener(topics = RESPONSE_CANCEL_TOPIC)
+    public void benefitCancelConsume(@Payload UserBenefitMessage message) {
+        kafkaProducerService.benefitCancel(message);
     }
 }

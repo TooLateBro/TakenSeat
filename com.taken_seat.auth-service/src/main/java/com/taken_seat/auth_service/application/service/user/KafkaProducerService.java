@@ -132,4 +132,40 @@ public class KafkaProducerService {
                     .build();
         }
     }
+
+    @Transactional
+    public void benefitCancel(UserBenefitMessage message) {
+        log.info("<Booking> -> <Auth> 차감된 마일리지와 쿠폰을 복원 중 입니다...." +
+                "{}, {}, {}, {}", message.getBookingId(), message.getUserId(), message.getCouponId(), message.getMileage());
+        User user = userRepository.findByIdAndDeletedAtIsNull(message.getUserId())
+                .orElseThrow(() -> new AuthException(ResponseCode.USER_NOT_FOUND));
+
+        if (message.getCouponId() != null) {
+            UserCoupon userCoupon = userCouponRepository.findByCouponIdAndIsActiveTrue(message.getCouponId())
+                    .orElseThrow(()->new CouponException(ResponseCode.COUPON_NOT_FOUND));
+            if (userCoupon != null) {
+                userCoupon.updateActive(true, user.getId());
+                log.info("<Auth> 쿠폰 활성화 완료! {}, {}", message.getCouponId(), userCoupon.isActive());
+            }
+        }
+        if (message.getMileage() != null && message.getMileage() > 0) {
+            Mileage mileages = mileageRepository.findTopByUserIdOrderByUpdatedAtDesc(message.getUserId())
+                    .orElseThrow(()->new MileageException(ResponseCode.MILEAGE_NOT_FOUND));
+
+            if (mileages != null) {
+                Integer currentMileage = mileages.getMileage() + message.getMileage();
+                if (currentMileage < 0) {
+                    throw new MileageException(ResponseCode.MILEAGE_EMPTY);
+                }
+                Mileage mileage = Mileage.create(
+                        user, currentMileage
+                );
+                if (mileage.getCreatedBy() != null){
+                    mileage.preUpdate(user.getId());
+                }
+                log.info("<Auth> 마일리지 복원 완료! {}", message.getMileage());
+                mileageRepository.save(mileage);
+            }
+        }
+    }
 }
