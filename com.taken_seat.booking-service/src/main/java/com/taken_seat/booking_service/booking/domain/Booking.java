@@ -56,6 +56,8 @@ public class Booking extends BaseEntity {
 
 	private int price;
 
+	private int discountedPrice;
+
 	@Builder.Default
 	@Enumerated(EnumType.STRING)
 	private BookingStatus bookingStatus = BookingStatus.PENDING;
@@ -66,5 +68,9 @@ public class Booking extends BaseEntity {
 
 	public void cancel() {
 		this.canceledAt = LocalDateTime.now();
+	}
+
+	public void discount(int price) {
+		this.discountedPrice = price;
 	}
 }

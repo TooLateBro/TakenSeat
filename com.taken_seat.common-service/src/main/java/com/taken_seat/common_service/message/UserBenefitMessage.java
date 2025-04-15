@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class UserBenefitMessage {
 
-	private UUID paymentId;
+	private UUID bookingId;
 
 	private UUID userId;
 

@@ -27,7 +27,8 @@ import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.common_service.dto.response.BookingSeatClientResponseDto;
 import com.taken_seat.common_service.exception.customException.BookingException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
-import com.taken_seat.common_service.message.enums.PaymentResultStatus;
+import com.taken_seat.common_service.message.PaymentMessage;
+import com.taken_seat.common_service.message.UserBenefitMessage;
 
 import lombok.RequiredArgsConstructor;
 
@@ -56,6 +57,7 @@ public class BookingServiceImpl implements BookingService {
 			.performanceScheduleId(request.getPerformanceScheduleId())
 			.seatId(request.getSeatId())
 			.price(responseDto.price())
+			.discountedPrice(responseDto.price())
 			.build();
 
 		Booking saved = bookingRepository.save(booking);
@@ -148,22 +150,40 @@ public class BookingServiceImpl implements BookingService {
 
 		Booking booking = findBookingByIdAndUserId(id, authenticatedUser.getUserId());
 
-		PaymentRequestMessage message = PaymentRequestMessage.builder()
+		boolean isUsedCoupon = request.getCouponId() != null;
+		boolean isUsedMileage = request.getMileage() != null && request.getMileage() > 0;
+
+		// 마일리지나 쿠폰을 사용한 경우 -> 비동기 차감 요청 이벤트 전송
+		if (isUsedCoupon || isUsedMileage) {
+			UserBenefitMessage benefitUsageRequestMessage = UserBenefitMessage.builder()
+				.bookingId(id)
+				.userId(authenticatedUser.getUserId())
+				.couponId(request.getCouponId())
+				.mileage(request.getMileage())
+				.build();
+
+			bookingProducer.sendBenefitUsageRequest(benefitUsageRequestMessage);
+			return;
+		}
+
+		// 마일리지, 쿠폰을 사용하지 않은 경우 바로 결제 요청
+		PaymentMessage message = PaymentMessage.builder()
 			.bookingId(id)
 			.userId(authenticatedUser.getUserId())
-			.couponId(request.getCouponId())
-			.mileage(request.getMileage())
 			.price(booking.getPrice())
+			.type(PaymentMessage.MessageType.REQUEST)
 			.build();
 
 		bookingProducer.sendPaymentRequestEvent(message);
 	}
 
 	@Override
-	public void updateBooking(PaymentResultMessage message) {
+	@Transactional
+	public void updateBooking(PaymentMessage message) {
 
-		PaymentResultStatus status = message.getStatus();
-		if (status == PaymentResultStatus.SUCCESS) {
+		PaymentMessage.PaymentResultStatus status = message.getStatus();
+		// 성공시
+		if (status == PaymentMessage.PaymentResultStatus.SUCCESS) {
 			Booking booking = bookingRepository.findById(message.getBookingId())
 				.orElseThrow(() -> new BookingException(ResponseCode.BOOKING_NOT_FOUND_EXCEPTION));
 
@@ -183,6 +203,48 @@ public class BookingServiceImpl implements BookingService {
 		} else {
 			throw new BookingException(ResponseCode.BOOKING_PAYMENT_FAILED_EXCEPTION);
 		}
+	}
+
+	@Override
+	@Transactional
+	public void createPayment(UserBenefitMessage message) {
+
+		Booking booking = bookingRepository.findById(message.getBookingId())
+			.orElseThrow(() -> new BookingException(ResponseCode.BOOKING_NOT_FOUND_EXCEPTION));
+		int price = booking.getPrice(); // 정가
+
+		if (message.getDiscount() != null) {
+			double discountAmount = price * (message.getDiscount() / 100.0);  // 할인 금액 계산
+			price = (int)(price - discountAmount); // 할인된 가격 계산
+
+			if (!isValidPrice(price)) {
+				throw new BookingException(ResponseCode.INVALID_COUPON);
+			}
+		}
+
+		// 마일리지 차감
+		if (message.getMileage() != null) {
+			price -= message.getMileage();
+
+			if (!isValidPrice(price)) {
+				throw new BookingException(ResponseCode.INVALID_MILEAGE);
+			}
+		}
+		booking.discount(price); // 할인가 업데이트
+
+		// 결제 요청
+		PaymentMessage paymentMessage = PaymentMessage.builder()
+			.bookingId(booking.getId())
+			.userId(message.getUserId())
+			.price(booking.getDiscountedPrice())
+			.type(PaymentMessage.MessageType.REQUEST)
+			.build();
+
+		bookingProducer.sendPaymentRequestEvent(paymentMessage);
+	}
+
+	private boolean isValidPrice(int price) {
+		return price > 0;
 	}
 
 	private Booking findBookingByIdAndUserId(UUID id, UUID userId) {
