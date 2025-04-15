@@ -44,7 +44,7 @@ public class KafkaProducerService {
 
         kafkaTemplate.send(REQUEST_TOPIC, REQUEST_KEY, message)
                 .thenAccept(sendResult -> {
-                    log.info("쿠폰 발급 요청에 성공했습니다!");
+                    log.info("<Auth> 👉🏻 <Coupon> 쿠폰 발급 요청에 성공했습니다! : {}, {}", message.getUserId(), message.getCouponId());
                 }).exceptionally(exception -> {
                     log.error("메시지 전송에 실패했습니다.", exception);
                     return null;
@@ -66,9 +66,9 @@ public class KafkaProducerService {
             UserCoupon u_c = UserCoupon.create(user, message);
 
             userCouponRepository.save(u_c);
-            log.info("쿠폰 발급에 성공하였습니다! 마이페이지에서 확인해주세요.");
+            log.info("<Coupon> 👉🏻 <Auth> 쿠폰 발급에 성공하였습니다! 마이페이지에서 확인해주세요. {}, {}", message.getUserId(), message.getCouponId());
         }else{
-            log.error("쿠폰이 모두 소진되었습니다.");
+            log.error("<Coupon> 쿠폰이 모두 소진되었습니다.😆");
         }
     }
 
