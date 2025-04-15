@@ -34,7 +34,7 @@ public class KafkaConsumer {
         return userBenefitMessage;
     }
 
-    @KafkaListener(topics = RESPONSE_CANCEL_TOPIC)
+    @KafkaListener(groupId = "${kafka.consumer.group-id}", topics = RESPONSE_CANCEL_TOPIC)
     public void benefitCancelConsume(@Payload UserBenefitMessage message) {
         kafkaProducerService.benefitCancel(message);
     }
