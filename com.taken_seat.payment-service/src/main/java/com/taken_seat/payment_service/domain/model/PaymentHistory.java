@@ -63,10 +63,19 @@ public class PaymentHistory extends BaseTimeEntity {
 		return paymentHistory;
 	}
 
-	public void update(Payment payment) {
+	public void updateHistory(Payment payment) {
 		this.price = payment.getPrice();
 		this.paymentStatus = payment.getPaymentStatus();
+		this.approvedAt = payment.getApprovedAt();
+		this.refundAmount = payment.getRefundAmount();
+		this.refundRequestedAt = payment.getRefundRequestedAt();
 		this.preUpdate(payment.getUpdatedBy());
+	}
+
+	public void markAsCompleted(UUID userId) {
+		this.paymentStatus = PaymentStatus.COMPLETED;
+		this.approvedAt = LocalDateTime.now();
+		this.preUpdate(userId);
 	}
 
 	@Override
@@ -75,9 +84,4 @@ public class PaymentHistory extends BaseTimeEntity {
 		this.paymentStatus = PaymentStatus.DELETED;
 	}
 
-	public void markAsCompleted(UUID userId) {
-		this.paymentStatus = PaymentStatus.COMPLETED;
-		this.approvedAt = LocalDateTime.now();
-		this.preUpdate(userId);
-	}
 }

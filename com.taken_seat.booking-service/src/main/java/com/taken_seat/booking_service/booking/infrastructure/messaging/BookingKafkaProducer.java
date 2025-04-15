@@ -5,7 +5,6 @@ import org.springframework.stereotype.Component;
 
 import com.taken_seat.booking_service.booking.application.service.BookingProducer;
 import com.taken_seat.booking_service.common.message.TicketRequestMessage;
-import com.taken_seat.common_service.message.PaymentRequestMessage;
 
 import lombok.RequiredArgsConstructor;
 
