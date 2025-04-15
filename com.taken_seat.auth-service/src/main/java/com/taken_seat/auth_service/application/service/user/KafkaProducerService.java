@@ -44,9 +44,9 @@ public class KafkaProducerService {
 
         kafkaTemplate.send(REQUEST_TOPIC, REQUEST_KEY, message)
                 .thenAccept(sendResult -> {
-                    log.info("<Auth> 👉🏻 <Coupon> 쿠폰 발급 요청에 성공했습니다! : {}, {}", message.getUserId(), message.getCouponId());
+                    log.info("<Auth> -> <Coupon> 쿠폰 발급 요청에 성공했습니다! : {}, {}", message.getUserId(), message.getCouponId());
                 }).exceptionally(exception -> {
-                    log.error("<Auth> 👉🏻 <Coupon> 쿠폰 발급 요청에 실패했습니다! : {}, {}", message.getUserId(), message.getCouponId());
+                    log.error("<Auth> -> <Coupon> 쿠폰 발급 요청에 실패했습니다! : {}, {}", message.getUserId(), message.getCouponId());
                     return null;
                 });
 
@@ -66,15 +66,17 @@ public class KafkaProducerService {
             UserCoupon u_c = UserCoupon.create(user, message);
 
             userCouponRepository.save(u_c);
-            log.info("<Coupon> 👉🏻 <Auth> 쿠폰 발급에 성공하였습니다! 마이페이지에서 확인해주세요. {}, {}", message.getUserId(), message.getCouponId());
+            log.info("<Coupon> -> <Auth> 쿠폰 발급에 성공하였습니다! 마이페이지에서 확인해주세요. {}, {}", message.getUserId(), message.getCouponId());
         }else{
-            log.error("<Auth> 쿠폰이 모두 소진되었습니다.😆");
+            log.error("<Auth> 쿠폰이 모두 소진되었습니다.");
         }
     }
 
     @Transactional
     public UserBenefitMessage benefitUsage(UserBenefitMessage message) {
         try {
+            log.info("<Booking> -> <Auth> 마일리지 및 쿠폰 사용 여부를 체크 중 입니다...." +
+                    "{}, {}, {}, {}", message.getBookingId(), message.getUserId(), message.getCouponId(), message.getMileage());
             User user = userRepository.findByIdAndDeletedAtIsNull(message.getUserId())
                     .orElseThrow(() -> new AuthException(ResponseCode.USER_NOT_FOUND));
 
@@ -96,7 +98,7 @@ public class KafkaProducerService {
                 if (mileages != null) {
                     Integer currentMileage = mileages.getMileage() - message.getMileage();
                     if (currentMileage < 0) {
-                        throw new IllegalArgumentException("사용 가능한 마일리지가 부족합니다.");
+                        throw new MileageException(ResponseCode.MILEAGE_EMPTY);
                     }
                     Mileage mileage = Mileage.create(
                             user, currentMileage
@@ -108,8 +110,10 @@ public class KafkaProducerService {
                     usedMileage = message.getMileage();
                 }
             }
+            log.info("<Auth> -> <Booking> 마일리지 및 쿠폰 사용 여부 검증에 성공했습니다! " +
+                    "{}, {}, {}, {}, {}", message.getBookingId(), message.getUserId(), message.getCouponId(), message.getMileage(), couponDiscount);
             return UserBenefitMessage.builder()
-                    .paymentId(message.getPaymentId())
+                    .bookingId(message.getBookingId())
                     .userId(user.getId())
                     .couponId(message.getCouponId())
                     .mileage(usedMileage)
@@ -117,8 +121,10 @@ public class KafkaProducerService {
                     .status(UserBenefitMessage.UserBenefitStatus.SUCCESS)
                     .build();
         } catch (Exception e) {
+            log.info("<Auth> -> <Booking> 마일리지 및 쿠폰 사용 여부 검증에 실패하였습니다. " +
+                    "{}, {}, {}, {}", message.getBookingId(), message.getUserId(), message.getCouponId(), message.getMileage());
             return UserBenefitMessage.builder()
-                    .paymentId(message.getPaymentId())
+                    .bookingId(message.getBookingId())
                     .userId(message.getUserId())
                     .couponId(message.getCouponId())
                     .mileage(message.getMileage())
