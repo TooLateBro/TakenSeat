@@ -7,8 +7,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 @Slf4j
@@ -56,4 +54,26 @@ public class QueueService {
         return "총 대기자 수: " + queueSize + ", 현재 대기 순번: " + userRank;
     }
 
+    public void processQueueBatch(int batchSize) {
+        Set<String> performanceList = queueRepository.getActivePerformanceIds();
+
+        for (String performance : performanceList) {
+            List<String> users = queueRepository.getTopUsers(performance, batchSize);
+            for (String token : users) {
+                //카프카 이벤트 전송
+                log.info("카프카 이벤트 전송 성공: " + token);
+            }
+
+            queueRepository.removeTopUsers(performance, batchSize);
+
+            //해당 공연의 대기자 수가 0명이면 공연 관리 set에서 공연 삭제 & 해당 공연 대기열 set 삭제
+            if(users.size() <= batchSize && queueRepository.getQueueSize(performance) == 0) {
+                queueRepository.removeActivePerformance(performance);
+                queueRepository.deleteUserSet(performance);
+                queueRepository.deleteQueue(performance);
+
+                log.info("대기자 없음. 공연 set에서 삭제: " + performance);
+            }
+        }
+    }
 }
