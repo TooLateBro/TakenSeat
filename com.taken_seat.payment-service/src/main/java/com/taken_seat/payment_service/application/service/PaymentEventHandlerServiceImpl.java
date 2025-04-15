@@ -11,10 +11,12 @@ import com.taken_seat.payment_service.domain.repository.PaymentHistoryRepository
 import com.taken_seat.payment_service.domain.repository.PaymentRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class PaymentEventHandlerServiceImpl implements PaymentEventHandlerService {
 
 	private final PaymentRepository paymentRepository;
@@ -27,22 +29,27 @@ public class PaymentEventHandlerServiceImpl implements PaymentEventHandlerServic
 
 		// 1. 결제 금액 검사
 		if (isInvalidPrice(message)) {
+			log.warn("[Payment] 잘못된 결제 금액 - bookingId: {}, price: {}", message.getBookingId(), message.getPrice());
 			PaymentMessage paymentResultMessage = PaymentMessage.builder()
 				.bookingId(message.getBookingId())
 				.status(PaymentMessage.PaymentResultStatus.INVALID_PRICE)
 				.build();
 
 			paymentResultProducer.sendPaymentResult(paymentResultMessage);
+
+			log.info("[Payment] 결제 실패 메시지 전송 완료 - bookingId: {}", message.getBookingId());
 			return;
 		}
 
 		// 2. 결제 엔티티 기본 생성 및 저장
 		Payment payment = Payment.register(message);
 		paymentRepository.save(payment);
+		log.debug("[Payment] 결제 저장 완료 - paymentId: {}", payment.getId());
 
 		// 3. 결제 히스토리 생성 및 저장
 		PaymentHistory paymentHistory = PaymentHistory.register(payment);
 		paymentHistoryRepository.save(paymentHistory);
+		log.debug("[Payment] 결제 히스토리 저장 완료 - paymentHistoryId: {}", paymentHistory.getId());
 
 		payment.markAsCompleted(message.getUserId());
 		paymentHistory.markAsCompleted(message.getUserId());
@@ -56,6 +63,8 @@ public class PaymentEventHandlerServiceImpl implements PaymentEventHandlerServic
 			.build();
 
 		paymentResultProducer.sendPaymentResult(paymentResultMessage);
+		log.info("[Payment] 결제 성공 메시지 전송 완료 - bookingId: {}, paymentId: {}",
+			message.getBookingId(), payment.getId());
 	}
 
 	private boolean isInvalidPrice(PaymentMessage message) {
