@@ -3,6 +3,7 @@ package com.taken_seat.auth_service.presentation.controller.auth;
 import com.taken_seat.auth_service.application.dto.auth.AuthLoginResponseDto;
 import com.taken_seat.auth_service.application.dto.auth.AuthSignUpResponseDto;
 import com.taken_seat.auth_service.application.service.auth.AuthService;
+import com.taken_seat.auth_service.presentation.docs.AuthControllerDocs;
 import com.taken_seat.auth_service.presentation.dto.auth.AuthLoginRequestDto;
 import com.taken_seat.auth_service.presentation.dto.auth.AuthSignUpRequestDto;
 import com.taken_seat.common_service.dto.ApiResponseData;
@@ -16,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/auths")
-public class AuthController {
+public class AuthController implements AuthControllerDocs {
 
     private final AuthService authService;
 

@@ -13,7 +13,12 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class WebSecurityConfig {
 
-    private final String[] auth_Urls = {"/api/v1/auths/**", "/api/v1/users/**"};
+    private final String[] auth_Urls = {
+            "/api/v1/auths/**",
+            "/api/v1/users/**",
+            "/swagger-ui/**",
+            "v3/api-docs/**",
+    };
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
