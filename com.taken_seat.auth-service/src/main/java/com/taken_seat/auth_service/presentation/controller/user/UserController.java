@@ -3,6 +3,7 @@ package com.taken_seat.auth_service.presentation.controller.user;
 import com.taken_seat.auth_service.application.dto.PageResponseDto;
 import com.taken_seat.auth_service.application.dto.user.UserInfoResponseDto;
 import com.taken_seat.auth_service.application.service.user.UserService;
+import com.taken_seat.auth_service.presentation.docs.UserControllerDocs;
 import com.taken_seat.auth_service.presentation.dto.user.UserUpdateRequestDto;
 import com.taken_seat.common_service.dto.ApiResponseData;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
@@ -15,7 +16,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/users")
-public class UserController {
+public class UserController implements UserControllerDocs {
 
     private final UserService userService;
 
