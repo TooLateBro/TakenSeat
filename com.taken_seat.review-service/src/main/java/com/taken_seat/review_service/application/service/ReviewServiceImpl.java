@@ -1,4 +1,4 @@
-package com.taken_seat.review_service.infrastructure.service;
+package com.taken_seat.review_service.application.service;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -19,7 +19,6 @@ import com.taken_seat.review_service.application.dto.request.ReviewRegisterReqDt
 import com.taken_seat.review_service.application.dto.request.ReviewUpdateReqDto;
 import com.taken_seat.review_service.application.dto.response.PageReviewResponseDto;
 import com.taken_seat.review_service.application.dto.response.ReviewDetailResDto;
-import com.taken_seat.review_service.application.service.ReviewService;
 import com.taken_seat.review_service.domain.model.Review;
 import com.taken_seat.review_service.domain.repository.ReviewQuerydslRepository;
 import com.taken_seat.review_service.domain.repository.ReviewRepository;

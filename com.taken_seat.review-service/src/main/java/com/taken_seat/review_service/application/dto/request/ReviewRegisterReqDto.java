@@ -18,4 +18,6 @@ public class ReviewRegisterReqDto {
 	private String title;
 
 	private String content;
+
+	private short rating;
 }

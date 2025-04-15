@@ -12,4 +12,6 @@ public class ReviewUpdateReqDto {
 	private String title;
 
 	private String content;
+	
+	private short rating;
 }

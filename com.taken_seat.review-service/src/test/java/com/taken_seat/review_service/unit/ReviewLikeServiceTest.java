@@ -16,11 +16,11 @@ import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 
 import com.taken_seat.common_service.dto.AuthenticatedUser;
+import com.taken_seat.review_service.application.service.ReviewLikeServiceImpl;
 import com.taken_seat.review_service.domain.model.Review;
 import com.taken_seat.review_service.domain.model.ReviewLike;
 import com.taken_seat.review_service.domain.repository.ReviewLikeRepository;
 import com.taken_seat.review_service.domain.repository.ReviewRepository;
-import com.taken_seat.review_service.infrastructure.service.ReviewLikeServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
 public class ReviewLikeServiceTest {

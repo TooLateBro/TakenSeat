@@ -27,12 +27,12 @@ import com.taken_seat.review_service.application.dto.request.ReviewRegisterReqDt
 import com.taken_seat.review_service.application.dto.request.ReviewUpdateReqDto;
 import com.taken_seat.review_service.application.dto.response.PageReviewResponseDto;
 import com.taken_seat.review_service.application.dto.response.ReviewDetailResDto;
+import com.taken_seat.review_service.application.service.ReviewServiceImpl;
 import com.taken_seat.review_service.domain.model.Review;
 import com.taken_seat.review_service.domain.repository.ReviewQuerydslRepository;
 import com.taken_seat.review_service.domain.repository.ReviewRepository;
 import com.taken_seat.review_service.infrastructure.client.dto.BookingStatusDto;
 import com.taken_seat.review_service.infrastructure.client.dto.PerformanceEndTimeDto;
-import com.taken_seat.review_service.infrastructure.service.ReviewServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
 public class ReviewServicesTest {

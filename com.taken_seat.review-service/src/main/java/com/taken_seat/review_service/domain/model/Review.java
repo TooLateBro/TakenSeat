@@ -52,6 +52,9 @@ public class Review extends BaseTimeEntity {
 	private String content;
 
 	@Column(nullable = false)
+	private short rating;
+
+	@Column(nullable = false)
 	private Integer likeCount;
 
 	public static Review create(ReviewRegisterReqDto reviewRegisterReqDto, AuthenticatedUser authenticatedUser) {
@@ -63,6 +66,7 @@ public class Review extends BaseTimeEntity {
 			.authorEmail(authenticatedUser.getEmail())
 			.title(reviewRegisterReqDto.getTitle())
 			.content(reviewRegisterReqDto.getContent())
+			.rating(reviewRegisterReqDto.getRating())
 			.likeCount(0)
 			.build();
 
@@ -74,6 +78,7 @@ public class Review extends BaseTimeEntity {
 	public void update(ReviewUpdateReqDto reviewUpdateReqDto, AuthenticatedUser authenticatedUser) {
 		this.title = reviewUpdateReqDto.getTitle();
 		this.content = reviewUpdateReqDto.getContent();
+		this.rating = reviewUpdateReqDto.getRating();
 		this.preUpdate(authenticatedUser.getUserId());
 	}
 
