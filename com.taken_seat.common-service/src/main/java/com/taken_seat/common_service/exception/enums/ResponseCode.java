@@ -66,9 +66,11 @@ public enum ResponseCode {
 
 	// Mileage
 	MILEAGE_NOT_FOUND(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "마일리지가 존재하지 않습니다."),
+	MILEAGE_EMPTY(HttpStatus.NO_CONTENT, HttpStatus.NO_CONTENT.value(), "마일리지가 부족합니다."),
 	// Coupon
 	COUPON_QUANTITY_EXCEPTION(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), "쿠폰의 수량이 모두 소진 되었습니다."),
 	COUPON_NOT_FOUND(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "쿠폰이 존재하지 않습니다."),
+	COUPON_HAS_USER(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), "이미 보유한 쿠폰 입니다."),
 
 	// Booking
 	BOOKING_ALREADY_CANCELED_EXCEPTION(HttpStatus.CONFLICT, HttpStatus.CONFLICT.value(), "이미 취소된 예약입니다."),
