@@ -4,7 +4,7 @@ VALUES
 
 INSERT INTO p_coupon (id, name, code, quantity, discount, is_active, expired_at, created_at, updated_at, created_by)
 VALUES
-    (UUID_TO_BIN('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'), 'test1', 'ABCDEF1', 1045, 30, true, DATE_ADD(NOW(), INTERVAL 10 MINUTE), NOW(), NOW(), UUID_TO_BIN('11111111-1111-1111-1111-111111111111'));
+    (UUID_TO_BIN('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'), 'test1', 'ABCDEF1', 100002, 30, true, DATE_ADD(NOW(), INTERVAL 10 MINUTE), NOW(), NOW(), UUID_TO_BIN('11111111-1111-1111-1111-111111111111'));
 
 INSERT INTO p_coupon (id, name, code, quantity, discount, is_active, expired_at, created_at, updated_at, created_by)
 VALUES
