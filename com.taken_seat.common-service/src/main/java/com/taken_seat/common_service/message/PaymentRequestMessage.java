@@ -17,9 +17,5 @@ public class PaymentRequestMessage {
 
 	private UUID userId;
 
-	private UUID couponId;
-
-	private Integer mileage;
-
-	private Integer price; // 좌석 금액( 원본 )
+	private Integer price;
 }
