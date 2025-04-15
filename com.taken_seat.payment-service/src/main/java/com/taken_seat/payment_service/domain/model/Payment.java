@@ -88,24 +88,31 @@ public class Payment extends BaseTimeEntity {
 		this.preUpdate(authenticatedUser.getUserId());
 	}
 
-	@Override
-	public void delete(UUID deleteBy) {
-		super.delete(deleteBy);
-		this.paymentStatus = PaymentStatus.DELETED;
-	}
-
 	public void markAsCompleted(UUID userId) {
 		this.paymentStatus = PaymentStatus.COMPLETED;
 		this.approvedAt = LocalDateTime.now();
 		this.preUpdate(userId);
 	}
 
-	public void updatePrice(int price) {
+	public void updateStatus(PaymentStatus paymentStatus) {
+		this.paymentStatus = paymentStatus;
+	}
 
+	public void updatePrice(int price) {
+		validatePrice(price);
+		this.price = price;
+	}
+
+	@Override
+	public void delete(UUID deleteBy) {
+		super.delete(deleteBy);
+		this.paymentStatus = PaymentStatus.DELETED;
+	}
+
+	private void validatePrice(int price) {
 		if (price < 0) {
 			throw new PaymentException(ResponseCode.ILLEGAL_ARGUMENT, "결제 금액은 0보다 작은 값으로 설정할 수 없습니다. 올바른 값을 입력해 주세요.");
 		}
-
-		this.price = price;
 	}
+
 }
