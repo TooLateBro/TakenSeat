@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
-import com.taken_seat.common_service.message.PaymentResultMessage;
+import com.taken_seat.common_service.message.PaymentMessage;
 import com.taken_seat.payment_service.application.kafka.producer.PaymentResultProducer;
 
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ public class PaymentResultProducerImpl implements PaymentResultProducer {
 	private String SEND_PAYMENT_RESULT_TOPIC;
 
 	@Override
-	public void sendPaymentResult(PaymentResultMessage message) {
+	public void sendPaymentResult(PaymentMessage message) {
 		kafkaTemplate.send(SEND_PAYMENT_RESULT_TOPIC, message);
 	}
 }
