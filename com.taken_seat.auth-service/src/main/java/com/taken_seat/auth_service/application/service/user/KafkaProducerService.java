@@ -46,7 +46,7 @@ public class KafkaProducerService {
                 .thenAccept(sendResult -> {
                     log.info("<Auth> 👉🏻 <Coupon> 쿠폰 발급 요청에 성공했습니다! : {}, {}", message.getUserId(), message.getCouponId());
                 }).exceptionally(exception -> {
-                    log.error("메시지 전송에 실패했습니다.", exception);
+                    log.error("<Auth> 👉🏻 <Coupon> 쿠폰 발급 요청에 실패했습니다! : {}, {}", message.getUserId(), message.getCouponId());
                     return null;
                 });
 
