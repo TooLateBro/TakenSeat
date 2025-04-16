@@ -44,19 +44,20 @@ public class QueueService {
 
         //이 토큰을 프론트에서 지니고 있다가 유저 랭크 조회 시 해당 토큰을 통해 알려주기
         log.info("토큰 발급 및 대기열 진입 성공: " + token);
+        log.info(getRank(token));
         return token;
     }
 
     public String getRank(String token) {
         if (!jwt.validateToken(token))
-            return "대기열에 존재 x";
+            return "유효하지 않은 토큰"; //예외처리 필요
 
         String key = jwt.getPerformanceId(token);
 
         Long queueSize = queueRepository.getQueueSize(key);
         Long userRank = queueRepository.getRank(token, key);
 
-        return "총 대기자 수: " + queueSize + ", 현재 대기 순번: " + userRank;
+        return "총 대기자 수: " + queueSize + ", 현재 대기 순번: " + (userRank + 1);
     }
 
     public void processQueueBatch(int batchSize) {
