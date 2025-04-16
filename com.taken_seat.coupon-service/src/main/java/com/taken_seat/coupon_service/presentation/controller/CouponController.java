@@ -1,6 +1,7 @@
 package com.taken_seat.coupon_service.presentation.controller;
 
 import com.taken_seat.common_service.dto.ApiResponseData;
+import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.coupon_service.application.dto.CouponResponseDto;
 import com.taken_seat.coupon_service.application.dto.PageResponseDto;
@@ -24,25 +25,27 @@ public class CouponController {
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponseData<CouponResponseDto>> createCoupon(
-            @RequestHeader("X-Role") String role,
-            @RequestHeader("X-User-Id") UUID userId,
-            @RequestBody CreateCouponRequestDto requestDto){
-        if (role == null || !(role.equals("ADMIN") || role.equals("MANAGER"))) {
+    public ResponseEntity<ApiResponseData<CouponResponseDto>> createCoupon(AuthenticatedUser authenticatedUser,
+                                                                           @RequestBody CreateCouponRequestDto requestDto){
+        if (authenticatedUser.getRole() == null ||
+                !(authenticatedUser.getRole().equals("ADMIN") ||
+                        authenticatedUser.getRole().equals("MANAGER"))) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(ApiResponseData.failure(ResponseCode.ACCESS_DENIED_EXCEPTION.getCode()
                             ,"접근 권한이 없습니다."));
         }
-        CouponResponseDto couponInfo = couponService.createCoupon(requestDto.toDto(), userId);
+        CouponResponseDto couponInfo = couponService.createCoupon(requestDto.toDto(), authenticatedUser);
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponseData.success(couponInfo));
     }
 
     @GetMapping("/{couponId}")
-    public ResponseEntity<ApiResponseData<CouponResponseDto>> getCoupon(@RequestHeader("X-Role") String role,
+    public ResponseEntity<ApiResponseData<CouponResponseDto>> getCoupon(AuthenticatedUser authenticatedUser,
                                                                         @PathVariable UUID couponId) {
-        if (role == null || !(role.equals("ADMIN") || role.equals("MANAGER"))) {
+        if (authenticatedUser.getRole() == null ||
+                !(authenticatedUser.getRole().equals("ADMIN") ||
+                        authenticatedUser.getRole().equals("MANAGER"))) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(ApiResponseData.failure(ResponseCode.ACCESS_DENIED_EXCEPTION.getCode()
                             ,"접근 권한이 없습니다."));
@@ -52,13 +55,14 @@ public class CouponController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<ApiResponseData<PageResponseDto<CouponResponseDto>>> searchCoupon(
-            @RequestHeader("X-Role") String role,
-            @RequestParam(required = false) String name,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+    public ResponseEntity<ApiResponseData<PageResponseDto<CouponResponseDto>>> searchCoupon(AuthenticatedUser authenticatedUser,
+                                                                                            @RequestParam(required = false) String name,
+                                                                                            @RequestParam(defaultValue = "0") int page,
+                                                                                            @RequestParam(defaultValue = "10") int size
     ){
-        if (role == null || !(role.equals("ADMIN") || role.equals("MANAGER"))) {
+        if (authenticatedUser.getRole() == null ||
+                !(authenticatedUser.getRole().equals("ADMIN") ||
+                        authenticatedUser.getRole().equals("MANAGER"))) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(ApiResponseData.failure(ResponseCode.ACCESS_DENIED_EXCEPTION.getCode()
                             ,"접근 권한이 없습니다."));
@@ -69,28 +73,30 @@ public class CouponController {
 
     @PatchMapping("/{couponId}")
     public ResponseEntity<ApiResponseData<CouponResponseDto>> updateCoupon(@PathVariable UUID couponId,
-                                                                           @RequestHeader("X-Role") String role,
-                                                                           @RequestHeader("X-User-Id") UUID userId,
+                                                                           AuthenticatedUser authenticatedUser,
                                                                            @RequestBody UpdateCouponRequestDto requestDto){
-        if (role == null || !(role.equals("ADMIN") || role.equals("MANAGER"))) {
+        if (authenticatedUser.getRole() == null ||
+                !(authenticatedUser.getRole().equals("ADMIN") ||
+                        authenticatedUser.getRole().equals("MANAGER"))) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(ApiResponseData.failure(ResponseCode.ACCESS_DENIED_EXCEPTION.getCode()
                             ,"접근 권한이 없습니다."));
         }
-        CouponResponseDto couponInfo = couponService.updateCoupon(couponId, userId, requestDto.toDto());
+        CouponResponseDto couponInfo = couponService.updateCoupon(couponId, authenticatedUser, requestDto.toDto());
         return ResponseEntity.ok(ApiResponseData.success(couponInfo));
     }
 
     @DeleteMapping("/{couponId}")
     public ResponseEntity<ApiResponseData<Void>> deleteCoupon(@PathVariable UUID couponId,
-                                                              @RequestHeader("X-Role") String role,
-                                                              @RequestHeader("X-User-Id") UUID userId) {
-        if (role == null || !(role.equals("ADMIN") || role.equals("MANAGER"))) {
+                                                              AuthenticatedUser authenticatedUser) {
+        if (authenticatedUser.getRole() == null ||
+                !(authenticatedUser.getRole().equals("ADMIN") ||
+                        authenticatedUser.getRole().equals("MANAGER"))) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(ApiResponseData.failure(ResponseCode.ACCESS_DENIED_EXCEPTION.getCode()
                             ,"접근 권한이 없습니다."));
         }
-        couponService.deleteCoupon(couponId, userId);
+        couponService.deleteCoupon(couponId, authenticatedUser);
         return ResponseEntity.ok(ApiResponseData.success(null));
     }
 }
