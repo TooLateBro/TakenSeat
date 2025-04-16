@@ -22,10 +22,16 @@ public interface ReviewRepository {
 	<S extends Review> List<S> saveAllAndFlush(Iterable<S> entities);
 
 	@Query(value =
-		"SELECT r.performance_id AS performanceId, AVG(r.rating) AS avgRating, COUNT(r.id) AS reviewCount " +
-			"FROM p_review r " +
-			"WHERE r.deleted_at IS NULL " +
-			"GROUP BY r.performance_id",
+		"SELECT r.performance_id AS performanceId, AVG(r.rating) AS avgRating, COUNT(r.id) AS reviewCount "
+			+ "FROM p_review r "
+			+ "WHERE r.performance_id = :performanceId AND r.deleted_at IS NULL", nativeQuery = true)
+	Map<String, Object> fetchAvgRatingAndReviewCountByPerformanceId(UUID performanceId);
+
+	@Query(value =
+		"SELECT r.performance_id AS performanceId, AVG(r.rating) AS avgRating, COUNT(r.id) AS reviewCount "
+			+ "FROM p_review r "
+			+ "WHERE r.deleted_at IS NULL "
+			+ "GROUP BY r.performance_id",
 		nativeQuery = true)
 	List<Map<String, Object>> fetchPerformanceRatingStatsBulk();
 }

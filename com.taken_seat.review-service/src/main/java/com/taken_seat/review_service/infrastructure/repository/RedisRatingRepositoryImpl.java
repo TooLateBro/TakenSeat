@@ -2,6 +2,7 @@ package com.taken_seat.review_service.infrastructure.repository;
 
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +10,8 @@ import java.util.UUID;
 
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Repository;
 
 import com.taken_seat.common_service.exception.customException.PaymentException;
@@ -26,12 +29,33 @@ public class RedisRatingRepositoryImpl implements RedisRatingRepository {
 
 	private final ReviewRepository reviewRepository;
 	private final RedisTemplate<String, Object> redisTemplate;
+	private final RedisScript<Boolean> redisScript;
+
+	private final StringRedisTemplate stringRedisTemplate;
 
 	private final String AVG_RATING_KEY = "avgRating:";
+	private static final String FIELD_AVG_RATING = "avgRating";
+	private static final String FIELD_REVIEW_COUNT = "reviewCount";
 
 	@Override
 	public Double getAvgRating(UUID performanceId) {
-		return 0.0;
+
+		String avgRatingKey = AVG_RATING_KEY + performanceId;
+
+		Map<Object, Object> ratingData = redisTemplate.opsForHash().entries(avgRatingKey);
+
+		double avgRating = getOrDefaultRating(ratingData, FIELD_AVG_RATING);
+		long reviewCount = getOrDefaultReviewCount(ratingData, FIELD_REVIEW_COUNT);
+
+		if (avgRating == 0.0 || reviewCount < 50) {
+			Map<String, Object> avgRatingAndCount = reviewRepository.fetchAvgRatingAndReviewCountByPerformanceId(
+				performanceId);
+
+			saveRating(performanceId, avgRatingAndCount);
+			avgRating = bigDecimalToDouble(avgRatingAndCount.get(FIELD_AVG_RATING));
+		}
+
+		return avgRating;
 	}
 
 	@Override
@@ -58,13 +82,13 @@ public class RedisRatingRepositoryImpl implements RedisRatingRepository {
 					Map<String, Object> map = performanceReviews.get(j);
 
 					UUID performanceId = bytesToUUID(map.get("performanceId"));
-					double avgRating = bigDecimalToDouble(map.get("avgRating"));
-					long reviewCount = (long)map.get("reviewCount");
+					double avgRating = bigDecimalToDouble(map.get(FIELD_AVG_RATING));
+					long reviewCount = (long)map.get(FIELD_REVIEW_COUNT);
 
 					String avgRatingKey = AVG_RATING_KEY + performanceId;
 					Map<String, Object> ratingInfo = new HashMap<>();
-					ratingInfo.put("avgRating", avgRating);
-					ratingInfo.put("reviewCount", reviewCount);
+					ratingInfo.put(FIELD_AVG_RATING, avgRating);
+					ratingInfo.put(FIELD_REVIEW_COUNT, reviewCount);
 
 					redisTemplate.opsForHash().putAll(avgRatingKey, ratingInfo);
 				}
@@ -73,6 +97,16 @@ public class RedisRatingRepositoryImpl implements RedisRatingRepository {
 
 		}
 
+	}
+
+	private double getOrDefaultRating(Map<Object, Object> ratingData, String field) {
+		Object ratingObj = ratingData.get(field);
+		return (ratingObj != null) ? (double)ratingObj : 0.0;
+	}
+
+	private long getOrDefaultReviewCount(Map<Object, Object> ratingData, String field) {
+		Object reviewCountObj = ratingData.get(field);
+		return (reviewCountObj != null) ? (long)reviewCountObj : 0L;
 	}
 
 	private UUID bytesToUUID(Object value) {
@@ -89,5 +123,16 @@ public class RedisRatingRepositoryImpl implements RedisRatingRepository {
 			return ((BigDecimal)value).doubleValue();
 		}
 		throw new PaymentException(ResponseCode.ILLEGAL_ARGUMENT);
+	}
+
+	private void saveRating(UUID avgRatingKey, Map<String, Object> avgRatingAndCount) {
+		List<String> keys = Collections.emptyList();
+
+		Object[] argv = {AVG_RATING_KEY + avgRatingKey.toString(),
+			avgRatingAndCount.get(FIELD_AVG_RATING).toString(),
+			avgRatingAndCount.get(FIELD_REVIEW_COUNT).toString()};
+
+		stringRedisTemplate.execute(redisScript, keys, argv);
+
 	}
 }

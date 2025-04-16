@@ -81,6 +81,7 @@ public class ReviewServicesTest {
 			.title("testReviewTitle")
 			.content("testReviewContent")
 			.likeCount(0)
+			.rating((short)1)
 			.build();
 
 		testReview.prePersist(UUID.randomUUID());
@@ -94,7 +95,7 @@ public class ReviewServicesTest {
 	void testRegisterReview_success() {
 		// Given
 		ReviewRegisterReqDto requestDto = new ReviewRegisterReqDto(testPerformanceId, testPerformanceScheduleId,
-			"testRegister", "testContent");
+			"testRegister", "testContent", (short)5);
 
 		when(reviewRepository.existsByAuthorIdAndPerformanceId(testAuthorId, testPerformanceId)).thenReturn(false);
 		when(reviewClient.getBookingStatus(testAuthorId, testPerformanceId)).thenReturn(
@@ -119,7 +120,7 @@ public class ReviewServicesTest {
 	void testRegisterReview_fail_alreadyWritten() {
 		// Given
 		ReviewRegisterReqDto requestDto = new ReviewRegisterReqDto(testPerformanceId, testPerformanceScheduleId, "중복",
-			"중복내용");
+			"중복내용", (short)5);
 
 		when(reviewRepository.existsByAuthorIdAndPerformanceId(testAuthorId, testPerformanceId)).thenReturn(true);
 
@@ -136,7 +137,7 @@ public class ReviewServicesTest {
 	void testRegisterReview_fail_bookingNotCompleted() {
 		// Given
 		ReviewRegisterReqDto requestDto = new ReviewRegisterReqDto(testPerformanceId, testPerformanceScheduleId, "test",
-			"내용");
+			"내용", (short)5);
 
 		when(reviewRepository.existsByAuthorIdAndPerformanceId(testAuthorId, testPerformanceId)).thenReturn(false);
 		when(reviewClient.getBookingStatus(testAuthorId, testPerformanceId)).thenReturn(
@@ -155,7 +156,7 @@ public class ReviewServicesTest {
 	void testRegisterReview_fail_earlyReview() {
 		// Given
 		ReviewRegisterReqDto requestDto = new ReviewRegisterReqDto(testPerformanceId, testPerformanceScheduleId,
-			"early", "내용");
+			"early", "내용", (short)5);
 
 		when(reviewRepository.existsByAuthorIdAndPerformanceId(testAuthorId, testPerformanceId)).thenReturn(false);
 		when(reviewClient.getBookingStatus(testAuthorId, testPerformanceId)).thenReturn(
@@ -208,6 +209,7 @@ public class ReviewServicesTest {
 	void testSearchReview_success_withTitleFilter() {
 
 		// Given
+		UUID performance_id = UUID.randomUUID();
 		String query = "testTitle";
 		String category = "title";
 		int page = 0;
@@ -217,10 +219,12 @@ public class ReviewServicesTest {
 
 		Page<Review> mockPage = new PageImpl<>(Collections.singletonList(testReview), PageRequest.of(page, size), 1);
 
-		when(reviewQuerydslRepository.search(query, category, page, size, sort, order)).thenReturn(mockPage);
+		when(reviewQuerydslRepository.search(performance_id, query, category, page, size, sort, order)).thenReturn(
+			mockPage);
 
 		// When
-		PageReviewResponseDto result = reviewServices.searchReview(query, category, page, size, sort, order);
+		PageReviewResponseDto result = reviewServices.searchReview(performance_id, query, category, page, size, sort,
+			order);
 
 		// Then
 		assertNotNull(result);
@@ -237,11 +241,13 @@ public class ReviewServicesTest {
 	@DisplayName("리뷰 리스트 검색 - 비어있는 결과 - SUCCESS")
 	void testSearchReview_success_emptyResult() {
 		// Given
-		when(reviewQuerydslRepository.search(anyString(), anyString(), anyInt(), anyInt(), anyString(), anyString()))
+		when(reviewQuerydslRepository.search(any(), anyString(), anyString(), anyInt(), anyInt(),
+			anyString(), anyString()))
 			.thenReturn(Page.empty());
 
 		// When
-		PageReviewResponseDto result = reviewServices.searchReview("emptyTitle", "title", 0, 10, "createdAt", "desc");
+		PageReviewResponseDto result = reviewServices.searchReview(UUID.randomUUID(), "emptyTitle", "title", 0, 10,
+			"createdAt", "desc");
 
 		// Then
 		assertNotNull(result);
@@ -254,7 +260,7 @@ public class ReviewServicesTest {
 	@DisplayName("리뷰 수정 - SUCCESS")
 	void testUpdateReview_success() {
 		// Given
-		ReviewUpdateReqDto reqDto = new ReviewUpdateReqDto("updateTitle", "updateContent");
+		ReviewUpdateReqDto reqDto = new ReviewUpdateReqDto("updateTitle", "updateContent", (short)4);
 
 		when(reviewRepository.findByIdAndDeletedAtIsNull(testReviewId)).thenReturn(Optional.of(testReview));
 
@@ -273,7 +279,7 @@ public class ReviewServicesTest {
 	void testUpdateReview__fail_reviewNotFound() {
 		// Given
 		UUID notExistId = UUID.randomUUID();
-		ReviewUpdateReqDto reqDto = new ReviewUpdateReqDto("updateTitle", "updateContent");
+		ReviewUpdateReqDto reqDto = new ReviewUpdateReqDto("updateTitle", "updateContent", (short)4);
 
 		when(reviewRepository.findByIdAndDeletedAtIsNull(notExistId)).thenReturn(Optional.empty());
 
@@ -289,7 +295,7 @@ public class ReviewServicesTest {
 	@DisplayName("리뷰 수정 실패 - 작성자도 아니고 마스터도 아님 - FAIL")
 	void testUpdateReview_fail_forbiddenAccess() {
 		// Given
-		ReviewUpdateReqDto reqDto = new ReviewUpdateReqDto("updateTitle", "updateContent");
+		ReviewUpdateReqDto reqDto = new ReviewUpdateReqDto("updateTitle", "updateContent", (short)4);
 
 		UUID notAuthorId = UUID.randomUUID();
 		AuthenticatedUser anotherUser = new AuthenticatedUser(notAuthorId, "other@gmail.com", "other@gmail.com");

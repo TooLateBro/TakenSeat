@@ -14,7 +14,8 @@ public interface ReviewService {
 
 	ReviewDetailResDto getReviewDetail(UUID id);
 
-	PageReviewResponseDto searchReview(String q, String category, int page, int size, String sort,
+	PageReviewResponseDto searchReview(UUID performance_id, String q, String category, int page, int size,
+		String sort,
 		String order);
 
 	ReviewDetailResDto updateReview(UUID id, ReviewUpdateReqDto reviewUpdateReqDto,
