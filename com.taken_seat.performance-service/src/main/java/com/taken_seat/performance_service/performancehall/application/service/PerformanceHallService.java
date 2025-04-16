@@ -168,7 +168,7 @@ public class PerformanceHallService {
 		return new BookingSeatClientResponseDto(null, false, "좌석 선점이 취소되었습니다.");
 	}
 
-	@Transactional
+	@Transactional(readOnly = true)
 	public SeatLayoutResponseDto getSeatLayout(UUID performanceScheduleId) {
 
 		Performance performance = performanceRepository.findByPerformanceScheduleId(performanceScheduleId)
