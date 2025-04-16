@@ -18,8 +18,9 @@ public class KafkaConsumer {
     }
 
     private static final String RESPONSE_TOPIC = "benefit.usage.response";
-    private static final String RESPONSE_CANCEL_TOPIC = "benefit.refund.response";
     private static final String RESPONSE_TOPIC_REPLY = "Issuance-of-coupons-reply";
+    private static final String REQUEST_CANCEL_TOPIC = "benefit.refund.request";
+    private static final String RESPONSE_CANCEL_TOPIC = "benefit.refund.response";
 
 
     @KafkaListener(groupId = "couponFIFO", topics = RESPONSE_TOPIC_REPLY)
@@ -34,8 +35,10 @@ public class KafkaConsumer {
         return userBenefitMessage;
     }
 
-    @KafkaListener(groupId = "${kafka.consumer.group-id}", topics = RESPONSE_CANCEL_TOPIC)
-    public void benefitCancelConsume(@Payload UserBenefitMessage message) {
-        kafkaProducerService.benefitCancel(message);
+    @KafkaListener(groupId = "${kafka.consumer.group-id}", topics = REQUEST_CANCEL_TOPIC)
+    @SendTo(RESPONSE_CANCEL_TOPIC)
+    public UserBenefitMessage benefitCancelConsume(@Payload UserBenefitMessage message) {
+        UserBenefitMessage userBenefitMessage = kafkaProducerService.benefitCancel(message);
+        return userBenefitMessage;
     }
 }
