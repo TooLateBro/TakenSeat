@@ -56,6 +56,7 @@ public class QueueService {
         return "총 대기자 수: " + queueSize + ", 현재 대기 순번: " + userRank;
     }
 
+
     public void processQueueBatch(int batchSize) {
         Set<String> performanceList = queueRepository.getActivePerformanceIds();
 
