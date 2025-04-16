@@ -72,8 +72,6 @@ public class BookingServiceImpl implements BookingService {
 			"[Booking] 예매 생성 - 성공 - bookingId={}, userId={}, performanceScheduleId={}, seatId={}, price={}",
 			saved.getId(), saved.getUserId(), saved.getPerformanceScheduleId(), saved.getSeatId(), saved.getPrice());
 
-		System.out.println("dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd" + saved.getId());
-
 		return BookingCreateResponse.toDto(saved);
 	}
 
