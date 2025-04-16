@@ -1,7 +1,6 @@
 package com.taken_seat.booking_service.booking.infrastructure.service;
 
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
@@ -15,7 +14,9 @@ import com.taken_seat.common_service.exception.customException.BookingException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RedissonServiceImpl implements RedissonService {
@@ -29,8 +30,9 @@ public class RedissonServiceImpl implements RedissonService {
 		RLock lock = redissonClient.getLock(key);
 
 		// TODO: FeignClient 처리에서 Kafka 이벤트 처리로 변경해보기
-		try {
-			if (lock.tryLock(3, 5, TimeUnit.SECONDS)) {
+		log.info("[Booking] 좌석 락 획득 시도 - seatId={}, scheduleId={}", seatId, performanceScheduleId);
+		if (lock.tryLock()) {
+			try {
 				BookingSeatClientRequestDto dto = BookingSeatClientRequestDto.builder()
 					.performanceId(performanceId)
 					.performanceScheduleId(performanceScheduleId)
@@ -40,19 +42,19 @@ public class RedissonServiceImpl implements RedissonService {
 				BookingSeatClientResponseDto responseDto = bookingClientService.updateSeatStatus(dto);
 
 				if (!responseDto.reserved()) {
+					log.warn("[Booking] 좌석 선점 실패 - seatId={}, 이유=이미 예약됨", seatId);
 					throw new BookingException(ResponseCode.BOOKING_SEAT_RESERVED_EXCEPTION);
 				}
+				log.info("[Booking] 좌석 선점 성공 - seatId={}", seatId);
 				return responseDto;
-			} else {
-				throw new BookingException(ResponseCode.BOOKING_SEAT_LOCKED_EXCEPTION);
+			} finally {
+				if (lock.isHeldByCurrentThread()) {
+					lock.unlock();
+					log.info("[Booking] 좌석 락 해제 - seatId={}", seatId);
+				}
 			}
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
-			throw new BookingException(ResponseCode.BOOKING_INTERRUPTED_EXCEPTION, e.getMessage());
-		} finally {
-			if (lock.isHeldByCurrentThread()) {
-				lock.unlock();
-			}
+		} else {
+			throw new BookingException(ResponseCode.BOOKING_SEAT_LOCKED_EXCEPTION);
 		}
 	}
 }

@@ -51,4 +51,9 @@ public class PerformanceHallRepositoryImpl implements PerformanceHallRepository 
 	public Optional<PerformanceHall> findBySeatId(UUID seatId) {
 		return performanceHallJpaRepository.findBySeatId(seatId);
 	}
+
+	@Override
+	public PerformanceHall saveAndFlush(PerformanceHall performanceHall) {
+		return performanceHallJpaRepository.saveAndFlush(performanceHall);
+	}
 }

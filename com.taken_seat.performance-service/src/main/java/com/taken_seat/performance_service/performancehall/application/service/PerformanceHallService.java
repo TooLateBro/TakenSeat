@@ -35,7 +35,9 @@ import com.taken_seat.performance_service.performancehall.domain.repository.Perf
 import com.taken_seat.performance_service.performancehall.domain.validation.PerformanceHallValidator;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PerformanceHallService {
@@ -113,7 +115,6 @@ public class PerformanceHallService {
 		performanceHallRepository.save(performanceHall);
 	}
 
-	@Transactional
 	public BookingSeatClientResponseDto updateSeatStatus(BookingSeatClientRequestDto request) {
 
 		PerformanceHall performanceHall = performanceHallRepository.findBySeatId(request.getSeatId())
@@ -122,16 +123,25 @@ public class PerformanceHallService {
 		Seat seat = performanceHall.getSeatById(request.getSeatId());
 
 		if (seat.getStatus() == SeatStatus.SOLDOUT) {
+			log.warn("[Performance] 좌석 선점 - 실패 - seatId={}, scheduleId={}, 이유=이미 선점됨",
+				request.getSeatId(), request.getPerformanceScheduleId());
 			return new BookingSeatClientResponseDto(null, false, "이미 선점된 좌석입니다.");
 		}
 
 		seat.updateStatus(SeatStatus.SOLDOUT);
+
+		performanceHallRepository.saveAndFlush(performanceHall);
 
 		Performance performance = performanceRepository.findById(request.getPerformanceId())
 			.orElseThrow(() -> new PerformanceException(ResponseCode.PERFORMANCE_NOT_FOUND_EXCEPTION));
 
 		Integer price = performance.findPriceByScheduleAndSeatType(request.getPerformanceScheduleId(),
 			seat.getSeatType());
+
+		log.info(
+			"[Performance] 좌석 선점 - 성공 - seatId={}, scheduleId={}, performanceId={}, performanceHallId={}, seatType={}, price={}",
+			request.getSeatId(), request.getPerformanceScheduleId(), performanceHall.getId(),
+			request.getPerformanceId(), seat.getSeatType(), price);
 
 		return new BookingSeatClientResponseDto(price, true, "좌석 선점에 성공했습니다.");
 	}
@@ -145,15 +155,20 @@ public class PerformanceHallService {
 		Seat seat = performanceHall.getSeatById(request.getSeatId());
 
 		if (seat.getStatus() == SeatStatus.DISABLED) {
+			log.warn("[Performance] 좌석 선점 취소 - 실패 - seatId={}, 이유=변경 불가 상태(DISABLED)",
+				request.getSeatId());
 			throw new PerformanceException(ResponseCode.SEAT_STATUS_CHANGE_NOT_ALLOWED);
 		}
 
 		seat.updateStatus(SeatStatus.AVAILABLE);
 
+		log.info("[Performance] 좌석 선점 취소 - 성공 - seatId={}, scheduleId={}",
+			request.getSeatId(), request.getPerformanceScheduleId());
+
 		return new BookingSeatClientResponseDto(null, false, "좌석 선점이 취소되었습니다.");
 	}
 
-	@Transactional
+	@Transactional(readOnly = true)
 	public SeatLayoutResponseDto getSeatLayout(UUID performanceScheduleId) {
 
 		Performance performance = performanceRepository.findByPerformanceScheduleId(performanceScheduleId)
@@ -165,6 +180,9 @@ public class PerformanceHallService {
 
 		PerformanceHall performanceHall = performanceHallRepository.findById(performanceHallId)
 			.orElseThrow(() -> new PerformanceException(ResponseCode.PERFORMANCE_HALL_NOT_FOUND_EXCEPTION));
+
+		log.info("[Performance] 좌석 배치도 조회 - scheduleId={}, hallId={}, 좌석 수={}",
+			performanceScheduleId, performanceHallId, performanceHall.getSeats().size());
 
 		List<SeatDto> seatLayout = HallResponseMapper.toSeatLayout(performanceHall.getSeats());
 
