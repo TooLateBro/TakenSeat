@@ -22,4 +22,6 @@ public interface PerformanceHallRepository {
 	boolean existsByNameAndAddressAndIdNot(String name, String address, UUID id);
 
 	Optional<PerformanceHall> findBySeatId(UUID seatId);
+
+	PerformanceHall saveAndFlush(PerformanceHall performanceHall);
 }
