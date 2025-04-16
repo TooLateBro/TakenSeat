@@ -25,9 +25,6 @@ public class KafkaProducerService {
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final UserRepository userRepository;
     private final UserCouponRepository userCouponRepository;
-
-    private static final String REQUEST_TOPIC = "Issuance-of-coupons";
-    private static final String REQUEST_KEY = "Partitions-of-coupons";
     private final MileageRepository mileageRepository;
 
     public KafkaProducerService(KafkaTemplate<String, Object> kafkaTemplate, UserRepository userRepository,
@@ -38,15 +35,18 @@ public class KafkaProducerService {
         this.mileageRepository = mileageRepository;
     }
 
+    private static final String REQUEST_TOPIC = "Issuance-of-coupons";
+    private static final String REQUEST_KEY = "Partitions-of-coupons";
+
     public void sendUserCoupon(KafkaUserInfoMessage message) {
         userRepository.findByIdAndDeletedAtIsNull(message.getUserId())
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new AuthException(ResponseCode.USER_NOT_FOUND));
 
-        kafkaTemplate.send(REQUEST_TOPIC, REQUEST_KEY, message)
+        kafkaTemplate.send(REQUEST_TOPIC,  REQUEST_KEY, message)
                 .thenAccept(sendResult -> {
-                    log.info("<Auth> -> <Coupon> 쿠폰 발급 요청에 성공했습니다! : {}, {}", message.getUserId(), message.getCouponId());
+                    log.info("[Auth] -> [Coupon] 쿠폰 발급 요청에 성공했습니다! : {}, {}", message.getUserId(), message.getCouponId());
                 }).exceptionally(exception -> {
-                    log.error("<Auth> -> <Coupon> 쿠폰 발급 요청에 실패했습니다! : {}, {}", message.getUserId(), message.getCouponId());
+                    log.error("[Auth] -> [Coupon] 쿠폰 발급 요청에 실패했습니다! : {}, {}", message.getUserId(), message.getCouponId());
                     return null;
                 });
 
@@ -66,19 +66,19 @@ public class KafkaProducerService {
             UserCoupon u_c = UserCoupon.create(user, message);
 
             userCouponRepository.save(u_c);
-            log.info("<Coupon> -> <Auth> 쿠폰 발급에 성공하였습니다! 마이페이지에서 확인해주세요. {}, {}", message.getUserId(), message.getCouponId());
+            log.info("[Coupon] -> [Auth] 쿠폰 발급에 성공하였습니다! 마이페이지에서 확인해주세요. {}, {}", message.getUserId(), message.getCouponId());
         }else{
-            log.error("<Auth> 쿠폰이 모두 소진되었습니다.");
+            log.error("[Auth] 쿠폰이 모두 소진되었습니다.");
         }
     }
 
     @Transactional
     public UserBenefitMessage benefitUsage(UserBenefitMessage message) {
         try {
-            log.info("<Booking> -> <Auth> 마일리지 및 쿠폰 사용 여부를 체크 중 입니다...." +
+            log.info("[Booking] -> [Auth] 마일리지 및 쿠폰 사용 여부를 체크 중 입니다...." +
                     "{}, {}, {}, {}", message.getBookingId(), message.getUserId(), message.getCouponId(), message.getMileage());
             User user = userRepository.findByIdAndDeletedAtIsNull(message.getUserId())
-                    .orElseThrow(() -> new AuthException(ResponseCode.USER_NOT_FOUND));
+                    .orElseThrow(() ->new AuthException(ResponseCode.USER_NOT_FOUND));
 
             Integer couponDiscount = null;
             Integer usedMileage = null;
@@ -110,7 +110,7 @@ public class KafkaProducerService {
                     usedMileage = message.getMileage();
                 }
             }
-            log.info("<Auth> -> <Booking> 마일리지 및 쿠폰 사용 여부 검증에 성공했습니다! " +
+            log.info("[Auth] -> [Booking] 마일리지 및 쿠폰 사용 여부 검증에 성공했습니다! " +
                     "{}, {}, {}, {}, {}", message.getBookingId(), message.getUserId(), message.getCouponId(), message.getMileage(), couponDiscount);
             return UserBenefitMessage.builder()
                     .bookingId(message.getBookingId())
@@ -121,7 +121,7 @@ public class KafkaProducerService {
                     .status(UserBenefitMessage.UserBenefitStatus.SUCCESS)
                     .build();
         } catch (Exception e) {
-            log.info("<Auth> -> <Booking> 마일리지 및 쿠폰 사용 여부 검증에 실패하였습니다. " +
+            log.info("[Auth] -> [Booking] 마일리지 및 쿠폰 사용 여부 검증에 실패하였습니다. " +
                     "{}, {}, {}, {}", message.getBookingId(), message.getUserId(), message.getCouponId(), message.getMileage());
             return UserBenefitMessage.builder()
                     .bookingId(message.getBookingId())
@@ -134,38 +134,53 @@ public class KafkaProducerService {
     }
 
     @Transactional
-    public void benefitCancel(UserBenefitMessage message) {
-        log.info("<Booking> -> <Auth> 차감된 마일리지와 쿠폰을 복원 중 입니다...." +
+    public UserBenefitMessage benefitCancel(UserBenefitMessage message) {
+        try{
+            log.info("[Booking] -> [Auth] 차감된 마일리지와 쿠폰을 복원 중 입니다...." +
                 "{}, {}, {}, {}", message.getBookingId(), message.getUserId(), message.getCouponId(), message.getMileage());
-        User user = userRepository.findByIdAndDeletedAtIsNull(message.getUserId())
-                .orElseThrow(() -> new AuthException(ResponseCode.USER_NOT_FOUND));
+            User user = userRepository.findByIdAndDeletedAtIsNull(message.getUserId())
+                    .orElseThrow(() -> new AuthException(ResponseCode.USER_NOT_FOUND));
 
-        if (message.getCouponId() != null) {
-            UserCoupon userCoupon = userCouponRepository.findByCouponIdAndIsActiveTrue(message.getCouponId())
-                    .orElseThrow(()->new CouponException(ResponseCode.COUPON_NOT_FOUND));
-            if (userCoupon != null) {
-                userCoupon.updateActive(true, user.getId());
-                log.info("<Auth> 쿠폰 활성화 완료! {}, {}", message.getCouponId(), userCoupon.isActive());
+            if (message.getCouponId() != null) {
+                UserCoupon userCoupon = userCouponRepository.findByCouponIdAndIsActiveTrue(message.getCouponId())
+                        .orElseThrow(()->new CouponException(ResponseCode.COUPON_NOT_FOUND));
+                if (userCoupon != null) {
+                    userCoupon.updateActive(true, user.getId());
+                    log.info("[Auth] 쿠폰 활성화 완료! {}, {}", message.getCouponId(), userCoupon.isActive());
+                }
             }
-        }
-        if (message.getMileage() != null && message.getMileage() > 0) {
-            Mileage mileages = mileageRepository.findTopByUserIdOrderByUpdatedAtDesc(message.getUserId())
+            if (message.getMileage() != null && message.getMileage() > 0) {
+                Mileage mileages = mileageRepository.findTopByUserIdOrderByUpdatedAtDesc(message.getUserId())
                     .orElseThrow(()->new MileageException(ResponseCode.MILEAGE_NOT_FOUND));
 
-            if (mileages != null) {
-                Integer currentMileage = mileages.getMileage() + message.getMileage();
-                if (currentMileage < 0) {
-                    throw new MileageException(ResponseCode.MILEAGE_EMPTY);
+                if (mileages != null) {
+                    Integer currentMileage = mileages.getMileage() + message.getMileage();
+                    if (currentMileage < 0) {
+                        throw new MileageException(ResponseCode.MILEAGE_EMPTY);
+                    }
+                    Mileage mileage = Mileage.create(
+                            user, currentMileage
+                    );
+                    if (mileage.getCreatedBy() != null){
+                        mileage.preUpdate(user.getId());
+                    }
+                    log.info("[Auth] 마일리지 복원 완료! {}", message.getMileage());
+                    mileageRepository.save(mileage);
                 }
-                Mileage mileage = Mileage.create(
-                        user, currentMileage
-                );
-                if (mileage.getCreatedBy() != null){
-                    mileage.preUpdate(user.getId());
-                }
-                log.info("<Auth> 마일리지 복원 완료! {}", message.getMileage());
-                mileageRepository.save(mileage);
             }
-        }
+            return UserBenefitMessage.builder()
+                    .bookingId(message.getBookingId())
+                    .couponId(message.getCouponId())
+                    .mileage(message.getMileage())
+                    .status(UserBenefitMessage.UserBenefitStatus.SUCCESS)
+                    .build();
+        }catch (Exception e) {
+            return UserBenefitMessage.builder()
+                    .bookingId(message.getBookingId())
+                    .couponId(message.getCouponId())
+                    .mileage(message.getMileage())
+                    .status(UserBenefitMessage.UserBenefitStatus.FAIL)
+                    .build();
+            }
     }
 }
