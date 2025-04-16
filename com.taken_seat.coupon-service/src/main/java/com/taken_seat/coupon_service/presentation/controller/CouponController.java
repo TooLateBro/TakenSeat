@@ -6,6 +6,7 @@ import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.coupon_service.application.dto.CouponResponseDto;
 import com.taken_seat.coupon_service.application.dto.PageResponseDto;
 import com.taken_seat.coupon_service.application.service.CouponService;
+import com.taken_seat.coupon_service.presentation.docs.CouponControllerDocs;
 import com.taken_seat.coupon_service.presentation.dto.CreateCouponRequestDto;
 import com.taken_seat.coupon_service.presentation.dto.UpdateCouponRequestDto;
 import org.springframework.http.HttpStatus;
@@ -16,7 +17,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/coupons")
-public class CouponController {
+public class CouponController implements CouponControllerDocs {
 
     private final CouponService couponService;
 
