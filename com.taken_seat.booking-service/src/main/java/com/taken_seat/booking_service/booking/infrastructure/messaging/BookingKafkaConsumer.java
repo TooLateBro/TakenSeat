@@ -29,4 +29,11 @@ public class BookingKafkaConsumer implements BookingConsumer {
 
 		bookingService.createPayment(message);
 	}
+
+	@Override
+	@KafkaListener(topics = "benefit.refund.response", groupId = "booking-service")
+	public void updateBenefitUsageHistory(UserBenefitMessage message) {
+
+		bookingService.updateBenefitUsageHistory(message);
+	}
 }

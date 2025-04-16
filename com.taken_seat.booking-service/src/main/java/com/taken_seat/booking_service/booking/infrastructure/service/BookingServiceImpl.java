@@ -1,6 +1,7 @@
 package com.taken_seat.booking_service.booking.infrastructure.service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -18,8 +19,10 @@ import com.taken_seat.booking_service.booking.application.dto.response.BookingRe
 import com.taken_seat.booking_service.booking.application.service.BookingProducer;
 import com.taken_seat.booking_service.booking.application.service.BookingService;
 import com.taken_seat.booking_service.booking.application.service.RedissonService;
+import com.taken_seat.booking_service.booking.domain.BenefitUsageHistory;
 import com.taken_seat.booking_service.booking.domain.Booking;
 import com.taken_seat.booking_service.booking.domain.BookingStatus;
+import com.taken_seat.booking_service.booking.domain.repository.BenefitUsageHistoryRepository;
 import com.taken_seat.booking_service.booking.domain.repository.BookingAdminRepository;
 import com.taken_seat.booking_service.booking.domain.repository.BookingRepository;
 import com.taken_seat.booking_service.common.message.TicketRequestMessage;
@@ -38,6 +41,7 @@ public class BookingServiceImpl implements BookingService {
 
 	private final RedissonService redissonService;
 	private final BookingRepository bookingRepository;
+	private final BenefitUsageHistoryRepository benefitUsageHistoryRepository;
 	private final BookingAdminRepository bookingAdminRepository;
 	private final BookingProducer bookingProducer;
 
@@ -201,6 +205,19 @@ public class BookingServiceImpl implements BookingService {
 					.build()
 			);
 		} else {
+			Optional<BenefitUsageHistory> optional = benefitUsageHistoryRepository.findByBookingIdAndRefundedIsFalse(
+				message.getBookingId());
+			if (optional.isPresent()) {
+				BenefitUsageHistory benefitUsageHistory = optional.get();
+				UserBenefitMessage benefitMessage = UserBenefitMessage.builder()
+					.bookingId(message.getBookingId())
+					.userId(message.getUserId())
+					.couponId(benefitUsageHistory.getCouponId())
+					.mileage(benefitUsageHistory.getMileage())
+					.build();
+
+				bookingProducer.sendBenefitRefundRequest(benefitMessage);
+			}
 			throw new BookingException(ResponseCode.BOOKING_PAYMENT_FAILED_EXCEPTION);
 		}
 	}
@@ -232,6 +249,17 @@ public class BookingServiceImpl implements BookingService {
 		}
 		booking.discount(price); // 할인가 업데이트
 
+		// 쿠폰, 마일리지 사용내역 저장
+		benefitUsageHistoryRepository.save(
+			BenefitUsageHistory.builder()
+				.bookingId(booking.getId())
+				.couponId(message.getCouponId())
+				.mileage(message.getMileage())
+				.usedAt(LocalDateTime.now())
+				.refunded(false)
+				.build()
+		);
+
 		// 결제 요청
 		PaymentMessage paymentMessage = PaymentMessage.builder()
 			.bookingId(booking.getId())
@@ -241,6 +269,21 @@ public class BookingServiceImpl implements BookingService {
 			.build();
 
 		bookingProducer.sendPaymentRequestEvent(paymentMessage);
+	}
+
+	@Override
+	@Transactional
+	public void updateBenefitUsageHistory(UserBenefitMessage message) {
+
+		if (message.getStatus() == UserBenefitMessage.UserBenefitStatus.SUCCESS) {
+			BenefitUsageHistory history = benefitUsageHistoryRepository.findByBookingIdAndRefundedIsFalse(
+					message.getBookingId())
+				.orElseThrow(() -> new BookingException(ResponseCode.BOOKING_BENEFIT_USAGE_NOT_FOUND_EXCEPTION));
+
+			history.refunded();
+		} else {
+			throw new BookingException(ResponseCode.BOOKING_BENEFIT_USAGE_REFUND_FAILED_EXCEPTION);
+		}
 	}
 
 	private boolean isValidPrice(int price) {
