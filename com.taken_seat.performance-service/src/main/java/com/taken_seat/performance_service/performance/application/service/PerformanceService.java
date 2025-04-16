@@ -141,11 +141,18 @@ public class PerformanceService {
 		Performance performance = performanceRepository.findById(id)
 			.orElseThrow(() -> new PerformanceException(ResponseCode.PERFORMANCE_NOT_FOUND_EXCEPTION));
 
+		PerformanceStatus oldPerformanceStatus = performance.getStatus();
 		PerformanceStatus newPerformanceStatus = PerformanceStatus.status(
 			performance.getStartAt(), performance.getEndAt());
 
 		if (!performance.getStatus().equals(newPerformanceStatus)) {
 			performance.updateStatus(newPerformanceStatus);
+
+			log.info("[Performance] 공연 상태 변경 - 성공 - performanceId={}, oldStatus={}, newStatus={}, 변경자={}",
+				performance.getId(),
+				oldPerformanceStatus,
+				newPerformanceStatus,
+				authenticatedUser.getUserId());
 		}
 
 		for (PerformanceSchedule schedule : performance.getSchedules()) {
@@ -158,12 +165,20 @@ public class PerformanceService {
 			boolean isSoldOut = performanceHall.getSeats().stream()
 				.noneMatch(seat -> seat.getStatus() == SeatStatus.AVAILABLE);
 
+			PerformanceScheduleStatus oldScheduleStatus = schedule.getStatus();
 			PerformanceScheduleStatus newPerformanceScheduleStatus =
 				PerformanceScheduleStatus.status(schedule.getSaleStartAt(), schedule.getSaleEndAt(), isSoldOut);
 
 			if (!schedule.getStatus().equals(newPerformanceScheduleStatus)) {
 				schedule.updateStatus(newPerformanceScheduleStatus);
 				schedule.preUpdate(authenticatedUser.getUserId());
+
+				log.info("[Performance] 회차 상태 변경 - 성공 - 공연회차 ID={}, oldStatus={}, newStatus={}, 공연 ID={}, 변경자={}",
+					schedule.getId(),
+					oldScheduleStatus,
+					newPerformanceScheduleStatus,
+					performance.getId(),
+					authenticatedUser.getUserId());
 			}
 		}
 		performanceRepository.save(performance);
