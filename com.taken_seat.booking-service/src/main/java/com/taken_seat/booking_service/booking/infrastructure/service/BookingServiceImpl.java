@@ -31,7 +31,9 @@ import com.taken_seat.common_service.message.PaymentMessage;
 import com.taken_seat.common_service.message.UserBenefitMessage;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BookingServiceImpl implements BookingService {
@@ -44,6 +46,10 @@ public class BookingServiceImpl implements BookingService {
 	@Override
 	@Transactional
 	public BookingCreateResponse createBooking(AuthenticatedUser authenticatedUser, BookingCreateRequest request) {
+
+		log.info("[Booking] 예매 요청 - 시작 - userId={}, performanceId={}, scheduleId={}, seatId={}",
+			authenticatedUser.getUserId(), request.getPerformanceId(),
+			request.getPerformanceScheduleId(), request.getSeatId());
 
 		BookingSeatClientResponseDto responseDto = redissonService.tryHoldSeat(
 			request.getPerformanceId(),
@@ -61,6 +67,12 @@ public class BookingServiceImpl implements BookingService {
 			.build();
 
 		Booking saved = bookingRepository.save(booking);
+
+		log.info(
+			"[Booking] 예매 생성 - 성공 - bookingId={}, userId={}, performanceScheduleId={}, seatId={}, price={}",
+			saved.getId(), saved.getUserId(), saved.getPerformanceScheduleId(), saved.getSeatId(), saved.getPrice());
+
+		System.out.println("dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd" + saved.getId());
 
 		return BookingCreateResponse.toDto(saved);
 	}
