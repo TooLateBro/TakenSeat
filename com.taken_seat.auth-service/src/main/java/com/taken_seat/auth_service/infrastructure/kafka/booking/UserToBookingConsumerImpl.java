@@ -1,7 +1,7 @@
-package com.taken_seat.auth_service.presentation.controller.user;
+package com.taken_seat.auth_service.infrastructure.kafka.booking;
 
-import com.taken_seat.auth_service.application.service.user.KafkaProducerService;
-import com.taken_seat.common_service.message.KafkaUserInfoMessage;
+import com.taken_seat.auth_service.application.kafka.booking.UserToBookingConsumer;
+import com.taken_seat.auth_service.application.kafka.booking.UserToBookingConsumerService;
 import com.taken_seat.common_service.message.UserBenefitMessage;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -9,36 +9,31 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Component;
 
 @Component
-public class KafkaConsumer {
+public class UserToBookingConsumerImpl implements UserToBookingConsumer {
 
-    private final KafkaProducerService kafkaProducerService;
+    private final UserToBookingConsumerService userToBookingConsumerService;
 
-    public KafkaConsumer(KafkaProducerService kafkaProducerService) {
-        this.kafkaProducerService = kafkaProducerService;
+    public UserToBookingConsumerImpl(UserToBookingConsumerService userToBookingConsumerService) {
+        this.userToBookingConsumerService = userToBookingConsumerService;
     }
 
     private static final String RESPONSE_TOPIC = "benefit.usage.response";
-    private static final String RESPONSE_TOPIC_REPLY = "Issuance-of-coupons-reply";
     private static final String REQUEST_CANCEL_TOPIC = "benefit.refund.request";
     private static final String RESPONSE_CANCEL_TOPIC = "benefit.refund.response";
 
-
-    @KafkaListener(groupId = "couponFIFO", topics = RESPONSE_TOPIC_REPLY)
-    public void consume(@Payload KafkaUserInfoMessage message) {
-        kafkaProducerService.createUserCoupon(message);
-    }
-
+    @Override
     @KafkaListener(groupId = "${kafka.consumer.group-id}", topics = "${kafka.topic.benefit-usage-request}")
     @SendTo(RESPONSE_TOPIC)
-    public UserBenefitMessage paymentConsume(@Payload UserBenefitMessage message) {
-        UserBenefitMessage userBenefitMessage = kafkaProducerService.benefitUsage(message);
+    public UserBenefitMessage benefitConsume(@Payload UserBenefitMessage message) {
+        UserBenefitMessage userBenefitMessage = userToBookingConsumerService.benefitUsage(message);
         return userBenefitMessage;
     }
 
+    @Override
     @KafkaListener(groupId = "${kafka.consumer.group-id}", topics = REQUEST_CANCEL_TOPIC)
     @SendTo(RESPONSE_CANCEL_TOPIC)
     public UserBenefitMessage benefitCancelConsume(@Payload UserBenefitMessage message) {
-        UserBenefitMessage userBenefitMessage = kafkaProducerService.benefitCancel(message);
+        UserBenefitMessage userBenefitMessage = userToBookingConsumerService.benefitCancel(message);
         return userBenefitMessage;
     }
 }
