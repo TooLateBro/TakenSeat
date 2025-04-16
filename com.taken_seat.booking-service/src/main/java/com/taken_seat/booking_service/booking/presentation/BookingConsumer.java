@@ -7,4 +7,6 @@ public interface BookingConsumer {
 	void updateBooking(PaymentMessage message);
 
 	void createPayment(UserBenefitMessage message);
+
+	void updateBenefitUsageHistory(UserBenefitMessage message);
 }

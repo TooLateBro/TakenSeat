@@ -74,6 +74,10 @@ public enum ResponseCode {
 
 	// Booking
 	BOOKING_ALREADY_CANCELED_EXCEPTION(HttpStatus.CONFLICT, HttpStatus.CONFLICT.value(), "이미 취소된 예약입니다."),
+	BOOKING_BENEFIT_USAGE_NOT_FOUND_EXCEPTION(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(),
+		"쿠폰, 마일리지 사용 내역이 없습니다."),
+	BOOKING_BENEFIT_USAGE_REFUND_FAILED_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,
+		HttpStatus.INTERNAL_SERVER_ERROR.value(), "쿠폰, 마일리지 원복처리가 실패했습니다."),
 	BOOKING_INTERRUPTED_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR.value(),
 		"인터럽트가 발생했습니다."),
 	BOOKING_NOT_CANCELED_EXCEPTION(HttpStatus.CONFLICT, HttpStatus.CONFLICT.value(), "예약 취소 후 삭제할 수 있습니다."),

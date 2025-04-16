@@ -35,4 +35,6 @@ public interface BookingService {
 	void updateBooking(PaymentMessage message);
 
 	void createPayment(UserBenefitMessage message);
+
+	void updateBenefitUsageHistory(UserBenefitMessage message);
 }
