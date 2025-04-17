@@ -35,28 +35,32 @@ public class UserToBookingConsumerServiceImpl implements UserToBookingConsumerSe
     @Override
     public UserBenefitMessage benefitUsage(UserBenefitMessage message) {
         try {
-            log.info("[Booking] -> [Auth] 마일리지 및 쿠폰 사용 여부를 체크 중 입니다...." +
+            log.info("[Booking] -> [Auth] 마일리지 및 쿠폰을 체크 중 입니다...." +
                     "{}, {}, {}, {}", message.getBookingId(), message.getUserId(), message.getCouponId(), message.getMileage());
             User user = userRepository.findByIdAndDeletedAtIsNull(message.getUserId())
                     .orElseThrow(() -> new AuthException(ResponseCode.USER_NOT_FOUND));
 
             Integer couponDiscount = null;
             Integer usedMileage = null;
+            Integer mileageRate = message.getPrice() / 1000;
 
             if (message.getCouponId() != null) {
                 UserCoupon userCoupon = userCouponRepository.findByCouponIdAndIsActiveTrue(message.getCouponId())
                         .orElseThrow(() -> new CouponException(ResponseCode.COUPON_NOT_FOUND));
                 if (userCoupon != null) {
+                    log.info("[Booking] -> [Auth] " +message.getCouponId() + " 쿠폰 사용에 성공했습니다!!!");
                     couponDiscount = userCoupon.getDiscount();
                     userCoupon.updateActive(false, user.getId());
                 }
             }
             if (message.getMileage() != null && message.getMileage() > 0) {
-                Mileage mileages = mileageRepository.findTopByUserIdOrderByUpdatedAtDesc(message.getUserId())
+                Mileage mileageExists = mileageRepository.findTopByUserIdOrderByUpdatedAtDesc(message.getUserId())
                         .orElseThrow(() -> new MileageException(ResponseCode.MILEAGE_NOT_FOUND));
 
-                if (mileages != null) {
-                    Integer currentMileage = mileages.getMileage() - message.getMileage();
+                if (mileageExists != null) {
+                    Integer currentMileage = mileageExists.getMileage() - message.getMileage() + mileageRate;
+
+                    log.info("[Booking] -> [Auth] " +message.getMileage() + " 마일리지 사용에 성공했습니다!!!");
                     if (currentMileage < 0) {
                         throw new MileageException(ResponseCode.MILEAGE_EMPTY);
                     }
@@ -70,7 +74,7 @@ public class UserToBookingConsumerServiceImpl implements UserToBookingConsumerSe
                     usedMileage = message.getMileage();
                 }
             }
-            log.info("[Auth] -> [Booking] 마일리지 및 쿠폰 사용 여부 검증에 성공했습니다! " +
+            log.info("[Auth] -> [Booking] 마일리지 및 쿠폰 사용에 성공했습니다! " +
                     "{}, {}, {}, {}, {}", message.getBookingId(), message.getUserId(), message.getCouponId(), message.getMileage(), couponDiscount);
             return UserBenefitMessage.builder()
                     .bookingId(message.getBookingId())
@@ -81,7 +85,7 @@ public class UserToBookingConsumerServiceImpl implements UserToBookingConsumerSe
                     .status(UserBenefitMessage.UserBenefitStatus.SUCCESS)
                     .build();
         } catch (Exception e) {
-            log.info("[Auth] -> [Booking] 마일리지 및 쿠폰 사용 여부 검증에 실패하였습니다. " +
+            log.info("[Auth] -> [Booking] 마일리지 및 쿠폰 사용에 실패하였습니다. " +
                     "{}, {}, {}, {}", message.getBookingId(), message.getUserId(), message.getCouponId(), message.getMileage());
             return UserBenefitMessage.builder()
                     .bookingId(message.getBookingId())
@@ -97,10 +101,12 @@ public class UserToBookingConsumerServiceImpl implements UserToBookingConsumerSe
     @Override
     public UserBenefitMessage benefitCancel(UserBenefitMessage message) {
         try {
-            log.info("[Booking] -> [Auth] 차감된 마일리지와 쿠폰을 복원 중 입니다...." +
+            log.info("[Booking] -> [Auth] 차감 및 적립된 마일리지와 쿠폰을 복원 중 입니다...." +
                     "{}, {}, {}, {}", message.getBookingId(), message.getUserId(), message.getCouponId(), message.getMileage());
             User user = userRepository.findByIdAndDeletedAtIsNull(message.getUserId())
                     .orElseThrow(() -> new AuthException(ResponseCode.USER_NOT_FOUND));
+
+            Integer mileageRate = message.getPrice() / 1000;
 
             if (message.getCouponId() != null) {
                 UserCoupon userCoupon = userCouponRepository.findByCouponIdAndIsActiveFalse(message.getCouponId())
@@ -115,7 +121,7 @@ public class UserToBookingConsumerServiceImpl implements UserToBookingConsumerSe
                         .orElseThrow(() -> new MileageException(ResponseCode.MILEAGE_NOT_FOUND));
 
                 if (mileages != null) {
-                    Integer currentMileage = mileages.getMileage() + message.getMileage();
+                    Integer currentMileage = mileages.getMileage() + message.getMileage() - mileageRate;
                     if (currentMileage < 0) {
                         throw new MileageException(ResponseCode.MILEAGE_EMPTY);
                     }
@@ -136,6 +142,8 @@ public class UserToBookingConsumerServiceImpl implements UserToBookingConsumerSe
                     .status(UserBenefitMessage.UserBenefitStatus.SUCCESS)
                     .build();
         } catch (Exception e) {
+            log.info("[Auth] 마일리지 및 쿠폰 복원에 실패하였습니다. " +
+                    "{}, {}, {}, {}", message.getBookingId(), message.getUserId(), message.getCouponId(), message.getMileage());
             return UserBenefitMessage.builder()
                     .bookingId(message.getBookingId())
                     .couponId(message.getCouponId())
