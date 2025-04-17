@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
-@Tag(name = "사용자", description = "회원가입, 로그인을 담당하는 API 입니다.")
+@Tag(name = "쿠폰", description = "쿠폰 생성, 조회, 수정, 삭제를 담당하는 API 입니다.")
 public interface CouponControllerDocs {
 
     @PostMapping("/api/v1/coupons")
