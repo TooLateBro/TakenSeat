@@ -16,8 +16,10 @@ import com.taken_seat.booking_service.booking.application.dto.response.AdminBook
 import com.taken_seat.booking_service.booking.application.dto.response.BookingCreateResponse;
 import com.taken_seat.booking_service.booking.application.dto.response.BookingPageResponse;
 import com.taken_seat.booking_service.booking.application.dto.response.BookingReadResponse;
+import com.taken_seat.booking_service.booking.application.service.BookingClientService;
 import com.taken_seat.booking_service.booking.application.service.BookingProducer;
 import com.taken_seat.booking_service.booking.application.service.BookingService;
+import com.taken_seat.booking_service.booking.application.service.RedisService;
 import com.taken_seat.booking_service.booking.application.service.RedissonService;
 import com.taken_seat.booking_service.booking.domain.BenefitUsageHistory;
 import com.taken_seat.booking_service.booking.domain.Booking;
@@ -27,6 +29,7 @@ import com.taken_seat.booking_service.booking.domain.repository.BookingAdminRepo
 import com.taken_seat.booking_service.booking.domain.repository.BookingRepository;
 import com.taken_seat.booking_service.common.message.TicketRequestMessage;
 import com.taken_seat.common_service.dto.AuthenticatedUser;
+import com.taken_seat.common_service.dto.request.BookingSeatClientRequestDto;
 import com.taken_seat.common_service.dto.response.BookingSeatClientResponseDto;
 import com.taken_seat.common_service.exception.customException.BookingException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
@@ -34,26 +37,28 @@ import com.taken_seat.common_service.message.PaymentMessage;
 import com.taken_seat.common_service.message.UserBenefitMessage;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BookingServiceImpl implements BookingService {
 
-	private final RedissonService redissonService;
-	private final BookingRepository bookingRepository;
 	private final BenefitUsageHistoryRepository benefitUsageHistoryRepository;
 	private final BookingAdminRepository bookingAdminRepository;
+	private final BookingClientService bookingClientService;
 	private final BookingProducer bookingProducer;
+	private final BookingRepository bookingRepository;
+	private final RedisService redisService;
+	private final RedissonService redissonService;
 
 	@Override
 	@Transactional
 	public BookingCreateResponse createBooking(AuthenticatedUser authenticatedUser, BookingCreateRequest request) {
 
-		log.info("[Booking] 예매 요청 - 시작 - userId={}, performanceId={}, scheduleId={}, seatId={}",
-			authenticatedUser.getUserId(), request.getPerformanceId(),
-			request.getPerformanceScheduleId(), request.getSeatId());
+		if (bookingRepository.isUniqueBooking(authenticatedUser.getUserId(), request.getPerformanceId(),
+			request.getPerformanceScheduleId(), request.getSeatId())) {
+
+			throw new BookingException(ResponseCode.BOOKING_DUPLICATED_EXCEPTION);
+		}
 
 		BookingSeatClientResponseDto responseDto = redissonService.tryHoldSeat(
 			request.getPerformanceId(),
@@ -69,12 +74,10 @@ public class BookingServiceImpl implements BookingService {
 			.price(responseDto.price())
 			.discountedPrice(responseDto.price())
 			.build();
+		booking.prePersist(authenticatedUser.getUserId());
 
 		Booking saved = bookingRepository.save(booking);
-
-		log.info(
-			"[Booking] 예매 생성 - 성공 - bookingId={}, userId={}, performanceScheduleId={}, seatId={}, price={}",
-			saved.getId(), saved.getUserId(), saved.getPerformanceScheduleId(), saved.getSeatId(), saved.getPrice());
+		redisService.setBookingExpire(saved.getId());
 
 		return BookingCreateResponse.toDto(saved);
 	}
@@ -99,17 +102,18 @@ public class BookingServiceImpl implements BookingService {
 
 	@Override
 	@Transactional
-	public void updateBooking(AuthenticatedUser authenticatedUser, UUID id) {
+	public void cancelBooking(AuthenticatedUser authenticatedUser, UUID id) {
 
 		Booking booking = findBookingByIdAndUserId(id, authenticatedUser.getUserId());
+		BookingStatus status = booking.getBookingStatus();
 
-		if (booking.getCanceledAt() != null) {
+		if (status == BookingStatus.CANCELED) {
 			throw new BookingException(ResponseCode.BOOKING_ALREADY_CANCELED_EXCEPTION);
 		}
 
-		booking.cancel();
+		booking.cancel(authenticatedUser.getUserId());
 
-		if (booking.getPaymentId() != null) {
+		if (status == BookingStatus.COMPLETED) {
 			// TODO: 환불 요청 보내기
 		}
 
@@ -206,6 +210,7 @@ public class BookingServiceImpl implements BookingService {
 				.paymentId(message.getPaymentId())
 				.bookedAt(LocalDateTime.now())
 				.build();
+			booking.preUpdate(message.getUserId());
 
 			bookingRepository.save(updated);
 			bookingProducer.sendPaymentCompleteEvent(
@@ -260,15 +265,16 @@ public class BookingServiceImpl implements BookingService {
 		booking.discount(price); // 할인가 업데이트
 
 		// 쿠폰, 마일리지 사용내역 저장
-		benefitUsageHistoryRepository.save(
-			BenefitUsageHistory.builder()
-				.bookingId(booking.getId())
-				.couponId(message.getCouponId())
-				.mileage(message.getMileage())
-				.usedAt(LocalDateTime.now())
-				.refunded(false)
-				.build()
-		);
+		BenefitUsageHistory history = BenefitUsageHistory.builder()
+			.bookingId(booking.getId())
+			.couponId(message.getCouponId())
+			.mileage(message.getMileage())
+			.usedAt(LocalDateTime.now())
+			.refunded(false)
+			.build();
+		history.prePersist(message.getUserId());
+
+		benefitUsageHistoryRepository.save(history);
 
 		// 결제 요청
 		PaymentMessage paymentMessage = PaymentMessage.builder()
@@ -291,8 +297,35 @@ public class BookingServiceImpl implements BookingService {
 				.orElseThrow(() -> new BookingException(ResponseCode.BOOKING_BENEFIT_USAGE_NOT_FOUND_EXCEPTION));
 
 			history.refunded();
+			history.preUpdate(message.getUserId());
 		} else {
 			throw new BookingException(ResponseCode.BOOKING_BENEFIT_USAGE_REFUND_FAILED_EXCEPTION);
+		}
+	}
+
+	@Override
+	@Transactional
+	public void expireBooking(UUID bookingId) {
+
+		Booking booking = bookingRepository.findById(bookingId)
+			.orElseThrow(() -> new BookingException(ResponseCode.BOOKING_NOT_FOUND_EXCEPTION));
+		BookingStatus status = booking.getBookingStatus();
+		UUID system = UUID.fromString("00000000-0000-0000-0000-000000000000");
+
+		if (status == BookingStatus.PENDING) {
+			booking.cancel(system);
+			booking.delete(system);
+
+			BookingSeatClientRequestDto dto = BookingSeatClientRequestDto.builder()
+				.performanceId(booking.getPerformanceId())
+				.performanceScheduleId(booking.getPerformanceScheduleId())
+				.seatId(booking.getSeatId())
+				.build();
+			BookingSeatClientResponseDto responseDto = bookingClientService.cancelSeatStatus(dto);
+
+			if (responseDto.reserved()) {
+				throw new BookingException(ResponseCode.BOOKING_SEAT_CANCEL_FAILED_EXCEPTION);
+			}
 		}
 	}
 

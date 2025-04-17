@@ -13,4 +13,7 @@ public interface PerformanceClient {
 
 	@PutMapping("/seat/status")
 	ApiResponseData<BookingSeatClientResponseDto> updateSeatStatus(@RequestBody BookingSeatClientRequestDto requestDto);
+
+	@PutMapping("/seat/status/cancel")
+	ApiResponseData<BookingSeatClientResponseDto> cancelSeatStatus(@RequestBody BookingSeatClientRequestDto requestDto);
 }
