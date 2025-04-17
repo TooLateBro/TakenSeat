@@ -1,4 +1,4 @@
-package com.taken_seat.review_service.infrastructure.service;
+package com.taken_seat.review_service.application.service;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -19,8 +19,8 @@ import com.taken_seat.review_service.application.dto.request.ReviewRegisterReqDt
 import com.taken_seat.review_service.application.dto.request.ReviewUpdateReqDto;
 import com.taken_seat.review_service.application.dto.response.PageReviewResponseDto;
 import com.taken_seat.review_service.application.dto.response.ReviewDetailResDto;
-import com.taken_seat.review_service.application.service.ReviewService;
 import com.taken_seat.review_service.domain.model.Review;
+import com.taken_seat.review_service.domain.repository.RedisRatingRepository;
 import com.taken_seat.review_service.domain.repository.ReviewQuerydslRepository;
 import com.taken_seat.review_service.domain.repository.ReviewRepository;
 import com.taken_seat.review_service.infrastructure.client.dto.PerformanceEndTimeDto;
@@ -35,6 +35,7 @@ public class ReviewServiceImpl implements ReviewService {
 
 	private final ReviewRepository reviewRepository;
 	private final ReviewQuerydslRepository reviewQuerydslRepository;
+	private final RedisRatingRepository redisRatingRepository;
 	private final ReviewClient reviewClient;
 
 	@Override
@@ -88,15 +89,22 @@ public class ReviewServiceImpl implements ReviewService {
 
 	@Override
 	@Transactional(readOnly = true)
-	@Cacheable(cacheNames = "reviewSearchCache", key = "#q + '-' + #category + '-' + #page + '-' + #size")
-	public PageReviewResponseDto searchReview(String q, String category, int page, int size, String sort,
+	@Cacheable(cacheNames = "reviewSearchCache", key = "#performance_id + '-' + #q + '-' + #category + '-' + #page + '-' + #size")
+	public PageReviewResponseDto searchReview(UUID performance_id,
+		String q,
+		String category,
+		int page,
+		int size,
+		String sort,
 		String order) {
 
-		Page<Review> reviewPages = reviewQuerydslRepository.search(q, category, page, size, sort, order);
+		Page<Review> reviewPages = reviewQuerydslRepository.search(performance_id, q, category, page, size, sort,
+			order);
 
 		Page<ReviewDetailResDto> reviewDetailResDtoPages = reviewPages.map(ReviewDetailResDto::toResponse);
 
-		return PageReviewResponseDto.toResponse(reviewDetailResDtoPages);
+		return PageReviewResponseDto.toResponse(reviewDetailResDtoPages,
+			redisRatingRepository.getAvgRating(performance_id));
 	}
 
 	@Override

@@ -52,6 +52,7 @@ public class ReviewController {
 
 	@GetMapping("/search")
 	public ResponseEntity<ApiResponseData<PageReviewResponseDto>> searchReview(
+		@RequestParam(required = true) UUID performance_id,
 		@RequestParam(required = false) String q,
 		@RequestParam(required = false) String category,
 		@RequestParam(defaultValue = "0") int page,
@@ -60,7 +61,8 @@ public class ReviewController {
 		@RequestParam(defaultValue = "desc") String order) {
 		return ResponseEntity.status(HttpStatus.OK)
 			.body(
-				ApiResponseData.success(reviewServices.searchReview(q, category, page, size, sort, order)));
+				ApiResponseData.success(
+					reviewServices.searchReview(performance_id, q, category, page, size, sort, order)));
 	}
 
 	@PatchMapping("/{id}")

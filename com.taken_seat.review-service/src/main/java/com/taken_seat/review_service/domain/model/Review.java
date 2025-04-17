@@ -30,16 +30,16 @@ public class Review extends BaseTimeEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
-	@Column(columnDefinition = "BINARY(16)", updatable = false, nullable = false, length = 36)
+	@Column(columnDefinition = "BINARY(16)", updatable = false, nullable = false)
 	private UUID id;
 
-	@Column(nullable = false, length = 36)
+	@Column(columnDefinition = "BINARY(16)", nullable = false)
 	private UUID performanceId;
 
-	@Column(nullable = false, length = 36)
+	@Column(columnDefinition = "BINARY(16)", nullable = false)
 	private UUID performanceScheduleId;
 
-	@Column(nullable = false, length = 36)
+	@Column(columnDefinition = "BINARY(16)", nullable = false)
 	private UUID authorId;
 
 	@Column(nullable = false)
@@ -50,6 +50,9 @@ public class Review extends BaseTimeEntity {
 
 	@Column(nullable = false, length = 100)
 	private String content;
+
+	@Column(nullable = false)
+	private short rating;
 
 	@Column(nullable = false)
 	private Integer likeCount;
@@ -63,6 +66,7 @@ public class Review extends BaseTimeEntity {
 			.authorEmail(authenticatedUser.getEmail())
 			.title(reviewRegisterReqDto.getTitle())
 			.content(reviewRegisterReqDto.getContent())
+			.rating(reviewRegisterReqDto.getRating())
 			.likeCount(0)
 			.build();
 
@@ -74,6 +78,7 @@ public class Review extends BaseTimeEntity {
 	public void update(ReviewUpdateReqDto reviewUpdateReqDto, AuthenticatedUser authenticatedUser) {
 		this.title = reviewUpdateReqDto.getTitle();
 		this.content = reviewUpdateReqDto.getContent();
+		this.rating = reviewUpdateReqDto.getRating();
 		this.preUpdate(authenticatedUser.getUserId());
 	}
 
