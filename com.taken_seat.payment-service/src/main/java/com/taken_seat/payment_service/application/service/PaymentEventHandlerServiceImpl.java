@@ -33,6 +33,7 @@ public class PaymentEventHandlerServiceImpl implements PaymentEventHandlerServic
 			PaymentMessage paymentResultMessage = PaymentMessage.builder()
 				.bookingId(message.getBookingId())
 				.status(PaymentMessage.PaymentResultStatus.INVALID_PRICE)
+				.type(PaymentMessage.MessageType.RESULT)
 				.build();
 
 			paymentResultProducer.sendPaymentResult(paymentResultMessage);
@@ -44,7 +45,7 @@ public class PaymentEventHandlerServiceImpl implements PaymentEventHandlerServic
 		// 2. 결제 엔티티 기본 생성 및 저장
 		Payment payment = Payment.register(message);
 		paymentRepository.save(payment);
-		log.debug("[Payment] 결제 저장 완료 - paymentId: {}", payment.getId());
+		log.debug("[Payment] 결제 저장 완료 - paymentId: {} , price: {}", payment.getId(), payment.getPrice());
 
 		// 3. 결제 히스토리 생성 및 저장
 		PaymentHistory paymentHistory = PaymentHistory.register(payment);

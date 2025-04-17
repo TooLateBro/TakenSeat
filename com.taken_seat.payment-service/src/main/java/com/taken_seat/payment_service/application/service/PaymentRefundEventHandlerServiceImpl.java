@@ -7,6 +7,7 @@ import com.taken_seat.common_service.exception.customException.PaymentException;
 import com.taken_seat.common_service.exception.customException.PaymentHistoryException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.common_service.message.PaymentRefundMessage;
+import com.taken_seat.payment_service.application.kafka.producer.PaymentRefundResultProducer;
 import com.taken_seat.payment_service.domain.model.Payment;
 import com.taken_seat.payment_service.domain.model.PaymentHistory;
 import com.taken_seat.payment_service.domain.repository.PaymentHistoryRepository;
@@ -24,6 +25,8 @@ public class PaymentRefundEventHandlerServiceImpl implements PaymentRefundEventH
 	private final PaymentRepository paymentRepository;
 	private final PaymentHistoryRepository paymentHistoryRepository;
 
+	private final PaymentRefundResultProducer paymentRefundResultProducer;
+
 	@Override
 	public void processPaymentRefund(PaymentRefundMessage message) {
 
@@ -34,9 +37,10 @@ public class PaymentRefundEventHandlerServiceImpl implements PaymentRefundEventH
 			PaymentRefundMessage paymentRefundMessage = PaymentRefundMessage.builder()
 				.bookingId(message.getBookingId())
 				.status(PaymentRefundMessage.PaymentRefundStatus.INVALID_PRICE)
+				.type(PaymentRefundMessage.MessageType.RESULT)
 				.build();
 
-			// 프로듀서 구현 후 적용
+			paymentRefundResultProducer.sendPaymentRefundResult(paymentRefundMessage);
 
 			log.info("[Payment] 환불 실패 메시지 전송 완료 - bookingId: {}", message.getBookingId());
 			return;
@@ -49,16 +53,18 @@ public class PaymentRefundEventHandlerServiceImpl implements PaymentRefundEventH
 			.orElseThrow(() -> new PaymentHistoryException(ResponseCode.PAYMENT_HISTORY_NOT_FOUND_EXCEPTION));
 
 		payment.refund(message);
-		log.debug("[Payment] 환불 처리 완료 - paymentId: {}", payment.getId());
+		log.debug("[Payment] 환불 처리 완료 - paymentId: {} , price: {}", payment.getId(), payment.getPrice());
 		paymentHistory.refund(payment);
 		log.debug("[Payment] 환불 히스토리 저장 완료 - paymentHistoryId: {}", paymentHistory.getId());
 
 		PaymentRefundMessage paymentRefundMessage = PaymentRefundMessage.builder()
 			.bookingId(message.getBookingId())
 			.status(PaymentRefundMessage.PaymentRefundStatus.SUCCESS)
+			.type(PaymentRefundMessage.MessageType.RESULT)
 			.build();
 
-		// 프로듀서 구현 후 적용
+		paymentRefundResultProducer.sendPaymentRefundResult(paymentRefundMessage);
+		log.info("[Payment] 환불 성공 메시지 전송 완료 - bookingId: {}", message.getBookingId());
 	}
 
 	private boolean isInvalidPrice(PaymentRefundMessage message) {
