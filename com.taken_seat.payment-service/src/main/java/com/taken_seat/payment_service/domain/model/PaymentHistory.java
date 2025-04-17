@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import com.taken_seat.common_service.entity.BaseTimeEntity;
+import com.taken_seat.common_service.exception.customException.PaymentException;
+import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.payment_service.domain.enums.PaymentStatus;
 
 import jakarta.persistence.Column;
@@ -82,6 +84,17 @@ public class PaymentHistory extends BaseTimeEntity {
 	public void delete(UUID deleteBy) {
 		super.delete(deleteBy);
 		this.paymentStatus = PaymentStatus.DELETED;
+	}
+
+	public void refund(Payment payment) {
+		if (this.paymentStatus != PaymentStatus.COMPLETED) {
+			throw new PaymentException(ResponseCode.CANNOT_REFUND);
+		}
+
+		this.refundAmount = payment.getPrice();
+		this.refundRequestedAt = LocalDateTime.now();
+		this.paymentStatus = PaymentStatus.REFUNDED;
+		this.preUpdate(payment.getUpdatedBy());
 	}
 
 }
