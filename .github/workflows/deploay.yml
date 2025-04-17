@@ -26,7 +26,7 @@ jobs:
           java-version: '17'
 
       - name: Gradle 실행 권한 부여
-        run: chmod +x /.gradlew
+        run: chmod +x ./gradlew
 
       - name: Eureka 서버 빌드
         run: |
