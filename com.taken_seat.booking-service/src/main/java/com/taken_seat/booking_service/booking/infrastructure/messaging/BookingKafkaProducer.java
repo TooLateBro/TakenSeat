@@ -1,5 +1,6 @@
 package com.taken_seat.booking_service.booking.infrastructure.messaging;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
@@ -16,27 +17,39 @@ public class BookingKafkaProducer implements BookingProducer {
 
 	private final KafkaTemplate<String, Object> kafkaTemplate;
 
+	@Value("${kafka.topic.payment-request")
+	private String PAYMENT_REQUEST_TOPIC;
+
+	@Value("${kafka.topic.ticket-request")
+	private String TICKET_REQUEST_TOPIC;
+
+	@Value("${kafka.topic.benefit-usage-request")
+	private String BENEFIT_USAGE_REQUEST_TOPIC;
+
+	@Value("${kafka.topic.benefit-refund-request")
+	private String BENEFIT_REFUND_REQUEST_TOPIC;
+
 	@Override
 	public void sendPaymentRequestEvent(PaymentMessage message) {
 
-		kafkaTemplate.send("payment.request", message);
+		kafkaTemplate.send(PAYMENT_REQUEST_TOPIC, message);
 	}
 
 	@Override
 	public void sendPaymentCompleteEvent(TicketRequestMessage message) {
 
-		kafkaTemplate.send("ticket.request", message);
+		kafkaTemplate.send(TICKET_REQUEST_TOPIC, message);
 	}
 
 	@Override
 	public void sendBenefitUsageRequest(UserBenefitMessage message) {
 
-		kafkaTemplate.send("benefit.usage.request", message);
+		kafkaTemplate.send(BENEFIT_USAGE_REQUEST_TOPIC, message);
 	}
 
 	@Override
 	public void sendBenefitRefundRequest(UserBenefitMessage message) {
 
-		kafkaTemplate.send("benefit.refund.request", message);
+		kafkaTemplate.send(BENEFIT_REFUND_REQUEST_TOPIC, message);
 	}
 }

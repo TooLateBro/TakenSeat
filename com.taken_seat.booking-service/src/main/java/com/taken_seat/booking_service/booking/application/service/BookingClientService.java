@@ -10,4 +10,6 @@ public interface BookingClientService {
 	BookingStatusDto getBookingStatus(UUID userId, UUID performanceId);
 
 	BookingSeatClientResponseDto updateSeatStatus(BookingSeatClientRequestDto request);
+
+	BookingSeatClientResponseDto cancelSeatStatus(BookingSeatClientRequestDto requestDto);
 }

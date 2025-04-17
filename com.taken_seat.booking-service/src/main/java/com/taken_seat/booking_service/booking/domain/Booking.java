@@ -3,7 +3,7 @@ package com.taken_seat.booking_service.booking.domain;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import com.taken_seat.booking_service.common.BaseEntity;
+import com.taken_seat.common_service.entity.BaseTimeEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -34,7 +34,7 @@ import lombok.NoArgsConstructor;
 		)
 	}
 )
-public class Booking extends BaseEntity {
+public class Booking extends BaseTimeEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
@@ -66,8 +66,10 @@ public class Booking extends BaseEntity {
 
 	private LocalDateTime canceledAt;
 
-	public void cancel() {
+	public void cancel(UUID id) {
+		this.preUpdate(id);
 		this.canceledAt = LocalDateTime.now();
+		this.bookingStatus = BookingStatus.CANCELED;
 	}
 
 	public void discount(int price) {

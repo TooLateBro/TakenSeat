@@ -22,7 +22,7 @@ public interface BookingService {
 
 	BookingPageResponse readBookings(AuthenticatedUser authenticatedUser, Pageable pageable);
 
-	void updateBooking(AuthenticatedUser authenticatedUser, UUID id);
+	void cancelBooking(AuthenticatedUser authenticatedUser, UUID id);
 
 	void deleteBooking(AuthenticatedUser authenticatedUser, UUID id);
 
@@ -37,4 +37,6 @@ public interface BookingService {
 	void createPayment(UserBenefitMessage message);
 
 	void updateBenefitUsageHistory(UserBenefitMessage message);
+
+	void expireBooking(UUID bookingId);
 }

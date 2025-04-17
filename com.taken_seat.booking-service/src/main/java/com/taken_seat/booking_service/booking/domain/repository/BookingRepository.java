@@ -21,4 +21,6 @@ public interface BookingRepository {
 	Page<Booking> findAllByUserId(Pageable pageable, UUID userId);
 
 	Optional<Booking> findByUserIdAndPerformanceId(UUID userId, UUID performanceId);
+
+	boolean isUniqueBooking(UUID userId, UUID performanceId, UUID performanceScheduleId, UUID seatId);
 }

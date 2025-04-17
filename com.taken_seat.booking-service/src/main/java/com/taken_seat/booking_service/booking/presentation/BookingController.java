@@ -60,7 +60,7 @@ public class BookingController {
 	@PatchMapping("/{id}")
 	public ResponseEntity<ApiResponseData<Void>> updateBooking(AuthenticatedUser authenticatedUser,
 		@PathVariable("id") UUID id) {
-		bookingService.updateBooking(authenticatedUser, id);
+		bookingService.cancelBooking(authenticatedUser, id);
 
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseData.success());
 	}
