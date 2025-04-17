@@ -2,7 +2,6 @@ package com.taken_seat.review_service.infrastructure.repository;
 
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,8 +9,6 @@ import java.util.UUID;
 
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Repository;
 
 import com.taken_seat.common_service.exception.customException.PaymentException;
@@ -29,9 +26,6 @@ public class RedisRatingRepositoryImpl implements RedisRatingRepository {
 
 	private final ReviewRepository reviewRepository;
 	private final RedisTemplate<String, Object> redisTemplate;
-	private final RedisScript<Boolean> redisScript;
-
-	private final StringRedisTemplate stringRedisTemplate;
 
 	private final String AVG_RATING_KEY = "avgRating:";
 	private static final String FIELD_AVG_RATING = "avgRating";
@@ -52,6 +46,7 @@ public class RedisRatingRepositoryImpl implements RedisRatingRepository {
 				performanceId);
 
 			saveRating(performanceId, avgRatingAndCount);
+
 			avgRating = bigDecimalToDouble(avgRatingAndCount.get(FIELD_AVG_RATING));
 		}
 
@@ -106,7 +101,15 @@ public class RedisRatingRepositoryImpl implements RedisRatingRepository {
 
 	private long getOrDefaultReviewCount(Map<Object, Object> ratingData, String field) {
 		Object reviewCountObj = ratingData.get(field);
-		return (reviewCountObj != null) ? (long)reviewCountObj : 0L;
+
+		if (reviewCountObj instanceof Long) {
+			return (Long)reviewCountObj;
+		} else if (reviewCountObj instanceof Integer) {
+			return ((Integer)reviewCountObj).longValue(); // Integer → Long 변환
+		} else {
+			return 0L;
+		}
+
 	}
 
 	private UUID bytesToUUID(Object value) {
@@ -125,14 +128,16 @@ public class RedisRatingRepositoryImpl implements RedisRatingRepository {
 		throw new PaymentException(ResponseCode.ILLEGAL_ARGUMENT);
 	}
 
-	private void saveRating(UUID avgRatingKey, Map<String, Object> avgRatingAndCount) {
-		List<String> keys = Collections.emptyList();
+	private void saveRating(UUID performanceId, Map<String, Object> avgRatingAndCount) {
+		String avgRatingKey = AVG_RATING_KEY + performanceId;
+		Map<String, Object> ratingInfo = new HashMap<>();
 
-		Object[] argv = {AVG_RATING_KEY + avgRatingKey.toString(),
-			avgRatingAndCount.get(FIELD_AVG_RATING).toString(),
-			avgRatingAndCount.get(FIELD_REVIEW_COUNT).toString()};
+		double avgRating = bigDecimalToDouble(avgRatingAndCount.get(FIELD_AVG_RATING));
+		long reviewCount = (long)avgRatingAndCount.get(FIELD_REVIEW_COUNT);
+		ratingInfo.put(FIELD_AVG_RATING, avgRating);
+		ratingInfo.put(FIELD_REVIEW_COUNT, reviewCount);
 
-		stringRedisTemplate.execute(redisScript, keys, argv);
+		redisTemplate.opsForHash().putAll(avgRatingKey, ratingInfo);
 
 	}
 }
