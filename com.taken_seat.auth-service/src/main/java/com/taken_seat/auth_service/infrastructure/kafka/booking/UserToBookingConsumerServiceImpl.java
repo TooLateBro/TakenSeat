@@ -50,7 +50,7 @@ public class UserToBookingConsumerServiceImpl implements UserToBookingConsumerSe
             Mileage mileage = mileageRepository.findTopByUserIdOrderByUpdatedAtDesc(message.getUserId())
                     .orElseThrow(() -> new MileageException(ResponseCode.MILEAGE_NOT_FOUND));
 
-            usedMileage = mileage.getMileage();
+            usedMileage = message.getMileage();
 
             log.info("[Auth] -> [Booking] 마일리지 및 쿠폰 사용에 성공했습니다! " +
                     "{}, {}, {}, {}, {}", message.getBookingId(), message.getUserId(), message.getCouponId(), message.getMileage(), couponDiscount);
