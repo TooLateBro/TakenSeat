@@ -30,6 +30,6 @@ jobs:
 
       - name: Eureka 서버 빌드
         run: |
-          ./gradlew :eureka:bootJar
-          java -jar com.devsquad10.eureka/build/libs/*.jar &  # 
+          ./gradlew :com.taken_seat.eureka-service:bootJar
+          java -jar com.taken_seat.eureka-service/build/libs/*.jar
           sleep 20
