@@ -6,6 +6,7 @@ import com.taken_seat.common_service.exception.customException.AuthException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.common_service.message.KafkaUserInfoMessage;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
@@ -20,9 +21,11 @@ public class UserToCouponPublisherImpl implements UserToCouponPublisher {
         this.kafkaTemplate = kafkaTemplate;
         this.userRepository = userRepository;
     }
+    @Value("${kafka.topic.coupon-request-user}")
+    private String REQUEST_TOPIC;
 
-    private static final String REQUEST_TOPIC = "Issuance-of-coupons";
-    private static final String REQUEST_KEY = "Partitions-of-coupons";
+    @Value("${kafka.key.coupon-user-key}")
+    private String REQUEST_KEY;
 
     @Override
     public void sendUserCoupon(KafkaUserInfoMessage message) {
