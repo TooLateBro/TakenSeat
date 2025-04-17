@@ -37,7 +37,8 @@ public class BenefitUsageHistory extends BaseTimeEntity {
 	private LocalDateTime usedAt;
 	private boolean refunded;
 
-	public void refunded() {
+	public void refunded(UUID id) {
+		this.preUpdate(id);
 		this.refunded = true;
 	}
 }

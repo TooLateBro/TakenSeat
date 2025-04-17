@@ -54,12 +54,14 @@ public class BookingServiceImpl implements BookingService {
 	@Transactional
 	public BookingCreateResponse createBooking(AuthenticatedUser authenticatedUser, BookingCreateRequest request) {
 
+		// 중복 체크
 		if (bookingRepository.isUniqueBooking(authenticatedUser.getUserId(), request.getPerformanceId(),
 			request.getPerformanceScheduleId(), request.getSeatId())) {
 
 			throw new BookingException(ResponseCode.BOOKING_DUPLICATED_EXCEPTION);
 		}
 
+		// 좌석 선점
 		BookingSeatClientResponseDto responseDto = redissonService.tryHoldSeat(
 			request.getPerformanceId(),
 			request.getPerformanceScheduleId(),
@@ -77,6 +79,8 @@ public class BookingServiceImpl implements BookingService {
 		booking.prePersist(authenticatedUser.getUserId());
 
 		Booking saved = bookingRepository.save(booking);
+
+		// 예매 만료 설정
 		redisService.setBookingExpire(saved.getId());
 
 		return BookingCreateResponse.toDto(saved);
@@ -117,7 +121,17 @@ public class BookingServiceImpl implements BookingService {
 			// TODO: 환불 요청 보내기
 		}
 
-		// TODO: 좌석 선점 해제 요청 보내기
+		// 좌석 선점 해제 요청 보내기
+		BookingSeatClientRequestDto dto = BookingSeatClientRequestDto.builder()
+			.performanceId(booking.getPerformanceId())
+			.performanceScheduleId(booking.getPerformanceScheduleId())
+			.seatId(booking.getSeatId())
+			.build();
+		BookingSeatClientResponseDto responseDto = bookingClientService.cancelSeatStatus(dto);
+
+		if (responseDto.reserved()) {
+			throw new BookingException(ResponseCode.BOOKING_SEAT_CANCEL_FAILED_EXCEPTION);
+		}
 	}
 
 	@Override
@@ -178,6 +192,7 @@ public class BookingServiceImpl implements BookingService {
 				.userId(authenticatedUser.getUserId())
 				.couponId(request.getCouponId())
 				.mileage(request.getMileage())
+				.price(booking.getPrice())
 				.build();
 
 			bookingProducer.sendBenefitUsageRequest(benefitUsageRequestMessage);
@@ -199,18 +214,18 @@ public class BookingServiceImpl implements BookingService {
 	@Transactional
 	public void updateBooking(PaymentMessage message) {
 
+		Booking booking = bookingRepository.findById(message.getBookingId())
+			.orElseThrow(() -> new BookingException(ResponseCode.BOOKING_NOT_FOUND_EXCEPTION));
 		PaymentMessage.PaymentResultStatus status = message.getStatus();
+
 		// 성공시
 		if (status == PaymentMessage.PaymentResultStatus.SUCCESS) {
-			Booking booking = bookingRepository.findById(message.getBookingId())
-				.orElseThrow(() -> new BookingException(ResponseCode.BOOKING_NOT_FOUND_EXCEPTION));
-
 			Booking updated = booking.toBuilder()
 				.bookingStatus(BookingStatus.COMPLETED)
 				.paymentId(message.getPaymentId())
 				.bookedAt(LocalDateTime.now())
 				.build();
-			booking.preUpdate(message.getUserId());
+			updated.preUpdate(message.getUserId());
 
 			bookingRepository.save(updated);
 			bookingProducer.sendPaymentCompleteEvent(
@@ -220,6 +235,7 @@ public class BookingServiceImpl implements BookingService {
 					.build()
 			);
 		} else {
+			// 실패시 사용한 쿠폰, 마일리지 원복처리
 			Optional<BenefitUsageHistory> optional = benefitUsageHistoryRepository.findByBookingIdAndRefundedIsFalse(
 				message.getBookingId());
 			if (optional.isPresent()) {
@@ -229,6 +245,7 @@ public class BookingServiceImpl implements BookingService {
 					.userId(message.getUserId())
 					.couponId(benefitUsageHistory.getCouponId())
 					.mileage(benefitUsageHistory.getMileage())
+					.price(booking.getPrice())
 					.build();
 
 				bookingProducer.sendBenefitRefundRequest(benefitMessage);
@@ -296,8 +313,7 @@ public class BookingServiceImpl implements BookingService {
 					message.getBookingId())
 				.orElseThrow(() -> new BookingException(ResponseCode.BOOKING_BENEFIT_USAGE_NOT_FOUND_EXCEPTION));
 
-			history.refunded();
-			history.preUpdate(message.getUserId());
+			history.refunded(message.getUserId());
 		} else {
 			throw new BookingException(ResponseCode.BOOKING_BENEFIT_USAGE_REFUND_FAILED_EXCEPTION);
 		}

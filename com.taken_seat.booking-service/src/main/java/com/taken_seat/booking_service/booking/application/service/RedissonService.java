@@ -5,6 +5,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.taken_seat.common_service.dto.request.BookingSeatClientRequestDto;
@@ -20,6 +21,10 @@ public class RedissonService {
 
 	private final RedissonClient redissonClient;
 	private final BookingClientService bookingClientService;
+	@Value("${variable.lock-wait-time}")
+	private long LOCK_WAIT_TIME;
+	@Value("${variable.lock-lease-time}")
+	private long LOCK_LEASE_TIME;
 
 	public BookingSeatClientResponseDto tryHoldSeat(UUID performanceId, UUID performanceScheduleId, UUID seatId) {
 		String key = "lock:seat:" + seatId;
@@ -27,7 +32,7 @@ public class RedissonService {
 
 		// TODO: FeignClient 처리에서 Kafka 이벤트 처리로 변경해보기
 		try {
-			if (lock.tryLock(3, 5, TimeUnit.SECONDS)) {
+			if (lock.tryLock(LOCK_WAIT_TIME, LOCK_LEASE_TIME, TimeUnit.SECONDS)) {
 				BookingSeatClientRequestDto dto = BookingSeatClientRequestDto.builder()
 					.performanceId(performanceId)
 					.performanceScheduleId(performanceScheduleId)
