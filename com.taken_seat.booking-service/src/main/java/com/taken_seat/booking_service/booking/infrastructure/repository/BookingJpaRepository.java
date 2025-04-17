@@ -18,4 +18,7 @@ public interface BookingJpaRepository extends JpaRepository<Booking, UUID> {
 	Optional<Booking> findByUserIdAndPerformanceIdAndDeletedAtIsNull(UUID userId, UUID performanceId);
 
 	Optional<Booking> findByIdAndDeletedAtIsNull(UUID id);
+
+	boolean existsByUserIdAndPerformanceIdAndPerformanceScheduleIdAndSeatIdAndDeletedAtIsNull(UUID userId,
+		UUID performanceId, UUID performanceScheduleId, UUID seatId);
 }

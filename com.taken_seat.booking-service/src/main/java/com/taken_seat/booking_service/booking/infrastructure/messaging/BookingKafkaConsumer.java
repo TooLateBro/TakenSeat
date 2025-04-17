@@ -17,21 +17,21 @@ public class BookingKafkaConsumer implements BookingConsumer {
 	private final BookingService bookingService;
 
 	@Override
-	@KafkaListener(topics = "payment.result", groupId = "booking-service")
+	@KafkaListener(topics = "${kafka.topic.payment-result}", groupId = "${kafka.consumer.group-id}")
 	public void updateBooking(PaymentMessage message) {
 
 		bookingService.updateBooking(message);
 	}
 
 	@Override
-	@KafkaListener(topics = "benefit.usage.response", groupId = "booking-service")
+	@KafkaListener(topics = "${kafka.topic.benefit-usage-response}", groupId = "${kafka.consumer.group-id}")
 	public void createPayment(UserBenefitMessage message) {
 
 		bookingService.createPayment(message);
 	}
 
 	@Override
-	@KafkaListener(topics = "benefit.refund.response", groupId = "booking-service")
+	@KafkaListener(topics = "${kafka.topic.benefit-refund-response}", groupId = "${kafka.consumer.group-id}")
 	public void updateBenefitUsageHistory(UserBenefitMessage message) {
 
 		bookingService.updateBenefitUsageHistory(message);

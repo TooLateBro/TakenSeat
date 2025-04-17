@@ -34,8 +34,14 @@ public class BookingClientServiceImpl implements BookingClientService {
 
 	@Override
 	public BookingSeatClientResponseDto updateSeatStatus(BookingSeatClientRequestDto request) {
-		ApiResponseData<BookingSeatClientResponseDto> response = performanceClient.updateSeatStatus(
-			request);
+		ApiResponseData<BookingSeatClientResponseDto> response = performanceClient.updateSeatStatus(request);
+
+		return response.body();
+	}
+
+	@Override
+	public BookingSeatClientResponseDto cancelSeatStatus(BookingSeatClientRequestDto requestDto) {
+		ApiResponseData<BookingSeatClientResponseDto> response = performanceClient.cancelSeatStatus(requestDto);
 
 		return response.body();
 	}

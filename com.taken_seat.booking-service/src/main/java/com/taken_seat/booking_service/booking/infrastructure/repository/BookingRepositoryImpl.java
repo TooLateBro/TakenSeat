@@ -42,4 +42,10 @@ public class BookingRepositoryImpl implements BookingRepository {
 	public Optional<Booking> findByUserIdAndPerformanceId(UUID userId, UUID performanceId) {
 		return bookingJpaRepository.findByUserIdAndPerformanceIdAndDeletedAtIsNull(userId, performanceId);
 	}
+
+	@Override
+	public boolean isUniqueBooking(UUID userId, UUID performanceId, UUID performanceScheduleId, UUID seatId) {
+		return bookingJpaRepository.existsByUserIdAndPerformanceIdAndPerformanceScheduleIdAndSeatIdAndDeletedAtIsNull(
+			userId, performanceId, performanceScheduleId, seatId);
+	}
 }
