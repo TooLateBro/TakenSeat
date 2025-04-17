@@ -50,6 +50,7 @@ public class BookingKafkaProducer implements BookingProducer {
 		kafkaTemplate.send(BENEFIT_USAGE_REQUEST_TOPIC, message);
 	}
 
+	// TODO: 환불 시도에 사용될 것
 	@Override
 	public void sendBenefitRefundRequest(UserBenefitMessage message) {
 

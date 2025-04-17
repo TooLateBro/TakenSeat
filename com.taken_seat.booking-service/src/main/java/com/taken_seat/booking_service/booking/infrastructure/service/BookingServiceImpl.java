@@ -258,16 +258,7 @@ public class BookingServiceImpl implements BookingService {
 
 			if (optional.isPresent()) {
 				BenefitUsageHistory benefitUsageHistory = optional.get();
-				UserBenefitMessage benefitMessage = UserBenefitMessage.builder()
-					.bookingId(message.getBookingId())
-					.userId(message.getUserId())
-					.couponId(benefitUsageHistory.getCouponId())
-					.mileage(benefitUsageHistory.getMileage())
-					.price(booking.getPrice())
-					.status(UserBenefitMessage.UserBenefitStatus.FAIL)
-					.build();
-
-				bookingProducer.sendBenefitRefundRequest(benefitMessage);
+				benefitUsageHistory.refunded(message.getUserId());
 			}
 			throw new BookingException(ResponseCode.BOOKING_PAYMENT_FAILED_EXCEPTION);
 		}
@@ -327,6 +318,7 @@ public class BookingServiceImpl implements BookingService {
 		}
 	}
 
+	// TODO: 나중에 환불 시도에 사용될 가능성있음
 	@Override
 	@Transactional
 	public void updateBenefitUsageHistory(UserBenefitMessage message) {
