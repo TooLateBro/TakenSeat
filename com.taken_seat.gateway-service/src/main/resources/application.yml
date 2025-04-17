@@ -1,0 +1,108 @@
+spring:
+  application:
+    name: gateway-service
+
+  main:
+    web-application-type: reactive
+  cloud:
+    gateway:
+      routes:
+        - id: auth-service
+          uri: lb://auth-service
+          predicates:
+            - Path=/api/v1/auths/**, /api/v1/users/**, /auth-service/v3/api-docs
+          filters:
+            - RewritePath=/auth-service/(?<segment>.*), /$\{segment}
+
+        - id: coupon-service
+          uri: lb://coupon-service
+          predicates:
+            - Path=/api/v1/coupons/**, /coupon-service/v3/api-docs
+          filters:
+            - RewritePath=/coupon-service/(?<segment>.*), /$\{segment}
+
+        - id: performance-service
+          uri: lb://performance-service
+          predicates:
+            - Path=/api/v1/performances/**, /api/v1/performancehalls/**, /performance-service/v3/api-docs
+          filters:
+            - RewritePath=/performance-service/(?<segment>.*), /$\{segment}
+
+        - id: booking-service
+          uri: lb://booking-service
+          predicates:
+            - Path=/api/v1/bookings/**, /api/v1/tickets/**, /booking-service/v3/api-docs
+          filters:
+            - RewritePath=/booking-service/(?<segment>.*), /$\{segment}
+
+        - id: payment-service
+          uri: lb://payment-service
+          predicates:
+            - Path=/api/v1/payments/**, /payment-service/v3/api-docs
+          filters:
+            - RewritePath=/payment-service/(?<segment>.*), /$\{segment}
+
+        - id: review-service
+          uri: lb://review-service
+          predicates:
+            - Path=/api/v1/reviews/**, /review-service/v3/api-docs
+          filters:
+            - RewritePath=/review-service/(?<segment>.*), /$\{segment}
+
+      discovery:
+        locator:
+          enabled: true
+      #default-filters:
+
+server:
+  port: 19091
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:19090/eureka/
+
+service:
+  jwt:
+    secret:
+      key: jt0secret1key2test3leeson4f4b9e8c2a1d5f7e9b3c0d8a6e2f1b4c7d9e0a5f3b8c1d6e4a7f2b9c0d3e5a1f8
+
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    path: /docs
+    urls:
+      - name: auth-service
+        url: /auth-service/v3/api-docs
+
+      - name: coupon-service
+        url: /coupon-service/v3/api-docs
+
+      - name: performance-service
+        url: /performance-service/v3/api-docs
+
+      - name: booking-service
+        url: /booking-service/v3/api-docs
+
+      - name: payment-service
+        url: /payment-service/v3/api-docs
+
+      - name: review-service
+        url: /review-service/v3/api-docs
+
+management:
+  metrics:
+    tags:
+      application: gateway-service
+  endpoint:
+    health:
+      show-details: always
+    prometheus:
+      access: unrestricted
+  endpoints:
+    web:
+      exposure:
+        include: '*'

@@ -1,0 +1,54 @@
+server:
+  port: 19098
+
+spring:
+  application:
+    name: review-service
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      username: default
+      password: systempass
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/takenseat
+    username: toolatebro
+    password: toolatebro
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+management:
+  zipkin:
+    tracing:
+      endpoint: "http://localhost:9411/api/v2/spans" # zipkin에서 정해진 엔드포인트
+  tracing:
+    sampling:
+      probability: 1.0
+
+common:
+  trust-package: "com.taken_seat.common_service.message"
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:19090/eureka/
+
+
+feign:
+  client:
+    performance:
+      name: performance-service
+      url:
+        http://localhost:19096/api/v1/performances
+    booking:
+      name: booking-service
+      url:
+        http://localhost:19095/api/v1/bookings
+
+
+

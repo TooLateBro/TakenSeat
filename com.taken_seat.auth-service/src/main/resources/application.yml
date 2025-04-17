@@ -1,0 +1,72 @@
+spring:
+  application:
+    name: auth-service
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      username: default
+      password: systempass
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/takenseat
+    username: toolatebro
+    password: toolatebro
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+    defer-datasource-initialization: true
+
+kafka:
+  topic:
+    coupon-request-user: coupon.request.user
+    coupon-response-user: coupon.response.user
+    benefit-usage-request: benefit.usage.request
+    benefit-refund-request: benefit.refund.request
+  key:
+    coupon-user-key: coupon.user.key
+  consumer:
+    group-id: auth-service
+
+server:
+  port: 19092
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:19090/eureka/
+common:
+  trust-package: "com.taken_seat.common_service.message"
+
+service:
+  jwt:
+    access-expiration: 600000       # 10분
+    refresh-expiration: 3600000     # 1시간
+    secret:
+      key: jt0secret1key2test3leeson4f4b9e8c2a1d5f7e9b3c0d8a6e2f1b4c7d9e0a5f3b8c1d6e4a7f2b9c0d3e5a1f8
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+management:
+  metrics:
+    tags:
+      application: auth-service
+  endpoint:
+    health:
+      show-details: always
+    prometheus:
+      access: unrestricted
+  endpoints:
+    web:
+      exposure:
+        include: '*'
