@@ -267,46 +267,50 @@ public class BookingServiceImpl implements BookingService {
 			.orElseThrow(() -> new BookingException(ResponseCode.BOOKING_NOT_FOUND_EXCEPTION));
 		int price = booking.getPrice(); // 정가
 
-		if (message.getDiscount() != null) {
-			double discountAmount = price * (message.getDiscount() / 100.0);  // 할인 금액 계산
-			price = (int)(price - discountAmount); // 할인된 가격 계산
+		if (message.getStatus() == UserBenefitMessage.UserBenefitStatus.SUCCESS) {
+			if (message.getDiscount() != null) {
+				double discountAmount = price * (message.getDiscount() / 100.0);  // 할인 금액 계산
+				price = (int)(price - discountAmount); // 할인된 가격 계산
 
-			if (!isValidPrice(price)) {
-				throw new BookingException(ResponseCode.INVALID_COUPON);
+				if (!isValidPrice(price)) {
+					throw new BookingException(ResponseCode.INVALID_COUPON);
+				}
 			}
-		}
 
-		// 마일리지 차감
-		if (message.getMileage() != null) {
-			price -= message.getMileage();
+			// 마일리지 차감
+			if (message.getMileage() != null) {
+				price -= message.getMileage();
 
-			if (!isValidPrice(price)) {
-				throw new BookingException(ResponseCode.INVALID_MILEAGE);
+				if (!isValidPrice(price)) {
+					throw new BookingException(ResponseCode.INVALID_MILEAGE);
+				}
 			}
+			booking.discount(price); // 할인가 업데이트
+
+			// 쿠폰, 마일리지 사용내역 저장
+			BenefitUsageHistory history = BenefitUsageHistory.builder()
+				.bookingId(booking.getId())
+				.couponId(message.getCouponId())
+				.mileage(message.getMileage())
+				.usedAt(LocalDateTime.now())
+				.refunded(false)
+				.build();
+			history.prePersist(message.getUserId());
+
+			benefitUsageHistoryRepository.save(history);
+
+			// 결제 요청
+			PaymentMessage paymentMessage = PaymentMessage.builder()
+				.bookingId(booking.getId())
+				.userId(message.getUserId())
+				.price(booking.getDiscountedPrice())
+				.type(PaymentMessage.MessageType.REQUEST)
+				.build();
+
+			bookingProducer.sendPaymentRequestEvent(paymentMessage);
+		} else {
+			throw new BookingException(ResponseCode.BOOKING_BENEFIT_USAGE_FAILED_EXCEPTION);
 		}
-		booking.discount(price); // 할인가 업데이트
-
-		// 쿠폰, 마일리지 사용내역 저장
-		BenefitUsageHistory history = BenefitUsageHistory.builder()
-			.bookingId(booking.getId())
-			.couponId(message.getCouponId())
-			.mileage(message.getMileage())
-			.usedAt(LocalDateTime.now())
-			.refunded(false)
-			.build();
-		history.prePersist(message.getUserId());
-
-		benefitUsageHistoryRepository.save(history);
-
-		// 결제 요청
-		PaymentMessage paymentMessage = PaymentMessage.builder()
-			.bookingId(booking.getId())
-			.userId(message.getUserId())
-			.price(booking.getDiscountedPrice())
-			.type(PaymentMessage.MessageType.REQUEST)
-			.build();
-
-		bookingProducer.sendPaymentRequestEvent(paymentMessage);
 	}
 
 	@Override
