@@ -107,7 +107,7 @@ public class UserToBookingConsumerServiceImpl implements UserToBookingConsumerSe
                 }
                 mileageRepository.save(mileage);
             }
-        }else if (message.getStatus().equals(UserBenefitMessage.UserBenefitStatus.FAIL)) {
+        }else if (message.getStatus().equals(UserBenefitMessage.UserBenefitStatus.REFUND)) {
             if (message.getCouponId() != null) {
                 UserCoupon userCoupon = userCouponRepository.findByCouponIdAndIsActiveFalse(message.getCouponId())
                         .orElseThrow(() -> new CouponException(ResponseCode.COUPON_NOT_FOUND));
