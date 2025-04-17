@@ -3,7 +3,7 @@ package com.taken_seat.booking_service.booking.domain;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import com.taken_seat.booking_service.common.BaseEntity;
+import com.taken_seat.common_service.entity.BaseTimeEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -23,7 +23,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @Table(name = "p_benefit_usage_history")
-public class BenefitUsageHistory extends BaseEntity {
+public class BenefitUsageHistory extends BaseTimeEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
