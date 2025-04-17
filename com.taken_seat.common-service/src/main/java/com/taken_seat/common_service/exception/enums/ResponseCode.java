@@ -55,6 +55,7 @@ public enum ResponseCode {
 	INVALID_LIKE_COUNT(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), "좋아요 수는 0보다 작을 수 없습니다."),
 	INVALID_COUPON(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), "잘못된 쿠폰 사용입니다."),
 	INVALID_MILEAGE(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), "잘못된 마일리지 사용입니다."),
+	CANNOT_REFUND(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), "현재 상태에서는 환불이 불가능합니다."),
 
 	// Performance
 	PERFORMANCE_NOT_FOUND(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "해당 공연 정보를 찾을 수 없습니다."),
