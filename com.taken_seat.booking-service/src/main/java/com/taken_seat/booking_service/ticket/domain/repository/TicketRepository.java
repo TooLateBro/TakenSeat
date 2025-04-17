@@ -5,14 +5,17 @@ import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import com.taken_seat.booking_service.ticket.domain.Ticket;
 
 @Repository
-public interface TicketRepository extends JpaRepository<Ticket, UUID> {
-	Optional<Ticket> findByIdAndUserIdAndDeletedAtIsNull(UUID id, UUID userId);
+public interface TicketRepository {
+	Ticket save(Ticket ticket);
 
-	Page<Ticket> findAllByUserIdAndDeletedAtIsNull(Pageable pageable, UUID userId);
+	Optional<Ticket> findByIdAndUserId(UUID id, UUID userId);
+
+	Optional<Ticket> findByBookingId(UUID bookingId);
+
+	Page<Ticket> findAllByUserId(Pageable pageable, UUID userId);
 }

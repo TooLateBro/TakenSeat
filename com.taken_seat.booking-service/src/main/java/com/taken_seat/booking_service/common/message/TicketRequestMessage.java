@@ -14,4 +14,7 @@ import lombok.NoArgsConstructor;
 public class TicketRequestMessage {
 	private UUID userId;
 	private UUID bookingId;
+	private UUID performanceId;
+	private UUID performanceScheduleId;
+	private UUID seatId;
 }

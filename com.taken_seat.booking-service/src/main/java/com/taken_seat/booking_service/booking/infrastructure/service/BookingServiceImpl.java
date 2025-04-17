@@ -234,6 +234,9 @@ public class BookingServiceImpl implements BookingService {
 				TicketRequestMessage.builder()
 					.userId(booking.getUserId())
 					.bookingId(booking.getId())
+					.performanceId(booking.getPerformanceId())
+					.performanceScheduleId(booking.getPerformanceScheduleId())
+					.seatId(booking.getSeatId())
 					.build()
 			);
 
