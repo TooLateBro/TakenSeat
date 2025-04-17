@@ -75,6 +75,8 @@ public enum ResponseCode {
 
 	// Booking
 	BOOKING_ALREADY_CANCELED_EXCEPTION(HttpStatus.CONFLICT, HttpStatus.CONFLICT.value(), "이미 취소된 예약입니다."),
+	BOOKING_BENEFIT_USAGE_FAILED_EXCEPTION(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(),
+		"쿠폰 또는 마일리지 사용을 실패했습니다."),
 	BOOKING_BENEFIT_USAGE_NOT_FOUND_EXCEPTION(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(),
 		"쿠폰, 마일리지 사용 내역이 없습니다."),
 	BOOKING_BENEFIT_USAGE_REFUND_FAILED_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,
@@ -88,6 +90,7 @@ public enum ResponseCode {
 	BOOKING_SEAT_CANCEL_FAILED_EXCEPTION(HttpStatus.CONFLICT, HttpStatus.CONFLICT.value(), "좌석 취소를 실패했습니다."),
 	BOOKING_SEAT_LOCKED_EXCEPTION(HttpStatus.OK, HttpStatus.OK.value(), "이미 예약중인 좌석입니다."),
 	BOOKING_SEAT_RESERVED_EXCEPTION(HttpStatus.OK, HttpStatus.OK.value(), "이미 선점된 좌석입니다."),
+	TICKET_NOT_FOUND_EXCEPTION(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "해당 티켓은 존재하지 않습니다."),
 
 	// Performance
 	PERFORMANCE_NOT_FOUND_EXCEPTION(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "해당 공연은 존재하지 않습니다."),
