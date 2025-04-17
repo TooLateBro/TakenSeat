@@ -7,6 +7,5 @@ public interface UserToBookingConsumer {
 
     UserBenefitMessage benefitConsume(@Payload UserBenefitMessage message);
 
-    UserBenefitMessage benefitCancelConsume(@Payload UserBenefitMessage message);
-
+    void benefitPaymentConsume(@Payload UserBenefitMessage message);
 }

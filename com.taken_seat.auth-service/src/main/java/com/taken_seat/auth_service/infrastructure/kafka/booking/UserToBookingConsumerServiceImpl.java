@@ -31,7 +31,6 @@ public class UserToBookingConsumerServiceImpl implements UserToBookingConsumerSe
         this.mileageRepository = mileageRepository;
     }
 
-    @Transactional
     @Override
     public UserBenefitMessage benefitUsage(UserBenefitMessage message) {
         try {
@@ -42,38 +41,17 @@ public class UserToBookingConsumerServiceImpl implements UserToBookingConsumerSe
 
             Integer couponDiscount = null;
             Integer usedMileage = null;
-            Integer mileageRate = message.getPrice() / 1000;
 
-            if (message.getCouponId() != null) {
-                UserCoupon userCoupon = userCouponRepository.findByCouponIdAndIsActiveTrue(message.getCouponId())
-                        .orElseThrow(() -> new CouponException(ResponseCode.COUPON_NOT_FOUND));
-                if (userCoupon != null) {
-                    log.info("[Booking] -> [Auth] " +message.getCouponId() + " 쿠폰 사용에 성공했습니다!!!");
-                    couponDiscount = userCoupon.getDiscount();
-                    userCoupon.updateActive(false, user.getId());
-                }
-            }
-            if (message.getMileage() != null && message.getMileage() > 0) {
-                Mileage mileageExists = mileageRepository.findTopByUserIdOrderByUpdatedAtDesc(message.getUserId())
-                        .orElseThrow(() -> new MileageException(ResponseCode.MILEAGE_NOT_FOUND));
+            UserCoupon userCoupon = userCouponRepository.findByCouponIdAndIsActiveTrue(message.getCouponId())
+                    .orElseThrow(() -> new CouponException(ResponseCode.COUPON_NOT_FOUND));
 
-                if (mileageExists != null) {
-                    Integer currentMileage = mileageExists.getMileage() - message.getMileage() + mileageRate;
+            couponDiscount = userCoupon.getDiscount();
 
-                    log.info("[Booking] -> [Auth] " +message.getMileage() + " 마일리지 사용에 성공했습니다!!!");
-                    if (currentMileage < 0) {
-                        throw new MileageException(ResponseCode.MILEAGE_EMPTY);
-                    }
-                    Mileage mileage = Mileage.create(
-                            user, currentMileage
-                    );
-                    if (mileage.getCreatedBy() != null) {
-                        mileage.preUpdate(user.getId());
-                    }
-                    mileageRepository.save(mileage);
-                    usedMileage = message.getMileage();
-                }
-            }
+            Mileage mileage = mileageRepository.findTopByUserIdOrderByUpdatedAtDesc(message.getUserId())
+                    .orElseThrow(() -> new MileageException(ResponseCode.MILEAGE_NOT_FOUND));
+
+            usedMileage = mileage.getMileage();
+
             log.info("[Auth] -> [Booking] 마일리지 및 쿠폰 사용에 성공했습니다! " +
                     "{}, {}, {}, {}, {}", message.getBookingId(), message.getUserId(), message.getCouponId(), message.getMileage(), couponDiscount);
             return UserBenefitMessage.builder()
@@ -88,10 +66,6 @@ public class UserToBookingConsumerServiceImpl implements UserToBookingConsumerSe
             log.info("[Auth] -> [Booking] 마일리지 및 쿠폰 사용에 실패하였습니다. " +
                     "{}, {}, {}, {}", message.getBookingId(), message.getUserId(), message.getCouponId(), message.getMileage());
             return UserBenefitMessage.builder()
-                    .bookingId(message.getBookingId())
-                    .userId(message.getUserId())
-                    .couponId(message.getCouponId())
-                    .mileage(message.getMileage())
                     .status(UserBenefitMessage.UserBenefitStatus.FAIL)
                     .build();
         }
@@ -99,15 +73,41 @@ public class UserToBookingConsumerServiceImpl implements UserToBookingConsumerSe
 
     @Transactional
     @Override
-    public UserBenefitMessage benefitCancel(UserBenefitMessage message) {
-        try {
-            log.info("[Booking] -> [Auth] 차감 및 적립된 마일리지와 쿠폰을 복원 중 입니다...." +
-                    "{}, {}, {}, {}", message.getBookingId(), message.getUserId(), message.getCouponId(), message.getMileage());
-            User user = userRepository.findByIdAndDeletedAtIsNull(message.getUserId())
-                    .orElseThrow(() -> new AuthException(ResponseCode.USER_NOT_FOUND));
+    public void benefitPayment(UserBenefitMessage message) {
+        log.info("[Booking] -> [Auth] 마일리지 및 쿠폰을 성공 유무를 체크 중 입니다...." +
+                "{}, {}, {}, {}", message.getBookingId(), message.getUserId(), message.getCouponId(), message.getMileage());
+        User user = userRepository.findByIdAndDeletedAtIsNull(message.getUserId())
+                .orElseThrow(() -> new AuthException(ResponseCode.USER_NOT_FOUND));
 
-            Integer mileageRate = message.getPrice() / 1000;
+        Integer mileageRate = message.getPrice() / 1000;
 
+        if (message.getStatus().equals(UserBenefitMessage.UserBenefitStatus.SUCCESS)) {
+            UserCoupon userCoupon = userCouponRepository.findByCouponIdAndIsActiveTrue(message.getCouponId())
+                    .orElseThrow(() -> new CouponException(ResponseCode.COUPON_NOT_FOUND));
+            if (userCoupon != null) {
+                log.info("[Booking] -> [Auth] " +message.getCouponId() + " 쿠폰 사용에 성공했습니다!!!");
+                userCoupon.updateActive(false, user.getId());
+            }
+
+            Mileage mileageExists = mileageRepository.findTopByUserIdOrderByUpdatedAtDesc(message.getUserId())
+                    .orElseThrow(() -> new MileageException(ResponseCode.MILEAGE_NOT_FOUND));
+
+            if (mileageExists != null) {
+                Integer currentMileage = mileageExists.getMileage() - message.getMileage() + mileageRate;
+
+                log.info("[Booking] -> [Auth] " +message.getMileage() + " 마일리지 사용에 성공했습니다!!!");
+                if (currentMileage < 0) {
+                    throw new MileageException(ResponseCode.MILEAGE_EMPTY);
+                }
+                Mileage mileage = Mileage.create(
+                        user, currentMileage
+                );
+                if (mileage.getCreatedBy() != null) {
+                    mileage.preUpdate(user.getId());
+                }
+                mileageRepository.save(mileage);
+            }
+        }else if (message.getStatus().equals(UserBenefitMessage.UserBenefitStatus.REFUND)) {
             if (message.getCouponId() != null) {
                 UserCoupon userCoupon = userCouponRepository.findByCouponIdAndIsActiveFalse(message.getCouponId())
                         .orElseThrow(() -> new CouponException(ResponseCode.COUPON_NOT_FOUND));
@@ -116,6 +116,7 @@ public class UserToBookingConsumerServiceImpl implements UserToBookingConsumerSe
                     log.info("[Auth] 쿠폰 활성화 완료! {}, {}", message.getCouponId(), userCoupon.isActive());
                 }
             }
+
             if (message.getMileage() != null && message.getMileage() > 0) {
                 Mileage mileages = mileageRepository.findTopByUserIdOrderByUpdatedAtDesc(message.getUserId())
                         .orElseThrow(() -> new MileageException(ResponseCode.MILEAGE_NOT_FOUND));
@@ -135,21 +136,6 @@ public class UserToBookingConsumerServiceImpl implements UserToBookingConsumerSe
                     mileageRepository.save(mileage);
                 }
             }
-            return UserBenefitMessage.builder()
-                    .bookingId(message.getBookingId())
-                    .couponId(message.getCouponId())
-                    .mileage(message.getMileage())
-                    .status(UserBenefitMessage.UserBenefitStatus.SUCCESS)
-                    .build();
-        } catch (Exception e) {
-            log.info("[Auth] 마일리지 및 쿠폰 복원에 실패하였습니다. " +
-                    "{}, {}, {}, {}", message.getBookingId(), message.getUserId(), message.getCouponId(), message.getMileage());
-            return UserBenefitMessage.builder()
-                    .bookingId(message.getBookingId())
-                    .couponId(message.getCouponId())
-                    .mileage(message.getMileage())
-                    .status(UserBenefitMessage.UserBenefitStatus.FAIL)
-                    .build();
         }
     }
 }
