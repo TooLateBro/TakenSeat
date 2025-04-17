@@ -1,4 +1,4 @@
-package com.taken_seat.review_service.application.service;
+package com.taken_seat.review_service.application.scheduler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,6 +8,7 @@ import java.util.UUID;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import com.taken_seat.review_service.application.service.ReviewLikeService;
 import com.taken_seat.review_service.domain.model.Review;
 import com.taken_seat.review_service.domain.repository.ReviewRepository;
 
@@ -19,7 +20,7 @@ public class ReviewLikeScheduler {
 
 	private final ReviewLikeService reviewLikeService;
 	private final ReviewRepository reviewRepository;
-	
+
 	@Scheduled(cron = "0 */5 * * * ?")  // 매 5분마다 실행
 	public void updateReviewLikeCounts() {
 		// Redis에서 모든 리뷰와 좋아요 수를 가져옴 (Hash 형태로)

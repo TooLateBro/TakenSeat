@@ -1,7 +1,9 @@
 package com.taken_seat.queue_service.application.service;
 
+import com.taken_seat.common_service.message.BookingRequestMessage;
 import com.taken_seat.queue_service.application.dto.QueueReqDto;
 import com.taken_seat.queue_service.infrastructure.jwt.JwtImpl;
+import com.taken_seat.queue_service.infrastructure.messaging.QueueKafkaProducerImpl;
 import com.taken_seat.queue_service.infrastructure.repository.QueueRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,6 +19,7 @@ import java.util.UUID;
 public class QueueService {
     private final JwtImpl jwt;
     private final QueueRepository queueRepository;
+    private final QueueKafkaProducerImpl kafkaProducer;
 
     public String enterQueue(QueueReqDto reqDto) {
         String token = jwt.createAccessToken(UUID.randomUUID(), reqDto.getPerformanceId(), reqDto.getPerformanceScheduleId());
@@ -41,19 +44,20 @@ public class QueueService {
 
         //이 토큰을 프론트에서 지니고 있다가 유저 랭크 조회 시 해당 토큰을 통해 알려주기
         log.info("토큰 발급 및 대기열 진입 성공: " + token);
+        log.info(getRank(token));
         return token;
     }
 
     public String getRank(String token) {
         if (!jwt.validateToken(token))
-            return "대기열에 존재 x";
+            return "유효하지 않은 토큰"; //예외처리 필요
 
         String key = jwt.getPerformanceId(token);
 
         Long queueSize = queueRepository.getQueueSize(key);
         Long userRank = queueRepository.getRank(token, key);
 
-        return "총 대기자 수: " + queueSize + ", 현재 대기 순번: " + userRank;
+        return "총 대기자 수: " + queueSize + ", 현재 대기 순번: " + (userRank + 1);
     }
 
 
@@ -64,7 +68,8 @@ public class QueueService {
             List<String> users = queueRepository.getTopUsers(performance, batchSize);
             for (String token : users) {
                 //카프카 이벤트 전송
-                log.info("카프카 이벤트 전송 성공: " + token);
+                sendEvent(token);
+                log.info("카프카 이벤트 전송 성공. 공연 UUID: " + performance);
             }
 
             queueRepository.removeTopUsers(performance, batchSize);
@@ -78,5 +83,13 @@ public class QueueService {
                 log.info("대기자 없음. 공연 set에서 삭제: " + performance);
             }
         }
+    }
+
+    private void sendEvent(String token) {
+        UUID userId = UUID.fromString(jwt.getUserId(token));
+        UUID performanceId = UUID.fromString(jwt.getPerformanceId(token));
+        UUID performanceScheduleId = UUID.fromString(jwt.getPerformanceScheduleId(token));
+
+        kafkaProducer.sendBookingRequestEvent(new BookingRequestMessage(userId, performanceId, performanceScheduleId));
     }
 }

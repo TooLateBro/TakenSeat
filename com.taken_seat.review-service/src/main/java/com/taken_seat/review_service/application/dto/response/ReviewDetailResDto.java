@@ -30,6 +30,8 @@ public class ReviewDetailResDto {
 
 	private String content;
 
+	private short rating;
+
 	private Integer likeCount;
 
 	public static ReviewDetailResDto toResponse(Review review) {
@@ -41,6 +43,7 @@ public class ReviewDetailResDto {
 			.authorEmail(review.getAuthorEmail())
 			.title(review.getTitle())
 			.content(review.getContent())
+			.rating(review.getRating())
 			.likeCount(review.getLikeCount())
 			.build();
 	}

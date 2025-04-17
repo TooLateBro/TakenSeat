@@ -33,19 +33,22 @@ public class ReviewQuerydslRepositoryImpl implements ReviewQuerydslRepository {
 	private static final List<String> VALID_SORT_BY = Arrays.asList("createdAt", "updatedAt", "deletedAt");
 
 	@Override
-	public Page<Review> search(String query, String category, int page, int size, String sortBy, String order) {
+	public Page<Review> search(UUID performance_id, String query, String category, int page, int size, String sortBy,
+		String order) {
 		size = validateSize(size);
 		Sort sort = getSortOrder(sortBy, order);
 		Pageable pageable = PageRequest.of(page, size, sort);
 
 		QReview review = QReview.review;
 
+		// 항상 performance_id로 필터링
+		BooleanExpression condition = review.performanceId.eq(performance_id)
+			.and(review.deletedAt.isNull())
+			.and(buildSearchCondition(query, category));
+
 		List<Review> contents = queryFactory
 			.selectFrom(review)
-			.where(
-				review.deletedAt.isNull(),
-				buildSearchCondition(query, category)
-			)
+			.where(condition)
 			.offset(pageable.getOffset())
 			.limit(pageable.getPageSize())
 			.orderBy(toOrderSpecifier(sortBy, order))
@@ -54,10 +57,7 @@ public class ReviewQuerydslRepositoryImpl implements ReviewQuerydslRepository {
 		Long total = queryFactory
 			.select(review.count())
 			.from(review)
-			.where(
-				review.deletedAt.isNull(),
-				buildSearchCondition(query, category)
-			)
+			.where(condition)
 			.fetchOne();
 
 		return new PageImpl<>(contents, pageable, total != null ? total : 0);
@@ -69,7 +69,7 @@ public class ReviewQuerydslRepositoryImpl implements ReviewQuerydslRepository {
 
 		return switch (category) {
 			case "title" -> titleContains(query);
-			case "performanceId" -> performanceIdEq(query);
+			case "performanceScheduleId" -> performanceScheduleIdEq(query);
 			case "authorEmail" -> authorEmailContains(query);
 			default -> null;
 		};
@@ -79,12 +79,12 @@ public class ReviewQuerydslRepositoryImpl implements ReviewQuerydslRepository {
 		return QReview.review.title.containsIgnoreCase(query);
 	}
 
-	private BooleanExpression performanceIdEq(String query) {
+	private BooleanExpression performanceScheduleIdEq(String query) {
 		try {
 			UUID uuid = UUID.fromString(query);
-			return QReview.review.performanceId.eq(uuid);
+			return QReview.review.performanceScheduleId.eq(uuid);
 		} catch (IllegalArgumentException e) {
-			throw new IllegalArgumentException("공연 ID는 UUID 형식이어야 합니다: " + query);
+			throw new IllegalArgumentException("공연 회차 ID는 UUID 형식이어야 합니다: " + query);
 		}
 	}
 

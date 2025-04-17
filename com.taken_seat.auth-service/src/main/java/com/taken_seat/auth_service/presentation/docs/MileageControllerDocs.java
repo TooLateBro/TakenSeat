@@ -17,42 +17,38 @@ public interface MileageControllerDocs {
 
     @PostMapping("/api/v1/users/mileages/{userId}")
     @Operation(summary = "마일리지 생성", description = "유저에게 마일리지를 생성해주는 API 입니다.")
-    ResponseEntity<ApiResponseData<UserMileageResponseDto>> createMileageToUser(@RequestHeader("X-Role") String role,
-                                                                                       AuthenticatedUser authenticatedUser,
-                                                                                       @PathVariable UUID userId,
-                                                                                       @RequestBody UserMileageRequestDto requestDto);
+    ResponseEntity<ApiResponseData<UserMileageResponseDto>> createMileageToUser(AuthenticatedUser authenticatedUser,
+                                                                                @PathVariable UUID userId,
+                                                                                @RequestBody UserMileageRequestDto requestDto);
 
     @GetMapping("/api/v1/users/mileages/{mileageId}")
     @Operation(summary = "마일리지 단건 조회", description = "유저가 보유한 마일리지 중 가장 최근에 업데이트 된 마일리지를 조회하는 API 입니다.")
-    ResponseEntity<ApiResponseData<UserMileageResponseDto>> getMileageUser(@RequestHeader("X-Role") String role,
-                                                                                  @PathVariable UUID mileageId);
+    ResponseEntity<ApiResponseData<UserMileageResponseDto>> getMileageUser(AuthenticatedUser authenticatedUser,
+                                                                           @PathVariable UUID mileageId);
 
     @GetMapping("/api/v1/users/mileages/history/{userId}")
     @Operation(summary = "마일리지 히스토리 조회", description = "유저가 보유한 마일리지의 히스토리를 조회하는 API 입니다.")
-    ResponseEntity<ApiResponseData<PageResponseDto<UserMileageResponseDto>>> getMileageHistoryUser(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @PathVariable UUID userId);
+    ResponseEntity<ApiResponseData<PageResponseDto<UserMileageResponseDto>>> getMileageHistoryUser(AuthenticatedUser authenticatedUser,
+                                                                                                   @RequestParam(defaultValue = "0") int page,
+                                                                                                   @RequestParam(defaultValue = "10") int size,
+                                                                                                   @PathVariable UUID userId);
 
     @GetMapping("/api/v1/users/mileages/search")
     @Operation(summary = "마일리지 전체 조회", description = "전체 유저의 마일리지를 조회하는 API 입니다.")
-    ResponseEntity<ApiResponseData<PageResponseDto<UserMileageResponseDto>>> searchMileageUser(
-            @RequestHeader("X-Role") String role,
-            @RequestParam(required = false) Integer startCount,
-            @RequestParam(required = false) Integer endCount,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size);
+    ResponseEntity<ApiResponseData<PageResponseDto<UserMileageResponseDto>>> searchMileageUser(AuthenticatedUser authenticatedUser,
+                                                                                               @RequestParam(required = false) Integer startCount,
+                                                                                               @RequestParam(required = false) Integer endCount,
+                                                                                               @RequestParam(defaultValue = "0") int page,
+                                                                                               @RequestParam(defaultValue = "10") int size);
 
     @PatchMapping("/api/v1/users/mileages/{mileageId}")
     @Operation(summary = "마일리지 수정", description = "마일리지를 수정하는 API 입니다.")
     ResponseEntity<ApiResponseData<UserMileageResponseDto>> updateMileageUser(@PathVariable UUID mileageId,
-                                                                                     @RequestHeader("X-Role") String role,
-                                                                                     @RequestHeader("X-User-Id") UUID userId,
-                                                                                     @RequestBody UserMileageRequestDto requestDto);
+                                                                              AuthenticatedUser authenticatedUser,
+                                                                              @RequestBody UserMileageRequestDto requestDto);
 
     @DeleteMapping("/api/v1/users/mileages/{mileageId}")
     @Operation(summary = "마일리지 삭제", description = "마일리지를 삭제하는 API 입니다.")
     ResponseEntity<ApiResponseData<Void>> deleteMileageUser(@PathVariable UUID mileageId,
-                                                                   @RequestHeader("X-Role") String role,
-                                                                   @RequestHeader("X-User-Id") UUID userId);
+                                                            AuthenticatedUser authenticatedUser);
 }

@@ -21,14 +21,16 @@ public class PageReviewResponseDto implements Serializable {
 	private long totalElements;
 	private int pageSize;
 	private int currentPage;
+	private double avgRating;
 
-	public static PageReviewResponseDto toResponse(Page<ReviewDetailResDto> page) {
+	public static PageReviewResponseDto toResponse(Page<ReviewDetailResDto> page, double avgRating) {
 		return PageReviewResponseDto.builder()
 			.content(page.getContent())
 			.totalPages(page.getTotalPages())
 			.totalElements(page.getTotalElements())
 			.pageSize(page.getSize())
 			.currentPage(page.getNumber() + 1)
+			.avgRating(avgRating)
 			.build();
 	}
 }
