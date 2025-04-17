@@ -31,6 +31,7 @@ public class PaymentEventHandlerServiceImpl implements PaymentEventHandlerServic
 		if (isInvalidPrice(message)) {
 			log.warn("[Payment] 잘못된 결제 금액 - bookingId: {}, price: {}", message.getBookingId(), message.getPrice());
 			PaymentMessage paymentResultMessage = PaymentMessage.builder()
+				.userId(message.getUserId())
 				.bookingId(message.getBookingId())
 				.status(PaymentMessage.PaymentResultStatus.INVALID_PRICE)
 				.type(PaymentMessage.MessageType.RESULT)
@@ -57,6 +58,7 @@ public class PaymentEventHandlerServiceImpl implements PaymentEventHandlerServic
 
 		// 4. 성공 메시지 전달
 		PaymentMessage paymentResultMessage = PaymentMessage.builder()
+			.userId(message.getUserId())
 			.bookingId(message.getBookingId())
 			.paymentId(payment.getId())
 			.status(PaymentMessage.PaymentResultStatus.SUCCESS)
