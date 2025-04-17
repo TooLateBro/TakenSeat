@@ -8,7 +8,7 @@ import com.taken_seat.common_service.dto.ApiResponseData;
 import com.taken_seat.common_service.dto.request.BookingSeatClientRequestDto;
 import com.taken_seat.common_service.dto.response.BookingSeatClientResponseDto;
 
-@FeignClient(name = "performance-service", path = "/api/v1/performancehalls")
+@FeignClient(name = "performance-service", path = "/api/v1/performancehalls", contextId = "booking")
 public interface PerformanceClient {
 
 	@PutMapping("/seat/status")
