@@ -33,6 +33,7 @@ public class PaymentEventHandlerServiceImpl implements PaymentEventHandlerServic
 			PaymentMessage paymentResultMessage = PaymentMessage.builder()
 				.bookingId(message.getBookingId())
 				.status(PaymentMessage.PaymentResultStatus.INVALID_PRICE)
+				.type(PaymentMessage.MessageType.RESULT)
 				.build();
 
 			paymentResultProducer.sendPaymentResult(paymentResultMessage);

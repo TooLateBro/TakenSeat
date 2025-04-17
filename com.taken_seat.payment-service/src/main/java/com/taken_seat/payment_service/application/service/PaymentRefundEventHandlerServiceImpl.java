@@ -37,6 +37,7 @@ public class PaymentRefundEventHandlerServiceImpl implements PaymentRefundEventH
 			PaymentRefundMessage paymentRefundMessage = PaymentRefundMessage.builder()
 				.bookingId(message.getBookingId())
 				.status(PaymentRefundMessage.PaymentRefundStatus.INVALID_PRICE)
+				.type(PaymentRefundMessage.MessageType.RESULT)
 				.build();
 
 			paymentRefundResultProducer.sendPaymentRefundResult(paymentRefundMessage);
@@ -59,6 +60,7 @@ public class PaymentRefundEventHandlerServiceImpl implements PaymentRefundEventH
 		PaymentRefundMessage paymentRefundMessage = PaymentRefundMessage.builder()
 			.bookingId(message.getBookingId())
 			.status(PaymentRefundMessage.PaymentRefundStatus.SUCCESS)
+			.type(PaymentRefundMessage.MessageType.RESULT)
 			.build();
 
 		paymentRefundResultProducer.sendPaymentRefundResult(paymentRefundMessage);
