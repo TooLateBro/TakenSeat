@@ -5,7 +5,10 @@ import java.util.UUID;
 
 import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.common_service.entity.BaseTimeEntity;
+import com.taken_seat.common_service.exception.customException.PaymentException;
+import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.common_service.message.PaymentMessage;
+import com.taken_seat.common_service.message.PaymentRefundMessage;
 import com.taken_seat.payment_service.application.dto.request.PaymentRegisterReqDto;
 import com.taken_seat.payment_service.domain.enums.PaymentStatus;
 
@@ -98,4 +101,14 @@ public class Payment extends BaseTimeEntity {
 		this.paymentStatus = PaymentStatus.DELETED;
 	}
 
+	public void refund(PaymentRefundMessage message) {
+		if (this.paymentStatus != PaymentStatus.COMPLETED) {
+			throw new PaymentException(ResponseCode.CANNOT_REFUND);
+		}
+
+		this.refundAmount = message.getPrice();
+		this.refundRequestedAt = LocalDateTime.now();
+		this.paymentStatus = PaymentStatus.REFUNDED;
+		this.preUpdate(message.getUserId());
+	}
 }

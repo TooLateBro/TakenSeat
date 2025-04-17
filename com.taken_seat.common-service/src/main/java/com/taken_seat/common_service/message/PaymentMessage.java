@@ -33,6 +33,7 @@ public class PaymentMessage {
 
 	public enum PaymentResultStatus {
 		SUCCESS,                // 결제 성공
+		FAIL,
 		INVALID_PRICE,          // 잘못된 가격
 	}
 }
