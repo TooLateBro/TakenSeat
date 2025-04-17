@@ -23,11 +23,12 @@ public class UserBenefitMessage {
 
 	private Integer discount;
 
+	private Integer price;
+
 	private UserBenefitStatus status;
 
 	public enum UserBenefitStatus {
 		SUCCESS,
 		FAIL
 	}
-
 }
