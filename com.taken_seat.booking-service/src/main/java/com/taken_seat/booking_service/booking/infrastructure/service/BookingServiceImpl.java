@@ -207,7 +207,7 @@ public class BookingServiceImpl implements BookingService {
 			.type(PaymentMessage.MessageType.REQUEST)
 			.build();
 
-		bookingProducer.sendPaymentRequestEvent(message);
+		bookingProducer.sendPaymentRequest(message);
 	}
 
 	@Override
@@ -216,6 +216,8 @@ public class BookingServiceImpl implements BookingService {
 
 		Booking booking = bookingRepository.findById(message.getBookingId())
 			.orElseThrow(() -> new BookingException(ResponseCode.BOOKING_NOT_FOUND_EXCEPTION));
+		Optional<BenefitUsageHistory> optional = benefitUsageHistoryRepository.findByBookingIdAndRefundedIsFalse(
+			message.getBookingId());
 		PaymentMessage.PaymentResultStatus status = message.getStatus();
 
 		// 성공시
@@ -228,16 +230,13 @@ public class BookingServiceImpl implements BookingService {
 			updated.preUpdate(message.getUserId());
 
 			bookingRepository.save(updated);
-			bookingProducer.sendPaymentCompleteEvent(
+			bookingProducer.sendTicketRequest(
 				TicketRequestMessage.builder()
 					.userId(booking.getUserId())
 					.bookingId(booking.getId())
 					.build()
 			);
-		} else {
-			// 실패시 사용한 쿠폰, 마일리지 원복처리
-			Optional<BenefitUsageHistory> optional = benefitUsageHistoryRepository.findByBookingIdAndRefundedIsFalse(
-				message.getBookingId());
+
 			if (optional.isPresent()) {
 				BenefitUsageHistory benefitUsageHistory = optional.get();
 				UserBenefitMessage benefitMessage = UserBenefitMessage.builder()
@@ -246,6 +245,23 @@ public class BookingServiceImpl implements BookingService {
 					.couponId(benefitUsageHistory.getCouponId())
 					.mileage(benefitUsageHistory.getMileage())
 					.price(booking.getPrice())
+					.status(UserBenefitMessage.UserBenefitStatus.SUCCESS)
+					.build();
+
+				bookingProducer.sendBenefitPaymentResult(benefitMessage);
+			}
+		} else {
+			// 실패시 사용한 쿠폰, 마일리지 원복처리
+
+			if (optional.isPresent()) {
+				BenefitUsageHistory benefitUsageHistory = optional.get();
+				UserBenefitMessage benefitMessage = UserBenefitMessage.builder()
+					.bookingId(message.getBookingId())
+					.userId(message.getUserId())
+					.couponId(benefitUsageHistory.getCouponId())
+					.mileage(benefitUsageHistory.getMileage())
+					.price(booking.getPrice())
+					.status(UserBenefitMessage.UserBenefitStatus.FAIL)
 					.build();
 
 				bookingProducer.sendBenefitRefundRequest(benefitMessage);
@@ -302,7 +318,7 @@ public class BookingServiceImpl implements BookingService {
 				.type(PaymentMessage.MessageType.REQUEST)
 				.build();
 
-			bookingProducer.sendPaymentRequestEvent(paymentMessage);
+			bookingProducer.sendPaymentRequest(paymentMessage);
 		} else {
 			throw new BookingException(ResponseCode.BOOKING_BENEFIT_USAGE_FAILED_EXCEPTION);
 		}

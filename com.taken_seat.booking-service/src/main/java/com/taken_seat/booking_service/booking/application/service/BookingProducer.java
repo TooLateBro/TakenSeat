@@ -5,11 +5,13 @@ import com.taken_seat.common_service.message.PaymentMessage;
 import com.taken_seat.common_service.message.UserBenefitMessage;
 
 public interface BookingProducer {
-	void sendPaymentRequestEvent(PaymentMessage message);
+	void sendPaymentRequest(PaymentMessage message);
 
-	void sendPaymentCompleteEvent(TicketRequestMessage message);
+	void sendTicketRequest(TicketRequestMessage message);
 
 	void sendBenefitUsageRequest(UserBenefitMessage message);
 
 	void sendBenefitRefundRequest(UserBenefitMessage message);
+
+	void sendBenefitPaymentResult(UserBenefitMessage message);
 }

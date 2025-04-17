@@ -29,14 +29,17 @@ public class BookingKafkaProducer implements BookingProducer {
 	@Value("${kafka.topic.benefit-refund-request}")
 	private String BENEFIT_REFUND_REQUEST_TOPIC;
 
+	@Value("${kafka.topic.benefit-payment-result}")
+	private String BENEFIT_PAYMENT_RESULT_TOPIC;
+
 	@Override
-	public void sendPaymentRequestEvent(PaymentMessage message) {
+	public void sendPaymentRequest(PaymentMessage message) {
 
 		kafkaTemplate.send(PAYMENT_REQUEST_TOPIC, message);
 	}
 
 	@Override
-	public void sendPaymentCompleteEvent(TicketRequestMessage message) {
+	public void sendTicketRequest(TicketRequestMessage message) {
 
 		kafkaTemplate.send(TICKET_REQUEST_TOPIC, message);
 	}
@@ -51,5 +54,11 @@ public class BookingKafkaProducer implements BookingProducer {
 	public void sendBenefitRefundRequest(UserBenefitMessage message) {
 
 		kafkaTemplate.send(BENEFIT_REFUND_REQUEST_TOPIC, message);
+	}
+
+	@Override
+	public void sendBenefitPaymentResult(UserBenefitMessage message) {
+
+		kafkaTemplate.send(BENEFIT_PAYMENT_RESULT_TOPIC, message);
 	}
 }
