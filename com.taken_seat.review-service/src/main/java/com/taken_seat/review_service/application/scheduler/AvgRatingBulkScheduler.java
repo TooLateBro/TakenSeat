@@ -16,9 +16,10 @@ public class AvgRatingBulkScheduler {
 
 	private final RedisRatingRepository redisRatingRepository;
 	private final ReviewRepository reviewRepository;
-	
+
 	// 한시간 마다 리뷰 평점을 업데이트
-	@Scheduled(cron = "0 0 * * * ?")
+	// @Scheduled(cron = "0 0 * * * ?")
+	@Scheduled(cron = "0 * * * * ?")
 	@Caching(evict = {
 		@CacheEvict(cacheNames = "reviewCache", allEntries = true),
 		@CacheEvict(cacheNames = "reviewSearchCache", allEntries = true)

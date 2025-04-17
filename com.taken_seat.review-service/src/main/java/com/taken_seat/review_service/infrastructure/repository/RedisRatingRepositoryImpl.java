@@ -2,6 +2,7 @@ package com.taken_seat.review_service.infrastructure.repository;
 
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -80,12 +81,7 @@ public class RedisRatingRepositoryImpl implements RedisRatingRepository {
 					double avgRating = bigDecimalToDouble(map.get(FIELD_AVG_RATING));
 					long reviewCount = (long)map.get(FIELD_REVIEW_COUNT);
 
-					String avgRatingKey = AVG_RATING_KEY + performanceId;
-					Map<String, Object> ratingInfo = new HashMap<>();
-					ratingInfo.put(FIELD_AVG_RATING, avgRating);
-					ratingInfo.put(FIELD_REVIEW_COUNT, reviewCount);
-
-					redisTemplate.opsForHash().putAll(avgRatingKey, ratingInfo);
+					saveRatingToRedisWithTTL(performanceId, avgRating, reviewCount);
 				}
 				return null;
 			});
@@ -129,15 +125,23 @@ public class RedisRatingRepositoryImpl implements RedisRatingRepository {
 	}
 
 	private void saveRating(UUID performanceId, Map<String, Object> avgRatingAndCount) {
-		String avgRatingKey = AVG_RATING_KEY + performanceId;
-		Map<String, Object> ratingInfo = new HashMap<>();
-
 		double avgRating = bigDecimalToDouble(avgRatingAndCount.get(FIELD_AVG_RATING));
 		long reviewCount = (long)avgRatingAndCount.get(FIELD_REVIEW_COUNT);
+
+		saveRatingToRedisWithTTL(performanceId, avgRating, reviewCount);
+	}
+
+	private void saveRatingToRedisWithTTL(UUID performanceId, double avgRating, long reviewCount) {
+		String avgRatingKey = AVG_RATING_KEY + performanceId;
+
+		Map<String, Object> ratingInfo = new HashMap<>();
 		ratingInfo.put(FIELD_AVG_RATING, avgRating);
 		ratingInfo.put(FIELD_REVIEW_COUNT, reviewCount);
 
+		// 해시로 저장
 		redisTemplate.opsForHash().putAll(avgRatingKey, ratingInfo);
 
+		// TTL 설정: 1시간 30분
+		redisTemplate.expire(avgRatingKey, Duration.ofHours(2));
 	}
 }
