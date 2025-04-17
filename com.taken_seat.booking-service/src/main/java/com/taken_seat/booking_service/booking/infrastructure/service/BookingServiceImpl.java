@@ -228,10 +228,15 @@ public class BookingServiceImpl implements BookingService {
 			updated.preUpdate(message.getUserId());
 
 			bookingRepository.save(updated);
+
+			// 티켓 생성 요청
 			bookingProducer.sendPaymentCompleteEvent(
 				TicketRequestMessage.builder()
 					.userId(booking.getUserId())
 					.bookingId(booking.getId())
+					.performanceId(booking.getPerformanceId())
+					.performanceScheduleId(booking.getPerformanceScheduleId())
+					.seatId(booking.getSeatId())
 					.build()
 			);
 		} else {
