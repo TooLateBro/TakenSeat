@@ -3,8 +3,10 @@ services:
     image: redis/redis-stack
     container_name: redis-stack-compose
     restart: always
-    environment:
-      REDIS_ARGS: "--requirepass systempass"
+    command: >
+      redis-server
+      --requirepass systempass
+      --notify-keyspace-events Ex
     ports:
       - 6379:6379
       - 8001:8001
