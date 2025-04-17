@@ -17,16 +17,16 @@ public class BookingKafkaProducer implements BookingProducer {
 
 	private final KafkaTemplate<String, Object> kafkaTemplate;
 
-	@Value("${kafka.topic.payment-request")
+	@Value("${kafka.topic.payment-request}")
 	private String PAYMENT_REQUEST_TOPIC;
 
-	@Value("${kafka.topic.ticket-request")
+	@Value("${kafka.topic.ticket-request}")
 	private String TICKET_REQUEST_TOPIC;
 
-	@Value("${kafka.topic.benefit-usage-request")
+	@Value("${kafka.topic.benefit-usage-request}")
 	private String BENEFIT_USAGE_REQUEST_TOPIC;
 
-	@Value("${kafka.topic.benefit-refund-request")
+	@Value("${kafka.topic.benefit-refund-request}")
 	private String BENEFIT_REFUND_REQUEST_TOPIC;
 
 	@Override
