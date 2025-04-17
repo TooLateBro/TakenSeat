@@ -30,5 +30,6 @@ jobs:
 
       - name: Eureka 서버 빌드
         run: |
-          -jar com.devsquad10.eureka/build/libs/*.jar & 
-           sleep 20 # Eureka 서버가 시작될 때까지 잠시 대기 (시간 조정 가능)
+          ./gradlew :eureka:bootJar
+          java -jar com.devsquad10.eureka/build/libs/*.jar &  # 
+          sleep 20
