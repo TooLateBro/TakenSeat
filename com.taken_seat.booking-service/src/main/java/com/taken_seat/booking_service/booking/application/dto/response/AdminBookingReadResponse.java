@@ -14,9 +14,12 @@ import lombok.Getter;
 public class AdminBookingReadResponse {
 	private UUID id;
 	private UUID userId;
+	private UUID performanceId;
 	private UUID performanceScheduleId;
 	private UUID seatId;
 	private UUID paymentId;
+	private int price;
+	private int discountedPrice;
 	private BookingStatus bookingStatus;
 	private LocalDateTime bookedAt;
 	private LocalDateTime canceledAt;
@@ -31,9 +34,12 @@ public class AdminBookingReadResponse {
 		return AdminBookingReadResponse.builder()
 			.id(booking.getId())
 			.userId(booking.getUserId())
+			.performanceId(booking.getPerformanceId())
 			.performanceScheduleId(booking.getPerformanceScheduleId())
 			.seatId(booking.getSeatId())
 			.paymentId(booking.getPaymentId())
+			.price(booking.getPrice())
+			.discountedPrice(booking.getDiscountedPrice())
 			.bookingStatus(booking.getBookingStatus())
 			.bookedAt(booking.getBookedAt())
 			.canceledAt(booking.getCanceledAt())
