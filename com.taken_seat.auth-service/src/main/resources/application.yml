@@ -70,3 +70,8 @@ management:
     web:
       exposure:
         include: '*'
+
+
+logging:
+  loki:
+    url: ${LOKI_URL}

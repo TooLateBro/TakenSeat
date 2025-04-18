@@ -71,6 +71,7 @@ jobs:
           echo "SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_DATASOURCE_PASSWORD }}" >> $GITHUB_ENV
           echo "SPRING_DATASOURCE_DRIVER_CLASS_NAME=${{ secrets.SPRING_DATASOURCE_DRIVER_CLASS_NAME }}" >> $GITHUB_ENV
           echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> $GITHUB_ENV
+          echo "LOKI_URL=${{ secrets.LOKI_URL }}" >> $GITHUB_ENV
 
       - name: Gradle 빌드 (서비스 모듈)
         run: ./gradlew :${{ matrix.module }}:build --parallel --no-daemon
