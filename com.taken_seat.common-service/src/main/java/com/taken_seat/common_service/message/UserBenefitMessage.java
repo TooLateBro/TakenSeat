@@ -29,6 +29,7 @@ public class UserBenefitMessage {
 
 	public enum UserBenefitStatus {
 		SUCCESS,
-		FAIL
+		FAIL,
+		REFUND
 	}
 }

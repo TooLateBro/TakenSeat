@@ -207,7 +207,7 @@ public class BookingServiceImpl implements BookingService {
 			.type(PaymentMessage.MessageType.REQUEST)
 			.build();
 
-		bookingProducer.sendPaymentRequestEvent(message);
+		bookingProducer.sendPaymentRequest(message);
 	}
 
 	@Override
@@ -216,6 +216,8 @@ public class BookingServiceImpl implements BookingService {
 
 		Booking booking = bookingRepository.findById(message.getBookingId())
 			.orElseThrow(() -> new BookingException(ResponseCode.BOOKING_NOT_FOUND_EXCEPTION));
+		Optional<BenefitUsageHistory> optional = benefitUsageHistoryRepository.findByBookingIdAndRefundedIsFalse(
+			message.getBookingId());
 		PaymentMessage.PaymentResultStatus status = message.getStatus();
 
 		// 성공시
@@ -228,9 +230,7 @@ public class BookingServiceImpl implements BookingService {
 			updated.preUpdate(message.getUserId());
 
 			bookingRepository.save(updated);
-
-			// 티켓 생성 요청
-			bookingProducer.sendPaymentCompleteEvent(
+			bookingProducer.sendTicketRequest(
 				TicketRequestMessage.builder()
 					.userId(booking.getUserId())
 					.bookingId(booking.getId())
@@ -239,10 +239,7 @@ public class BookingServiceImpl implements BookingService {
 					.seatId(booking.getSeatId())
 					.build()
 			);
-		} else {
-			// 실패시 사용한 쿠폰, 마일리지 원복처리
-			Optional<BenefitUsageHistory> optional = benefitUsageHistoryRepository.findByBookingIdAndRefundedIsFalse(
-				message.getBookingId());
+
 			if (optional.isPresent()) {
 				BenefitUsageHistory benefitUsageHistory = optional.get();
 				UserBenefitMessage benefitMessage = UserBenefitMessage.builder()
@@ -251,9 +248,17 @@ public class BookingServiceImpl implements BookingService {
 					.couponId(benefitUsageHistory.getCouponId())
 					.mileage(benefitUsageHistory.getMileage())
 					.price(booking.getPrice())
+					.status(UserBenefitMessage.UserBenefitStatus.SUCCESS)
 					.build();
 
-				bookingProducer.sendBenefitRefundRequest(benefitMessage);
+				bookingProducer.sendBenefitPaymentResult(benefitMessage);
+			}
+		} else {
+			// 실패시 사용한 쿠폰, 마일리지 원복처리
+
+			if (optional.isPresent()) {
+				BenefitUsageHistory benefitUsageHistory = optional.get();
+				benefitUsageHistory.refunded(message.getUserId());
 			}
 			throw new BookingException(ResponseCode.BOOKING_PAYMENT_FAILED_EXCEPTION);
 		}
@@ -307,12 +312,13 @@ public class BookingServiceImpl implements BookingService {
 				.type(PaymentMessage.MessageType.REQUEST)
 				.build();
 
-			bookingProducer.sendPaymentRequestEvent(paymentMessage);
+			bookingProducer.sendPaymentRequest(paymentMessage);
 		} else {
 			throw new BookingException(ResponseCode.BOOKING_BENEFIT_USAGE_FAILED_EXCEPTION);
 		}
 	}
 
+	// TODO: 나중에 환불 시도에 사용될 가능성있음
 	@Override
 	@Transactional
 	public void updateBenefitUsageHistory(UserBenefitMessage message) {

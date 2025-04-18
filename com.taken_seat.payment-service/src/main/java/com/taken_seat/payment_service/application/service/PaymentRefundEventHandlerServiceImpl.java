@@ -35,6 +35,7 @@ public class PaymentRefundEventHandlerServiceImpl implements PaymentRefundEventH
 			log.warn("[Payment] 잘못된 환불 금액 - bookingId: {}, price: {}", message.getBookingId(),
 				message.getPrice());
 			PaymentRefundMessage paymentRefundMessage = PaymentRefundMessage.builder()
+				.userId(message.getUserId())
 				.bookingId(message.getBookingId())
 				.status(PaymentRefundMessage.PaymentRefundStatus.INVALID_PRICE)
 				.type(PaymentRefundMessage.MessageType.RESULT)
@@ -58,6 +59,7 @@ public class PaymentRefundEventHandlerServiceImpl implements PaymentRefundEventH
 		log.debug("[Payment] 환불 히스토리 저장 완료 - paymentHistoryId: {}", paymentHistory.getId());
 
 		PaymentRefundMessage paymentRefundMessage = PaymentRefundMessage.builder()
+			.userId(message.getUserId())
 			.bookingId(message.getBookingId())
 			.status(PaymentRefundMessage.PaymentRefundStatus.SUCCESS)
 			.type(PaymentRefundMessage.MessageType.RESULT)

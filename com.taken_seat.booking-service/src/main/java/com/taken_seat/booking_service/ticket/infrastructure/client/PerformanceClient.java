@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import com.taken_seat.common_service.dto.response.TicketPerformanceClientResponse;
 
-@FeignClient(name = "performance-service", path = "/api/v1/performencetickets")
+@FeignClient(name = "performance-service", path = "/api/v1/performencetickets", contextId = "ticket")
 public interface PerformanceClient {
 
 	@GetMapping("/{performanceId}/schedules/{performanceScheduleId}/seats/{seatId}")
