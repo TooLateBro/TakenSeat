@@ -9,7 +9,7 @@ import com.taken_seat.auth_service.domain.repository.user.UserRepository;
 import com.taken_seat.auth_service.infrastructure.util.JwtUtil;
 import com.taken_seat.common_service.exception.customException.AuthException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
-import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,13 +22,13 @@ class AuthServiceImpl implements AuthService{
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final JwtUtil jwtUtil;
-    private final StringRedisTemplate stringRedisTemplate;
+    private final RedisTemplate<String, String> redisTemplate;
 
-    public AuthServiceImpl(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder, JwtUtil jwtUtil, StringRedisTemplate stringRedisTemplate) {
+    public AuthServiceImpl(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder, JwtUtil jwtUtil, RedisTemplate<String, String> redisTemplate) {
         this.userRepository = userRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.jwtUtil = jwtUtil;
-        this.stringRedisTemplate = stringRedisTemplate;
+        this.redisTemplate = redisTemplate;
     }
 
     @Transactional
@@ -60,7 +60,7 @@ class AuthServiceImpl implements AuthService{
         String accessToken = jwtUtil.createToken(user);
         String refreshToken = jwtUtil.createRefreshToken(user.getId());
 
-        stringRedisTemplate.opsForValue().set(user.getEmail()+" : refresh_token", refreshToken, 10, TimeUnit.SECONDS);
+        redisTemplate.opsForValue().set(user.getEmail()+" : refresh_token", refreshToken, 1, TimeUnit.HOURS);
 
         return AuthLoginResponseDto.of(accessToken, refreshToken);
     }

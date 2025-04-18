@@ -41,17 +41,18 @@ public class UserToBookingConsumerServiceImpl implements UserToBookingConsumerSe
 
             Integer couponDiscount = null;
             Integer usedMileage = null;
+            if (message.getCouponId() != null) {
+                UserCoupon userCoupon = userCouponRepository.findByCouponIdAndIsActiveTrue(message.getCouponId())
+                        .orElseThrow(() -> new CouponException(ResponseCode.COUPON_NOT_FOUND));
 
-            UserCoupon userCoupon = userCouponRepository.findByCouponIdAndIsActiveTrue(message.getCouponId())
-                    .orElseThrow(() -> new CouponException(ResponseCode.COUPON_NOT_FOUND));
+                couponDiscount = userCoupon.getDiscount();
+            }
+            if (message.getMileage() != null) {
+                mileageRepository.findTopByUserIdOrderByUpdatedAtDesc(message.getUserId())
+                        .orElseThrow(() -> new MileageException(ResponseCode.MILEAGE_NOT_FOUND));
 
-            couponDiscount = userCoupon.getDiscount();
-
-            mileageRepository.findTopByUserIdOrderByUpdatedAtDesc(message.getUserId())
-                    .orElseThrow(() -> new MileageException(ResponseCode.MILEAGE_NOT_FOUND));
-
-            usedMileage = message.getMileage();
-
+                usedMileage = message.getMileage();
+            }
             log.info("[Auth] -> [Booking] 마일리지 및 쿠폰 사용에 성공했습니다! " +
                     "{}, {}, {}, {}, {}", message.getBookingId(), message.getUserId(), message.getCouponId(), message.getMileage(), couponDiscount);
             return UserBenefitMessage.builder()
@@ -95,6 +96,7 @@ public class UserToBookingConsumerServiceImpl implements UserToBookingConsumerSe
                 log.info("[Auth] {} 쿠폰 사용에 성공했습니다!!!", message.getCouponId());
 
                 int currentMileage = mileageExists.getMileage() - message.getMileage() + mileageRate;
+                log.info("[Auth] {} 마일리지 적립에 성공했습니다!!!!", mileageRate);
                 if (currentMileage < 0) {
                     throw new MileageException(ResponseCode.MILEAGE_EMPTY);
                 }
@@ -139,6 +141,7 @@ public class UserToBookingConsumerServiceImpl implements UserToBookingConsumerSe
                     log.info("[Auth] 마일리지 복원 완료! {}", message.getMileage());
                     mileageRepository.save(mileage);
                 }
+                log.info("[Auth] -> [Booking] 환불 요청에 성공했습니다!!!");
                 return UserBenefitMessage.builder()
                         .bookingId(message.getBookingId())
                         .userId(user.getId())
@@ -150,6 +153,7 @@ public class UserToBookingConsumerServiceImpl implements UserToBookingConsumerSe
                 log.error("[Auth] 서비스에서 예기치 오류가 발생했습니다 : {}", e.getMessage());
             }
         }
+        log.error("[Auth] -> [Booking] 환불 요청에 실패했습니다.");
         return UserBenefitMessage.builder()
                 .bookingId(message.getBookingId())
                 .userId(user.getId())
