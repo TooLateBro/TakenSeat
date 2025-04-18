@@ -48,7 +48,7 @@ jobs:
           - com.taken_seat.payment-service
           - com.taken_seat.review-service
       fail-fast: false
-      max-parallel:
+      max-parallel: 5
 
     steps:
       - name: 소스 코드 체크아웃
