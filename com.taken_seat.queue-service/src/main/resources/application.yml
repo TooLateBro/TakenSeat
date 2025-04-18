@@ -36,3 +36,8 @@ eureka:
 
 common:
   trust-package: "com.taken_seat.common_service.message"
+
+
+logging:
+  loki:
+    url: ${LOKI_URL}
