@@ -1,6 +1,4 @@
 name: 이선좌 - Multi-Module CI
-
-
 on:
   push:
     branches:
@@ -33,6 +31,7 @@ jobs:
           ./gradlew :com.taken_seat.eureka-service:bootJar
           java -jar com.taken_seat.eureka-service/build/libs/*.jar &
           sleep 20
+
 
   services:
     runs-on: ubuntu-latest
