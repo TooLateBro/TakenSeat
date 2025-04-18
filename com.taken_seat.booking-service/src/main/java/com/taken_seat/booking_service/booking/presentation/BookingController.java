@@ -81,4 +81,12 @@ public class BookingController {
 
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseData.success());
 	}
+
+	@PostMapping("/{id}/refund")
+	public ResponseEntity<ApiResponseData<Void>> refundBooking(AuthenticatedUser authenticatedUser,
+		@PathVariable("id") UUID id) {
+		bookingService.refundBooking(authenticatedUser, id);
+
+		return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseData.success());
+	}
 }

@@ -13,6 +13,7 @@ import com.taken_seat.booking_service.booking.application.dto.response.BookingPa
 import com.taken_seat.booking_service.booking.application.dto.response.BookingReadResponse;
 import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.common_service.message.PaymentMessage;
+import com.taken_seat.common_service.message.PaymentRefundMessage;
 import com.taken_seat.common_service.message.UserBenefitMessage;
 
 public interface BookingService {
@@ -36,7 +37,11 @@ public interface BookingService {
 
 	void createPayment(UserBenefitMessage message);
 
-	void updateBenefitUsageHistory(UserBenefitMessage message);
+	void updateBooking(PaymentRefundMessage message);
 
 	void expireBooking(UUID bookingId);
+
+	void refundBooking(AuthenticatedUser authenticatedUser, UUID id);
+
+	void updateBenefitUsageHistory(UserBenefitMessage message);
 }

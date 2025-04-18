@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import com.taken_seat.booking_service.booking.application.service.BookingProducer;
 import com.taken_seat.booking_service.common.message.TicketRequestMessage;
 import com.taken_seat.common_service.message.PaymentMessage;
+import com.taken_seat.common_service.message.PaymentRefundMessage;
 import com.taken_seat.common_service.message.UserBenefitMessage;
 
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,9 @@ public class BookingKafkaProducer implements BookingProducer {
 
 	@Value("${kafka.topic.benefit-payment-result}")
 	private String BENEFIT_PAYMENT_RESULT_TOPIC;
+
+	@Value("${kafka.topic.payment-refund-request}")
+	private String PAYMENT_REFUND_REQUEST_TOPIC;
 
 	@Override
 	public void sendPaymentRequest(PaymentMessage message) {
@@ -61,5 +65,11 @@ public class BookingKafkaProducer implements BookingProducer {
 	public void sendBenefitPaymentResult(UserBenefitMessage message) {
 
 		kafkaTemplate.send(BENEFIT_PAYMENT_RESULT_TOPIC, message);
+	}
+
+	@Override
+	public void sendPaymentRefundRequest(PaymentRefundMessage message) {
+
+		kafkaTemplate.send(PAYMENT_REFUND_REQUEST_TOPIC, message);
 	}
 }
