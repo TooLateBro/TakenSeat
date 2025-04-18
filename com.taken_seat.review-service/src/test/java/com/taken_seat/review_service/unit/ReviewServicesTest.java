@@ -29,6 +29,7 @@ import com.taken_seat.review_service.application.dto.response.PageReviewResponse
 import com.taken_seat.review_service.application.dto.response.ReviewDetailResDto;
 import com.taken_seat.review_service.application.service.ReviewServiceImpl;
 import com.taken_seat.review_service.domain.model.Review;
+import com.taken_seat.review_service.domain.repository.RedisRatingRepository;
 import com.taken_seat.review_service.domain.repository.ReviewQuerydslRepository;
 import com.taken_seat.review_service.domain.repository.ReviewRepository;
 import com.taken_seat.review_service.infrastructure.client.dto.BookingStatusDto;
@@ -45,6 +46,9 @@ public class ReviewServicesTest {
 
 	@Mock
 	private ReviewClient reviewClient;
+	
+	@Mock
+	private RedisRatingRepository redisRatingRepository;
 
 	@InjectMocks
 	private ReviewServiceImpl reviewServices;

@@ -28,6 +28,7 @@ ext {
 }
 
 dependencies {
+    implementation 'me.paulschwarz:spring-dotenv:4.0.0'
 
     implementation project(':com.taken_seat.common-service')
     annotationProcessor project(':com.taken_seat.common-service')

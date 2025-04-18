@@ -37,7 +37,6 @@ out/
 .vscode/
 
 ### yml
-**/application.yml
-
+.env
 *.jtl          # JMeter 결과 리포트
 *.log          # 테스트 중 생성된 로그
