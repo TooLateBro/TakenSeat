@@ -45,15 +45,20 @@ eureka:
 
 kafka:
   topic:
-    payment-request: payment.request
-    payment-result: payment.result
-    ticket-request: ticket.request
-    benefit-usage-request: benefit.usage.request
-    benefit-usage-response: benefit.usage.response
+    benefit-payment-response: benefit.payment.response
     benefit-refund-request: benefit.refund.request
     benefit-refund-response: benefit.refund.response
+    benefit-usage-request: benefit.usage.request
+    benefit-usage-response: benefit.usage.response
+    payment-refund-request: payment.refund.request
+    payment-refund-response: payment.refund.response
+    payment-request: payment.request
+    payment-response: payment.response
+    ticket-request: ticket.request
   consumer:
-    group-id: booking-service
+    group-id:
+      booking-service: booking-service
+      ticket-service: ticket-service
 
 variable:
   lock-wait-time: 3 # 초

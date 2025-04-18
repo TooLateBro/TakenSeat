@@ -30,8 +30,8 @@ public class BookingKafkaProducer implements BookingProducer {
 	@Value("${kafka.topic.benefit-refund-request}")
 	private String BENEFIT_REFUND_REQUEST_TOPIC;
 
-	@Value("${kafka.topic.benefit-payment-result}")
-	private String BENEFIT_PAYMENT_RESULT_TOPIC;
+	@Value("${kafka.topic.benefit-payment-response}")
+	private String BENEFIT_PAYMENT_RESPONSE_TOPIC;
 
 	@Value("${kafka.topic.payment-refund-request}")
 	private String PAYMENT_REFUND_REQUEST_TOPIC;
@@ -54,7 +54,6 @@ public class BookingKafkaProducer implements BookingProducer {
 		kafkaTemplate.send(BENEFIT_USAGE_REQUEST_TOPIC, message);
 	}
 
-	// TODO: 환불 시도에 사용될 것
 	@Override
 	public void sendBenefitRefundRequest(UserBenefitMessage message) {
 
@@ -64,7 +63,7 @@ public class BookingKafkaProducer implements BookingProducer {
 	@Override
 	public void sendBenefitPaymentResult(UserBenefitMessage message) {
 
-		kafkaTemplate.send(BENEFIT_PAYMENT_RESULT_TOPIC, message);
+		kafkaTemplate.send(BENEFIT_PAYMENT_RESPONSE_TOPIC, message);
 	}
 
 	@Override
