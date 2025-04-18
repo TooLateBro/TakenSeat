@@ -3,10 +3,10 @@ spring:
     name: performance-service
 
   datasource:
-    url: jdbc:mysql://localhost:3306/takenseat
-    username: toolatebro
-    password: toolatebro
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME}
 
   jpa:
     properties:
@@ -58,6 +58,12 @@ eureka:
 
 common:
   trust-package: "com.taken_seat.common_service.message"
+
+
+logging:
+  loki:
+    url: ${LOKI_URL}
+
 
 # 로컬
 #eureka:
