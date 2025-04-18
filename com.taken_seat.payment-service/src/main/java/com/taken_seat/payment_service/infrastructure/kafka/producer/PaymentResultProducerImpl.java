@@ -15,11 +15,11 @@ public class PaymentResultProducerImpl implements PaymentResultProducer {
 
 	private final KafkaTemplate<String, Object> kafkaTemplate;
 
-	@Value("${kafka.topic.payment-result}")
-	private String SEND_PAYMENT_RESULT_TOPIC;
+	@Value("${kafka.topic.payment-response}")
+	private String SEND_PAYMENT_RESPONSE_TOPIC;
 
 	@Override
 	public void sendPaymentResult(PaymentMessage message) {
-		kafkaTemplate.send(SEND_PAYMENT_RESULT_TOPIC, message);
+		kafkaTemplate.send(SEND_PAYMENT_RESPONSE_TOPIC, message);
 	}
 }
