@@ -73,7 +73,7 @@ public class UserToBookingConsumerServiceImpl implements UserToBookingConsumerSe
 
     @Transactional
     @Override
-    public void benefitPayment(UserBenefitMessage message) {
+    public UserBenefitMessage benefitPayment(UserBenefitMessage message) {
         log.info("[Booking] -> [Auth] 마일리지 및 쿠폰의 성공 유무를 체크 중 입니다...." +
                 "{}, {}, {}, {}", message.getBookingId(), message.getUserId(), message.getCouponId(), message.getMileage());
         User user = userRepository.findByIdAndDeletedAtIsNull(message.getUserId())
@@ -139,11 +139,21 @@ public class UserToBookingConsumerServiceImpl implements UserToBookingConsumerSe
                     log.info("[Auth] 마일리지 복원 완료! {}", message.getMileage());
                     mileageRepository.save(mileage);
                 }
+                return UserBenefitMessage.builder()
+                        .bookingId(message.getBookingId())
+                        .userId(user.getId())
+                        .status(UserBenefitMessage.UserBenefitStatus.SUCCESS)
+                        .build();
             } catch (MileageException | CouponException e) {
                 log.error("[Auth] 환불 처리 중 오류가 발생했습니다 : {}", e.getMessage());
             } catch (Exception e) {
                 log.error("[Auth] 서비스에서 예기치 오류가 발생했습니다 : {}", e.getMessage());
             }
         }
+        return UserBenefitMessage.builder()
+                .bookingId(message.getBookingId())
+                .userId(user.getId())
+                .status(UserBenefitMessage.UserBenefitStatus.FAIL)
+                .build();
     }
 }
