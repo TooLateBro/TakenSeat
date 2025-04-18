@@ -47,7 +47,7 @@ public class UserToBookingConsumerServiceImpl implements UserToBookingConsumerSe
 
             couponDiscount = userCoupon.getDiscount();
 
-            Mileage mileage = mileageRepository.findTopByUserIdOrderByUpdatedAtDesc(message.getUserId())
+            mileageRepository.findTopByUserIdOrderByUpdatedAtDesc(message.getUserId())
                     .orElseThrow(() -> new MileageException(ResponseCode.MILEAGE_NOT_FOUND));
 
             usedMileage = message.getMileage();
@@ -63,7 +63,7 @@ public class UserToBookingConsumerServiceImpl implements UserToBookingConsumerSe
                     .status(UserBenefitMessage.UserBenefitStatus.SUCCESS)
                     .build();
         } catch (Exception e) {
-            log.info("[Auth] -> [Booking] 마일리지 및 쿠폰 사용에 실패하였습니다. " +
+            log.error("[Auth] -> [Booking] 마일리지 및 쿠폰 사용에 실패하였습니다. " +
                     "{}, {}, {}, {}", message.getBookingId(), message.getUserId(), message.getCouponId(), message.getMileage());
             return UserBenefitMessage.builder()
                     .status(UserBenefitMessage.UserBenefitStatus.FAIL)
@@ -74,31 +74,32 @@ public class UserToBookingConsumerServiceImpl implements UserToBookingConsumerSe
     @Transactional
     @Override
     public void benefitPayment(UserBenefitMessage message) {
-        log.info("[Booking] -> [Auth] 마일리지 및 쿠폰을 성공 유무를 체크 중 입니다...." +
+        log.info("[Booking] -> [Auth] 마일리지 및 쿠폰의 성공 유무를 체크 중 입니다...." +
                 "{}, {}, {}, {}", message.getBookingId(), message.getUserId(), message.getCouponId(), message.getMileage());
         User user = userRepository.findByIdAndDeletedAtIsNull(message.getUserId())
                 .orElseThrow(() -> new AuthException(ResponseCode.USER_NOT_FOUND));
 
-        Integer mileageRate = message.getPrice() / 1000;
+        int mileageRate = message.getPrice() / 1000;
 
         if (message.getStatus().equals(UserBenefitMessage.UserBenefitStatus.SUCCESS)) {
-            UserCoupon userCoupon = userCouponRepository.findByCouponIdAndIsActiveTrue(message.getCouponId())
-                    .orElseThrow(() -> new CouponException(ResponseCode.COUPON_NOT_FOUND));
-            if (userCoupon != null) {
-                log.info("[Booking] -> [Auth] " +message.getCouponId() + " 쿠폰 사용에 성공했습니다!!!");
+            try {
+                Mileage mileageExists = mileageRepository.findTopByUserIdOrderByUpdatedAtDesc(message.getUserId())
+                        .orElseThrow(() -> new MileageException(ResponseCode.MILEAGE_NOT_FOUND));
+                UserCoupon userCoupon = userCouponRepository.findByCouponIdAndIsActiveTrue(message.getCouponId())
+                        .orElseThrow(() -> new CouponException(ResponseCode.COUPON_NOT_FOUND));
+
+                log.info("[Auth] 현재 보유중인 마일리지 및 쿠폰의 상태 : {}, {}, {}",
+                        message.getMileage(), userCoupon, userCoupon.isActive());
+
                 userCoupon.updateActive(false, user.getId());
-            }
+                log.info("[Auth] {} 쿠폰 사용에 성공했습니다!!!", message.getCouponId());
 
-            Mileage mileageExists = mileageRepository.findTopByUserIdOrderByUpdatedAtDesc(message.getUserId())
-                    .orElseThrow(() -> new MileageException(ResponseCode.MILEAGE_NOT_FOUND));
-
-            if (mileageExists != null) {
-                Integer currentMileage = mileageExists.getMileage() - message.getMileage() + mileageRate;
-
-                log.info("[Booking] -> [Auth] " +message.getMileage() + " 마일리지 사용에 성공했습니다!!!");
+                int currentMileage = mileageExists.getMileage() - message.getMileage() + mileageRate;
                 if (currentMileage < 0) {
                     throw new MileageException(ResponseCode.MILEAGE_EMPTY);
                 }
+                log.info("[Auth] {} 마일리지 사용에 성공했습니다!!!", message.getMileage());
+
                 Mileage mileage = Mileage.create(
                         user, currentMileage
                 );
@@ -106,23 +107,26 @@ public class UserToBookingConsumerServiceImpl implements UserToBookingConsumerSe
                     mileage.preUpdate(user.getId());
                 }
                 mileageRepository.save(mileage);
+            } catch (MileageException | CouponException e) {
+                log.error("[Auth] 마일리지 또는 쿠폰 처리 중 오류가 발생했습니다 : {}", e.getMessage());
+            } catch (Exception e) {
+                log.error("[Auth] 서비스에서 예기치 않은 오류가 발생했습니다 : {}", e.getMessage());
             }
-        }else if (message.getStatus().equals(UserBenefitMessage.UserBenefitStatus.REFUND)) {
-            if (message.getCouponId() != null) {
+        } else if (message.getStatus().equals(UserBenefitMessage.UserBenefitStatus.REFUND)) {
+            try {
+                log.info("[Booking] -> [Auth] 환불 처리 중...." +
+                        "{}, {}, {}, {}", message.getBookingId(), message.getUserId(), message.getCouponId(), message.getMileage());
                 UserCoupon userCoupon = userCouponRepository.findByCouponIdAndIsActiveFalse(message.getCouponId())
                         .orElseThrow(() -> new CouponException(ResponseCode.COUPON_NOT_FOUND));
-                if (userCoupon != null) {
-                    userCoupon.updateActive(true, user.getId());
-                    log.info("[Auth] 쿠폰 활성화 완료! {}, {}", message.getCouponId(), userCoupon.isActive());
-                }
-            }
 
-            if (message.getMileage() != null && message.getMileage() > 0) {
-                Mileage mileages = mileageRepository.findTopByUserIdOrderByUpdatedAtDesc(message.getUserId())
-                        .orElseThrow(() -> new MileageException(ResponseCode.MILEAGE_NOT_FOUND));
+                userCoupon.updateActive(true, user.getId());
+                log.info("[Auth] 쿠폰 활성화 완료! {}, {}", message.getCouponId(), userCoupon.isActive());
 
-                if (mileages != null) {
-                    Integer currentMileage = mileages.getMileage() + message.getMileage() - mileageRate;
+                if (message.getMileage() != null && message.getMileage() > 0) {
+                    Mileage mileages = mileageRepository.findTopByUserIdOrderByUpdatedAtDesc(message.getUserId())
+                            .orElseThrow(() -> new MileageException(ResponseCode.MILEAGE_NOT_FOUND));
+
+                    int currentMileage = mileages.getMileage() + message.getMileage() - mileageRate;
                     if (currentMileage < 0) {
                         throw new MileageException(ResponseCode.MILEAGE_EMPTY);
                     }
@@ -135,6 +139,10 @@ public class UserToBookingConsumerServiceImpl implements UserToBookingConsumerSe
                     log.info("[Auth] 마일리지 복원 완료! {}", message.getMileage());
                     mileageRepository.save(mileage);
                 }
+            } catch (MileageException | CouponException e) {
+                log.error("[Auth] 환불 처리 중 오류가 발생했습니다 : {}", e.getMessage());
+            } catch (Exception e) {
+                log.error("[Auth] 서비스에서 예기치 오류가 발생했습니다 : {}", e.getMessage());
             }
         }
     }
