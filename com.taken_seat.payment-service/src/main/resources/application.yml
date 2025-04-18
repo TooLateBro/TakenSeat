@@ -1,0 +1,49 @@
+server:
+  port: 19097
+
+spring:
+  application:
+    name: payment-service
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      username: default
+      password: systempass
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME}
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show-sql: true
+
+management:
+  zipkin:
+    tracing:
+      endpoint: "http://localhost:9411/api/v2/spans" # zipkin에서 정해진 엔드포인트
+  tracing:
+    sampling:
+      probability: 1.0
+
+common:
+  trust-package: "com.taken_seat.common_service.message"
+
+kafka:
+  topic:
+    payment-request: payment.request
+    payment-result: payment.result
+    refund-request: payment.refund.request
+    refund-result: payment.refund.result
+  consumer:
+    group-id: payment-service
+
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:19090/eureka/

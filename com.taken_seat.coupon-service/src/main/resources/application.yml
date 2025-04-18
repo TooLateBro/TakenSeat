@@ -1,0 +1,72 @@
+spring:
+  application:
+    name: coupon-service
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      username: default
+      password: systempass
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME}
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+    defer-datasource-initialization: true
+  sql:
+    init:
+      mode: always
+      data-locations: classpath:db/data.sql
+
+common:
+  trust-package: "com.taken_seat.common_service.message"
+
+
+server:
+  port: 19093
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:19090/eureka/
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+kafka:
+  topic:
+    coupon-request-user: coupon.request.user
+  key:
+    coupon-user-key: coupon.user.key
+  consumer:
+    group-id: auth-service
+
+management:
+  metrics:
+    tags:
+      application: coupon-service
+  endpoint:
+    health:
+      show-details: always
+    prometheus:
+      access: unrestricted
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+
+logging:
+  loki:
+    url: ${LOKI_URL}

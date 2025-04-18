@@ -42,10 +42,11 @@ clean.doLast {
 }
 
 dependencies {
-
     // Common 패키지
     implementation project(':com.taken_seat.common-service')
     annotationProcessor project(':com.taken_seat.common-service')
+
+    implementation 'me.paulschwarz:spring-dotenv:4.0.0'
 
     // jackson
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'

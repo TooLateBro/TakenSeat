@@ -1,0 +1,68 @@
+server:
+  port: 19095
+
+spring:
+  application:
+    name: booking-service
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      username: default
+      password: systempass
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME}
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        format_sql: true
+
+management:
+  metrics:
+    tags:
+      application: booking-service
+  zipkin:
+    tracing:
+      endpoint: "http://localhost:9411/api/v2/spans" # zipkin에서 정해진 엔드포인트
+  tracing:
+    sampling:
+      probability: 1.0
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:19090/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+
+kafka:
+  topic:
+    payment-request: payment.request
+    payment-result: payment.result
+    ticket-request: ticket.request
+    benefit-usage-request: benefit.usage.request
+    benefit-usage-response: benefit.usage.response
+    benefit-refund-request: benefit.refund.request
+    benefit-refund-response: benefit.refund.response
+  consumer:
+    group-id: booking-service
+
+variable:
+  lock-wait-time: 3 # 초
+  lock-lease-time: 5 # 초
+  booking-expiration-time: 600 # 초
+
+common:
+  trust-package: "com.taken_seat.common_service.message, com.taken_seat.booking_service.common.message"
+
+logging:
+  loki:
+    url: ${LOKI_URL}
