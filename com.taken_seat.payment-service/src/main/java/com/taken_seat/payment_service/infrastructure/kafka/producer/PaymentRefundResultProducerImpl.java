@@ -15,11 +15,11 @@ public class PaymentRefundResultProducerImpl implements PaymentRefundResultProdu
 
 	private final KafkaTemplate<String, Object> kafkaTemplate;
 
-	@Value("${kafka.topic.refund-result}")
-	private String SEND_PAYMENT_REFUND_RESULT_TOPIC;
+	@Value("${kafka.topic.refund-response}")
+	private String SEND_PAYMENT_REFUND_RESPONSE_TOPIC;
 
 	@Override
 	public void sendPaymentRefundResult(PaymentRefundMessage message) {
-		kafkaTemplate.send(SEND_PAYMENT_REFUND_RESULT_TOPIC, message);
+		kafkaTemplate.send(SEND_PAYMENT_REFUND_RESPONSE_TOPIC, message);
 	}
 }
