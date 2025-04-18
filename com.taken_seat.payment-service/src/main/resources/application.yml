@@ -36,9 +36,9 @@ common:
 kafka:
   topic:
     payment-request: payment.request
-    payment-result: payment.result
+    payment-response: payment.response
     refund-request: payment.refund.request
-    refund-result: payment.refund.result
+    refund-response: payment.refund.response
   consumer:
     group-id: payment-service
 
