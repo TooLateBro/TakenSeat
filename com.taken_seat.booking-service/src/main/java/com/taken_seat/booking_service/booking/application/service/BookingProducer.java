@@ -14,7 +14,5 @@ public interface BookingProducer {
 
 	void sendBenefitRefundRequest(UserBenefitMessage message);
 
-	void sendBenefitPaymentResult(UserBenefitMessage message);
-
 	void sendPaymentRefundRequest(PaymentRefundMessage message);
 }
