@@ -65,7 +65,7 @@ eureka:
 service:
   jwt:
     secret:
-      key: jt0secret1key2test3leeson4f4b9e8c2a1d5f7e9b3c0d8a6e2f1b4c7d9e0a5f3b8c1d6e4a7f2b9c0d3e5a1f8
+      key: ${JWT_SECRET}
 
 
 springdoc:
