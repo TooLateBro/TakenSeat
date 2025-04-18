@@ -64,5 +64,13 @@ jobs:
       - name: Gradle 실행 권한 부여
         run: chmod +x ./gradlew
 
+      - name: 환경 변수 설정
+        run: |
+          echo "SPRING_DATASOURCE_URL=${{ secrets.SPRING_DATASOURCE_URL }}" >> $GITHUB_ENV
+          echo "SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_DATASOURCE_USERNAME }}" >> $GITHUB_ENV
+          echo "SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_DATASOURCE_PASSWORD }}" >> $GITHUB_ENV
+          echo "SPRING_DATASOURCE_DRIVER_CLASS_NAME=${{ secrets.SPRING_DATASOURCE_DRIVER_CLASS_NAME }}" >> $GITHUB_ENV
+          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> $GITHUB_ENV
+
       - name: Gradle 빌드 (서비스 모듈)
         run: ./gradlew :${{ matrix.module }}:build --parallel --no-daemon
