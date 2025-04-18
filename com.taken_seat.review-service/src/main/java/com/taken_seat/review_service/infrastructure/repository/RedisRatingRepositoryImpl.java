@@ -34,7 +34,7 @@ public class RedisRatingRepositoryImpl implements RedisRatingRepository {
 
 	@Override
 	public Double getAvgRating(UUID performanceId) {
-
+		log.info("[Review] 평균 평점 조회 시작, performanceId={}", performanceId);
 		String avgRatingKey = AVG_RATING_KEY + performanceId;
 
 		Map<Object, Object> ratingData = redisTemplate.opsForHash().entries(avgRatingKey);
@@ -43,12 +43,14 @@ public class RedisRatingRepositoryImpl implements RedisRatingRepository {
 		long reviewCount = getOrDefaultReviewCount(ratingData, FIELD_REVIEW_COUNT);
 
 		if (avgRating == 0.0 || reviewCount < 50) {
+			log.info("[Review] 평점이 없거나 리뷰 수가 적음, DB에서 평점 및 리뷰 수 조회 시작, performanceId={}", performanceId);
 			Map<String, Object> avgRatingAndCount = reviewRepository.fetchAvgRatingAndReviewCountByPerformanceId(
 				performanceId);
 
 			saveRating(performanceId, avgRatingAndCount);
 
 			avgRating = bigDecimalToDouble(avgRatingAndCount.get(FIELD_AVG_RATING));
+			log.info("[Review] DB에서 평균 평점 및 리뷰 수 조회 완료, avgRating={}, reviewCount={}", avgRating, reviewCount);
 		}
 
 		return avgRating;
@@ -56,6 +58,7 @@ public class RedisRatingRepositoryImpl implements RedisRatingRepository {
 
 	@Override
 	public void setAvgRatingBulk() {
+		log.info("[Review] 대량 평점 설정 시작");
 
 		// DB에서 각 공연 아이디 별 평점과 리뷰의 수를 가져온다
 		List<Map<String, Object>> performanceReviews = reviewRepository.fetchPerformanceRatingStatsBulk();
@@ -73,6 +76,7 @@ public class RedisRatingRepositoryImpl implements RedisRatingRepository {
 			int end = Math.min(start + batchSize, totalRecords);
 
 			// Redis Pipeline 시작
+			log.info("[Review] Redis Pipeline 처리 시작, start={}, end={}", start, end);
 			redisTemplate.executePipelined((RedisCallback<Object>)connect -> {
 				for (int j = start; j < end; j++) {
 					Map<String, Object> map = performanceReviews.get(j);
@@ -82,10 +86,12 @@ public class RedisRatingRepositoryImpl implements RedisRatingRepository {
 					long reviewCount = (long)map.get(FIELD_REVIEW_COUNT);
 
 					saveRatingToRedisWithTTL(performanceId, avgRating, reviewCount);
+					log.debug("[Review] 평점 저장, performanceId={}, avgRating={}, reviewCount={}", performanceId,
+						avgRating, reviewCount);
 				}
 				return null;
 			});
-
+			log.info("[Review] Redis Pipeline 처리 완료, start={}, end={}", start, end);
 		}
 
 	}
@@ -121,6 +127,7 @@ public class RedisRatingRepositoryImpl implements RedisRatingRepository {
 		if (value instanceof BigDecimal) {
 			return ((BigDecimal)value).doubleValue();
 		}
+		log.error("[Review] 잘못된 값 형식, value={}", value);
 		throw new PaymentException(ResponseCode.ILLEGAL_ARGUMENT);
 	}
 
@@ -129,6 +136,8 @@ public class RedisRatingRepositoryImpl implements RedisRatingRepository {
 		long reviewCount = (long)avgRatingAndCount.get(FIELD_REVIEW_COUNT);
 
 		saveRatingToRedisWithTTL(performanceId, avgRating, reviewCount);
+		log.info("[Review] Redis에 평점 및 리뷰 수 저장, performanceId={}, avgRating={}, reviewCount={}", performanceId,
+			avgRating, reviewCount);
 	}
 
 	private void saveRatingToRedisWithTTL(UUID performanceId, double avgRating, long reviewCount) {
@@ -143,5 +152,7 @@ public class RedisRatingRepositoryImpl implements RedisRatingRepository {
 
 		// TTL 설정: 1시간 30분
 		redisTemplate.expire(avgRatingKey, Duration.ofHours(2));
+		log.info("[Review] 평점 및 리뷰 수 Redis에 저장 완료, performanceId={}, avgRating={}, reviewCount={}", performanceId,
+			avgRating, reviewCount);
 	}
 }
