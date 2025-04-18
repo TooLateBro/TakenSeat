@@ -255,7 +255,7 @@ public class BookingServiceImpl implements BookingService {
 					.status(UserBenefitMessage.UserBenefitStatus.SUCCESS)
 					.build();
 
-				bookingProducer.sendBenefitPaymentResult(benefitMessage);
+				bookingProducer.sendBenefitRefundRequest(benefitMessage);
 			}
 		} else {
 			// 실패시 사용한 쿠폰, 마일리지 원복처리
