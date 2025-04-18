@@ -13,10 +13,10 @@ spring:
       password: systempass
 
   datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    username: toolatebro
-    password: toolatebro
-    url: jdbc:mysql://localhost:3306/takenseat
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME}
 
   jpa:
     hibernate:
@@ -62,3 +62,7 @@ variable:
 
 common:
   trust-package: "com.taken_seat.common_service.message, com.taken_seat.booking_service.common.message"
+
+logging:
+  loki:
+    url: ${LOKI_URL}

@@ -9,10 +9,11 @@ spring:
       password: systempass
 
   datasource:
-    url: jdbc:mysql://localhost:3306/takenseat
-    username: toolatebro
-    password: toolatebro
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME}
+
   jpa:
     hibernate:
       ddl-auto: create
@@ -65,3 +66,7 @@ management:
     web:
       exposure:
         include: '*'
+
+logging:
+  loki:
+    url: ${LOKI_URL}

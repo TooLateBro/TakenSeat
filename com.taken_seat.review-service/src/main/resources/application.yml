@@ -12,10 +12,10 @@ spring:
       username: default
       password: systempass
   datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/takenseat
-    username: toolatebro
-    password: toolatebro
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME}
 
   jpa:
     hibernate:
@@ -38,7 +38,6 @@ eureka:
     service-url:
       defaultZone: http://localhost:19090/eureka/
 
-
 feign:
   client:
     performance:
@@ -49,6 +48,3 @@ feign:
       name: booking-service
       url:
         http://localhost:19095/api/v1/bookings
-
-
-
