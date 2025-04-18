@@ -54,7 +54,7 @@ public class ReviewLikeServiceTest {
 	}
 
 	@Test
-	@DisplayName("\"리뷰에 좋아요를 처음 누르면 좋아요가 등록되고 count가 1 증가한다- SUCCESS")
+	@DisplayName("리뷰에 좋아요를 처음 누르면 좋아요가 등록되고 count가 1 증가한다- SUCCESS")
 	void testToggleReviewLike_increaseLikeCount() {
 		// given
 		String key = "review:like:" + reviewId;

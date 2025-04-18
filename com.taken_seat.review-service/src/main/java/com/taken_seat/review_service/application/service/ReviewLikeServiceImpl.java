@@ -23,10 +23,12 @@ import com.taken_seat.review_service.domain.repository.ReviewLikeRepository;
 import com.taken_seat.review_service.domain.repository.ReviewRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class ReviewLikeServiceImpl implements ReviewLikeService {
 
 	private final RedisTemplate<String, Integer> likeCountRedisTemplate;
@@ -56,6 +58,7 @@ public class ReviewLikeServiceImpl implements ReviewLikeService {
 			reviewLike.cancelReviewLike(authenticatedUser.getUserId());
 			reviewLikeRepository.save(reviewLike);
 
+			log.info("[Review] 좋아요 취소 시도 - 성공 userId={}, reviewId={}", authenticatedUser.getUserId(), reviewId);
 		} else {
 			// 좋아요를 안한 상태 -> 추가
 			hashOps.put(key, userField, true);
@@ -64,9 +67,13 @@ public class ReviewLikeServiceImpl implements ReviewLikeService {
 			ReviewLike like = reviewLikeOpt
 				.map(l -> {
 					l.addReviewLike(authenticatedUser.getUserId()); // soft delete 되어 있던 것 복구
+					log.info("[Review] 좋아요 복구 시도 - 성공 userId={}, reviewId={}", authenticatedUser.getUserId(), reviewId);
 					return l;
 				})
-				.orElse(ReviewLike.create(findReview(reviewId), authenticatedUser.getUserId())); // 완전 새로운 좋아요
+				.orElseGet(() -> {
+					log.info("[Review] 좋아요 생성 시도 - 성공 userId={}, reviewId={}", authenticatedUser.getUserId(), reviewId);
+					return ReviewLike.create(findReview(reviewId), authenticatedUser.getUserId());
+				});
 
 			reviewLikeRepository.save(like);
 		}
@@ -134,6 +141,7 @@ public class ReviewLikeServiceImpl implements ReviewLikeService {
 
 		// Redis에서 해당 키들 삭제
 		likeCountRedisTemplate.delete(redisKeys);
+		log.info("[Review] 좋아요 캐시 삭제 요청 - 완료 deletedCount={}", redisKeys.size());
 	}
 
 	// Redis에서 특정 키에 대한 좋아요 수를 가져오는 메서드
@@ -144,8 +152,10 @@ public class ReviewLikeServiceImpl implements ReviewLikeService {
 
 		// "count" 값이 있으면 Integer로 변환하여 반환, 없으면 기본값 0 반환
 		if (count != null) {
+			log.debug("[Review] 좋아요 수 조회 - 성공 key={}, count={}", key, count);
 			return count;
 		} else {
+			log.warn("[Review] 좋아요 수 조회 - 실패 key={}, count=0 ", key);
 			return 0; // 기본값 0 반환
 		}
 	}
