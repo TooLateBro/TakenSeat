@@ -1,0 +1,24 @@
+<configuration>
+    <springProperty name="LOKI_URL" source="logging.loki.url"/>
+    <appender name="LOKI" class="com.github.loki4j.logback.Loki4jAppender">
+        <http>
+            <url>http://${LOKI_URL}/loki/api/v1/push</url>
+        </http>
+        <format>
+            <label>
+                <pattern>app=review-service,host=${HOSTNAME}</pattern>
+            </label>
+            <message class="com.github.loki4j.logback.JsonLayout"/>
+        </format>
+    </appender>
+
+    <encoder>
+        <pattern>
+            %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - [%X{traceId}] %msg%n
+        </pattern>
+    </encoder>
+
+    <root level="DEBUG">
+        <appender-ref ref="LOKI"/>
+    </root>
+</configuration>

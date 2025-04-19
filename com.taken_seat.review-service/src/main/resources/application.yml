@@ -23,6 +23,19 @@ spring:
     show-sql: true
 
 management:
+
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+  endpoint:
+    health:
+      show-details: always
+
+  metrics:
+    tags:
+      application: review-service
   zipkin:
     tracing:
       endpoint: "http://localhost:9411/api/v2/spans" # zipkin에서 정해진 엔드포인트
@@ -48,3 +61,8 @@ feign:
       name: booking-service
       url:
         http://localhost:19095/api/v1/bookings
+
+
+logging:
+  loki:
+    url: ${LOKI_URL}
