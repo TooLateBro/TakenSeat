@@ -13,9 +13,9 @@ public interface MileageRepository {
 
     Mileage save(Mileage mileage);
 
-    Page<Mileage> findByUserIdAndDeletedAtIsNull(UUID userId, Pageable pageable);
-
     Optional<Mileage> findByIdAndDeletedAtIsNull(UUID mileageId);
 
     Optional<Mileage> findTopByUserIdOrderByUpdatedAtDesc(UUID userId);
+
+    Page<Mileage> findMileageByUserIdAndDeletedAtIsNull(UUID userId, Pageable pageable);
 }

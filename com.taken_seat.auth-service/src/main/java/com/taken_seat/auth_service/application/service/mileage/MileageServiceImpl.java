@@ -68,8 +68,10 @@ public class MileageServiceImpl implements MileageService {
     @Override
     @Cacheable(cacheNames = "searchMileage", key = "#userId + '-' + #page + '-' + #size")
     public PageResponseDto<UserMileageResponseDto> getMileageHistoryUser(UUID userId, int page, int size) {
+        User user = userRepository.findByIdAndDeletedAtIsNull(userId)
+                .orElseThrow(()-> new AuthException(ResponseCode.USER_NOT_FOUND));
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "updatedAt"));
-        Page<Mileage> mileage = mileageRepository.findByUserIdAndDeletedAtIsNull(userId, pageable);
+        Page<Mileage> mileage = mileageRepository.findMileageByUserIdAndDeletedAtIsNull(user.getId(), pageable);
 
         Page<UserMileageResponseDto> mileageInfo = mileage.map(UserMileageResponseDto::of);
 

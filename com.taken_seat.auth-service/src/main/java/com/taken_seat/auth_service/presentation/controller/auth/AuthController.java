@@ -10,10 +10,7 @@ import com.taken_seat.common_service.dto.ApiResponseData;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/auths")
@@ -41,5 +38,11 @@ public class AuthController implements AuthControllerDocs {
         return ResponseEntity.ok()
                 .header("Authorization", userinfo.getAccessToken())
                 .body(ApiResponseData.success(userinfo));
+    }
+
+    @GetMapping("/logout")
+    public ResponseEntity<ApiResponseData<Void>> logout(@RequestHeader(value = "Authorization") String token) {
+        authService.logout(token);
+        return ResponseEntity.ok(ApiResponseData.success(null));
     }
 }
