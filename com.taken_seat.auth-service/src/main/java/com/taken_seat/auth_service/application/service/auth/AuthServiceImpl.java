@@ -9,6 +9,7 @@ import com.taken_seat.auth_service.domain.repository.user.UserRepository;
 import com.taken_seat.auth_service.infrastructure.util.JwtUtil;
 import com.taken_seat.common_service.exception.customException.AuthException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
+import io.jsonwebtoken.Claims;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -60,9 +61,21 @@ class AuthServiceImpl implements AuthService{
         String accessToken = jwtUtil.createToken(user);
         String refreshToken = jwtUtil.createRefreshToken(user.getId());
 
-        redisTemplate.opsForValue().set(user.getEmail()+" : refresh_token", refreshToken, 1, TimeUnit.HOURS);
+        redisTemplate.opsForValue().set(user.getEmail()+" :: refresh_token", refreshToken, 1, TimeUnit.HOURS);
 
         return AuthLoginResponseDto.of(accessToken, refreshToken);
+    }
+
+    @Override
+    public void logout(String token) {
+        String accessToken = jwtUtil.extractToken(token);
+        Claims claims = jwtUtil.parseClaims(accessToken);
+        String email = claims.get("email", String.class);
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AuthException(ResponseCode.USER_NOT_FOUND));
+
+        redisTemplate.delete(user.getEmail()+" :: refresh_token"); // 기존 refreshToken 삭제
     }
 }
 
