@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.taken_seat.common_service.dto.AuthenticatedUser;
+import com.taken_seat.common_service.dto.response.PerformanceStartTimeDto;
 import com.taken_seat.common_service.exception.customException.PerformanceException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.performance_service.performance.application.dto.mapper.ResponseMapper;
@@ -182,5 +183,15 @@ public class PerformanceService {
 			}
 		}
 		performanceRepository.save(performance);
+	}
+
+	@Transactional
+	public PerformanceStartTimeDto getPerformanceStartTime(UUID performanceId, UUID performanceScheduleId) {
+		Performance performance = performanceRepository.findById(performanceId)
+			.orElseThrow(() -> new PerformanceException(ResponseCode.PERFORMANCE_NOT_FOUND_EXCEPTION));
+
+		PerformanceSchedule schedule = performance.getScheduleById(performanceScheduleId);
+
+		return new PerformanceStartTimeDto(schedule.getStartAt());
 	}
 }
