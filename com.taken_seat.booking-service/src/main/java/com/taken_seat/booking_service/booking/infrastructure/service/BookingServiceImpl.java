@@ -112,6 +112,15 @@ public class BookingServiceImpl implements BookingService {
 		Booking booking = findBookingByIdAndUserId(id, authenticatedUser.getUserId());
 		BookingStatus status = booking.getBookingStatus();
 
+		LocalDateTime startAt = bookingClientService.getPerformanceStartTime(booking.getPerformanceId(),
+			booking.getPerformanceScheduleId()).startAt();
+		LocalDateTime now = LocalDateTime.now();
+
+		// 현재 시각이 공연 시작 하루 전보다 지난 시각인지 확인
+		if (now.isAfter(startAt.minusDays(1))) {
+			throw new BookingException(ResponseCode.BOOKING_CANCEL_NOT_ALLOWED_EXCEPTION);
+		}
+
 		if (status == BookingStatus.CANCELED) {
 			throw new BookingException(ResponseCode.BOOKING_ALREADY_CANCELED_EXCEPTION);
 		} else if (status == BookingStatus.COMPLETED) {
@@ -146,9 +155,10 @@ public class BookingServiceImpl implements BookingService {
 	public void deleteBooking(AuthenticatedUser authenticatedUser, UUID id) {
 
 		Booking booking = findBookingByIdAndUserId(id, authenticatedUser.getUserId());
+		BookingStatus status = booking.getBookingStatus();
 
-		if (booking.getCanceledAt() == null) {
-			throw new BookingException(ResponseCode.BOOKING_NOT_CANCELED_EXCEPTION);
+		if (status == BookingStatus.PENDING) {
+			throw new BookingException(ResponseCode.BOOKING_DELETE_NOT_ALLOWED_EXCEPTION);
 		}
 
 		booking.delete(authenticatedUser.getUserId());
