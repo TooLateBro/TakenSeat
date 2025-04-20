@@ -38,9 +38,11 @@ import com.taken_seat.common_service.message.PaymentRefundMessage;
 import com.taken_seat.common_service.message.UserBenefitMessage;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BookingServiceImpl implements BookingService {
 
 	private final BenefitUsageHistoryRepository benefitUsageHistoryRepository;
@@ -55,10 +57,17 @@ public class BookingServiceImpl implements BookingService {
 	@Transactional
 	public BookingCreateResponse createBooking(AuthenticatedUser authenticatedUser, BookingCreateRequest request) {
 
+		log.info("[Booking] 예약 생성 - 시도: | userId={}", authenticatedUser.getUserId());
+
 		// 중복 체크
 		if (bookingRepository.isUniqueBooking(authenticatedUser.getUserId(), request.getPerformanceId(),
 			request.getPerformanceScheduleId(), request.getSeatId())) {
 
+			log.warn(
+				"[Booking] 예약 생성 - 실패: {} | userId={}",
+				ResponseCode.BOOKING_DUPLICATED_EXCEPTION.getMessage(),
+				authenticatedUser.getUserId()
+			);
 			throw new BookingException(ResponseCode.BOOKING_DUPLICATED_EXCEPTION);
 		}
 
@@ -84,6 +93,7 @@ public class BookingServiceImpl implements BookingService {
 		// 예매 만료 설정
 		redisService.setBookingExpire(saved.getId());
 
+		log.info("[Booking] 예약 생성 - 성공: | userId={}", authenticatedUser.getUserId());
 		return BookingCreateResponse.toDto(saved);
 	}
 
@@ -91,7 +101,9 @@ public class BookingServiceImpl implements BookingService {
 	@Transactional(readOnly = true)
 	public BookingReadResponse readBooking(AuthenticatedUser authenticatedUser, UUID id) {
 
+		log.info("[Booking] 조회 - 시도: | userId={}", authenticatedUser.getUserId());
 		Booking booking = findBookingByIdAndUserId(id, authenticatedUser.getUserId());
+		log.info("[Booking] 조회 - 성공: | userId={}", authenticatedUser.getUserId());
 
 		return BookingReadResponse.toDto(booking);
 	}
@@ -100,7 +112,9 @@ public class BookingServiceImpl implements BookingService {
 	@Transactional(readOnly = true)
 	public BookingPageResponse readBookings(AuthenticatedUser authenticatedUser, Pageable pageable) {
 
+		log.info("[Booking] 조회 - 시도: | userId={}", authenticatedUser.getUserId());
 		Page<Booking> page = bookingRepository.findAllByUserId(pageable, authenticatedUser.getUserId());
+		log.info("[Booking] 조회 - 성공: | userId={}", authenticatedUser.getUserId());
 
 		return BookingPageResponse.toDto(page);
 	}
@@ -109,6 +123,8 @@ public class BookingServiceImpl implements BookingService {
 	@Transactional
 	public void cancelBooking(AuthenticatedUser authenticatedUser, UUID id) {
 
+		log.info("[Booking] 예약 취소 - 시도: | userId={}", authenticatedUser.getUserId());
+
 		Booking booking = findBookingByIdAndUserId(id, authenticatedUser.getUserId());
 		BookingStatus status = booking.getBookingStatus();
 
@@ -116,12 +132,22 @@ public class BookingServiceImpl implements BookingService {
 			booking.getPerformanceScheduleId()).startAt();
 		LocalDateTime now = LocalDateTime.now();
 
-		// 현재 시각이 공연 시작 하루 전보다 지난 시각인지 확인
+		// 현재 시각이 공연 시작 하루 전 앞인지 확인
 		if (now.isAfter(startAt.minusDays(1))) {
+			log.warn(
+				"[Booking] 예약 취소 - 실패: {} | userId={}",
+				ResponseCode.BOOKING_CANCEL_NOT_ALLOWED_EXCEPTION.getMessage(),
+				authenticatedUser.getUserId()
+			);
 			throw new BookingException(ResponseCode.BOOKING_CANCEL_NOT_ALLOWED_EXCEPTION);
 		}
 
 		if (status == BookingStatus.CANCELED) {
+			log.warn(
+				"[Booking] 예약 취소 - 실패: {} | userId={}",
+				ResponseCode.BOOKING_ALREADY_CANCELED_EXCEPTION.getMessage(),
+				authenticatedUser.getUserId()
+			);
 			throw new BookingException(ResponseCode.BOOKING_ALREADY_CANCELED_EXCEPTION);
 		} else if (status == BookingStatus.COMPLETED) {
 			// 환불 요청 전송
@@ -134,8 +160,9 @@ public class BookingServiceImpl implements BookingService {
 				.build();
 
 			bookingProducer.sendPaymentRefundRequest(message);
+
+			log.info("[Booking] 예약 취소 - 환불 요청 전송: | userId={}", authenticatedUser.getUserId());
 		}
-		booking.cancel(authenticatedUser.getUserId());
 
 		// 좌석 선점 해제 요청 보내기
 		BookingSeatClientRequestDto dto = BookingSeatClientRequestDto.builder()
@@ -146,35 +173,59 @@ public class BookingServiceImpl implements BookingService {
 		BookingSeatClientResponseDto responseDto = bookingClientService.cancelSeatStatus(dto);
 
 		if (responseDto.reserved()) {
+			log.warn(
+				"[Booking] 예약 취소 - 실패: {} | userId={}",
+				ResponseCode.BOOKING_SEAT_CANCEL_FAILED_EXCEPTION.getMessage(),
+				authenticatedUser.getUserId()
+			);
 			throw new BookingException(ResponseCode.BOOKING_SEAT_CANCEL_FAILED_EXCEPTION);
 		}
+
+		booking.cancel(authenticatedUser.getUserId());
+		log.info("[Booking] 예약 취소 - 성공: | userId={}", authenticatedUser.getUserId());
 	}
 
 	@Override
 	@Transactional
 	public void deleteBooking(AuthenticatedUser authenticatedUser, UUID id) {
 
+		log.info("[Booking] 예약 삭제 - 시도: | userId={}", authenticatedUser.getUserId());
+
 		Booking booking = findBookingByIdAndUserId(id, authenticatedUser.getUserId());
 		BookingStatus status = booking.getBookingStatus();
 
 		if (status == BookingStatus.PENDING) {
+			log.warn(
+				"[Booking] 예약 삭제 - 실패: {} | userId={}",
+				ResponseCode.BOOKING_DELETE_NOT_ALLOWED_EXCEPTION.getMessage(),
+				authenticatedUser.getUserId()
+			);
 			throw new BookingException(ResponseCode.BOOKING_DELETE_NOT_ALLOWED_EXCEPTION);
 		}
 
 		booking.delete(authenticatedUser.getUserId());
+		log.info("[Booking] 예약 삭제 - 성공: | userId={}", authenticatedUser.getUserId());
 	}
 
 	@Override
 	@Transactional(readOnly = true)
 	public AdminBookingReadResponse adminReadBooking(AuthenticatedUser authenticatedUser, UUID id) {
 
+		log.info("[Booking] 관리자 예매 조회 - 시도: | userId={}", authenticatedUser.getUserId());
+
 		String role = authenticatedUser.getRole();
 		if (role == null || (!role.equals("MANAGER") && !role.equals("MASTER"))) {
+			log.warn(
+				"[Booking] 관리자 예매 조회 - 실패: {} | userId={}",
+				ResponseCode.ACCESS_DENIED_EXCEPTION.getMessage(),
+				authenticatedUser.getUserId()
+			);
 			throw new BookingException(ResponseCode.ACCESS_DENIED_EXCEPTION);
 		}
 
 		Booking booking = bookingAdminRepository.findById(id)
 			.orElseThrow(() -> new BookingException(ResponseCode.BOOKING_NOT_FOUND_EXCEPTION));
+		log.info("[Booking] 관리자 예매 조회 - 성공: | userId={}", authenticatedUser.getUserId());
 
 		return AdminBookingReadResponse.toDto(booking);
 	}
@@ -183,19 +234,29 @@ public class BookingServiceImpl implements BookingService {
 	@Transactional(readOnly = true)
 	public AdminBookingPageResponse adminReadBookings(AuthenticatedUser authenticatedUser, Pageable pageable) {
 
+		log.info("[Booking] 관리자 예매 조회 - 시도: | userId={}", authenticatedUser.getUserId());
+
 		// TODO: Querydsl 을 적용하여 사용자ID 포함 동적 검색 적용하기
 		String role = authenticatedUser.getRole();
 		if (role == null || (!role.equals("MANAGER") && !role.equals("MASTER"))) {
+			log.warn(
+				"[Booking] 관리자 예매 조회 - 실패: {} | userId={}",
+				ResponseCode.ACCESS_DENIED_EXCEPTION.getMessage(),
+				authenticatedUser.getUserId()
+			);
 			throw new BookingException(ResponseCode.ACCESS_DENIED_EXCEPTION);
 		}
 
 		Page<Booking> page = bookingAdminRepository.findAll(pageable);
+		log.info("[Booking] 관리자 예매 조회 - 성공: | userId={}", authenticatedUser.getUserId());
 
 		return AdminBookingPageResponse.toDto(page);
 	}
 
 	@Override
 	public void createPayment(AuthenticatedUser authenticatedUser, UUID id, BookingPayRequest request) {
+
+		log.info("[Booking] 예매 결제 - 시도: | userId={}, bookingId={}", authenticatedUser.getUserId(), id);
 
 		Booking booking = findBookingByIdAndUserId(id, authenticatedUser.getUserId());
 
@@ -213,6 +274,11 @@ public class BookingServiceImpl implements BookingService {
 				.build();
 
 			bookingProducer.sendBenefitUsageRequest(benefitUsageRequestMessage);
+			log.info(
+				"[Booking] 예매 결제 - 쿠폰, 마일리지 사용 요청 전송: | userId={}, bookingId={}",
+				authenticatedUser.getUserId(),
+				id
+			);
 			return;
 		}
 
@@ -225,11 +291,22 @@ public class BookingServiceImpl implements BookingService {
 			.build();
 
 		bookingProducer.sendPaymentRequest(message);
+		log.info(
+			"[Booking] 예매 결제 - 쿠폰, 마일리지 사용 없이 결제 요청 전송: | userId={}, bookingId={}",
+			authenticatedUser.getUserId(),
+			id
+		);
 	}
 
 	@Override
 	@Transactional
 	public void updateBooking(PaymentMessage message) {
+
+		log.info(
+			"[Booking] 예매 결제 메시지 수신 - 시도: | userId={}, bookingId={}",
+			message.getUserId(),
+			message.getBookingId()
+		);
 
 		Booking booking = bookingRepository.findById(message.getBookingId())
 			.orElseThrow(() -> new BookingException(ResponseCode.BOOKING_NOT_FOUND_EXCEPTION));
@@ -272,7 +349,18 @@ public class BookingServiceImpl implements BookingService {
 					.build();
 
 				bookingProducer.sendBenefitRefundRequest(benefitMessage);
+				log.info(
+					"[Booking] 예매 결제 메시지 수신 - 성공: 쿠폰, 마일리지 사용내역 전송 | userId={}, bookingId={}",
+					message.getUserId(),
+					message.getBookingId()
+				);
 			}
+
+			log.info(
+				"[Booking] 예매 결제 메시지 수신 - 성공: | userId={}, bookingId={}",
+				message.getUserId(),
+				message.getBookingId()
+			);
 		} else {
 			// 실패시 사용한 쿠폰, 마일리지 원복처리
 
@@ -280,6 +368,13 @@ public class BookingServiceImpl implements BookingService {
 				BenefitUsageHistory benefitUsageHistory = optional.get();
 				benefitUsageHistory.refunded(message.getUserId());
 			}
+			log.warn(
+				"[Booking] 예매 결제 메시지 수신 - 실패: {} | userId={}, bookingId={}",
+				ResponseCode.BOOKING_PAYMENT_FAILED_EXCEPTION.getMessage(),
+				message.getUserId(),
+				message.getBookingId()
+			);
+
 			throw new BookingException(ResponseCode.BOOKING_PAYMENT_FAILED_EXCEPTION);
 		}
 	}
@@ -287,6 +382,12 @@ public class BookingServiceImpl implements BookingService {
 	@Override
 	@Transactional
 	public void createPayment(UserBenefitMessage message) {
+
+		log.info(
+			"[Booking] 예매 쿠폰, 마일리지 적용 메시지 수신 - 시도: | userId={}, bookingId={}",
+			message.getUserId(),
+			message.getBookingId()
+		);
 
 		Booking booking = bookingRepository.findById(message.getBookingId())
 			.orElseThrow(() -> new BookingException(ResponseCode.BOOKING_NOT_FOUND_EXCEPTION));
@@ -298,6 +399,12 @@ public class BookingServiceImpl implements BookingService {
 				price = (int)(price - discountAmount); // 할인된 가격 계산
 
 				if (!isValidPrice(price)) {
+					log.warn(
+						"[Booking] 예매 쿠폰, 마일리지 적용 메시지 수신 - 실패: {} | userId={}, bookingId={}",
+						ResponseCode.INVALID_COUPON.getMessage(),
+						message.getUserId(),
+						message.getBookingId()
+					);
 					throw new BookingException(ResponseCode.INVALID_COUPON);
 				}
 			}
@@ -307,10 +414,15 @@ public class BookingServiceImpl implements BookingService {
 				price -= message.getMileage();
 
 				if (!isValidPrice(price)) {
+					log.warn(
+						"[Booking] 예매 쿠폰, 마일리지 적용 메시지 수신 - 실패: {} | userId={}, bookingId={}",
+						ResponseCode.INVALID_MILEAGE.getMessage(),
+						message.getUserId(),
+						message.getBookingId()
+					);
 					throw new BookingException(ResponseCode.INVALID_MILEAGE);
 				}
 			}
-			booking.discount(price); // 할인가 업데이트
 
 			// 쿠폰, 마일리지 사용내역 저장
 			BenefitUsageHistory history = BenefitUsageHistory.builder()
@@ -333,7 +445,26 @@ public class BookingServiceImpl implements BookingService {
 				.build();
 
 			bookingProducer.sendPaymentRequest(paymentMessage);
+			log.info(
+				"[Booking] 예매 쿠폰, 마일리지 적용 메시지 수신 - 결제 요청 전송: | userId={}, bookingId={}",
+				message.getUserId(),
+				message.getBookingId()
+			);
+
+			booking.discount(price); // 할인가 업데이트
+
+			log.info(
+				"[Booking] 예매 쿠폰, 마일리지 적용 메시지 수신 - 성공: | userId={}, bookingId={}",
+				message.getUserId(),
+				message.getBookingId()
+			);
 		} else {
+			log.warn(
+				"[Booking] 예매 쿠폰, 마일리지 적용 메시지 수신 - 실패: {} | userId={}, bookingId={}",
+				ResponseCode.BOOKING_BENEFIT_USAGE_FAILED_EXCEPTION.getMessage(),
+				message.getUserId(),
+				message.getBookingId()
+			);
 			throw new BookingException(ResponseCode.BOOKING_BENEFIT_USAGE_FAILED_EXCEPTION);
 		}
 	}
@@ -341,6 +472,12 @@ public class BookingServiceImpl implements BookingService {
 	@Override
 	@Transactional
 	public void updateBooking(PaymentRefundMessage message) {
+
+		log.info(
+			"[Booking] 예매 환불 메시지 수신 - 시도: | userId={}, bookingId={}",
+			message.getUserId(),
+			message.getBookingId()
+		);
 
 		if (message.getStatus() == PaymentRefundMessage.PaymentRefundStatus.SUCCESS) {
 			Booking booking = bookingRepository.findById(message.getBookingId())
@@ -375,8 +512,26 @@ public class BookingServiceImpl implements BookingService {
 					.status(UserBenefitMessage.UserBenefitStatus.REFUND)
 					.build();
 				bookingProducer.sendBenefitRefundRequest(benefitMessage);
+
+				log.info(
+					"[Booking] 예매 환불 메시지 수신 - 쿠폰, 마일리지 원복 요청 전송: | userId={}, bookingId={}",
+					message.getUserId(),
+					message.getBookingId()
+				);
 			}
+
+			log.info(
+				"[Booking] 예매 환불 메시지 수신 - 성공: | userId={}, bookingId={}",
+				message.getUserId(),
+				message.getBookingId()
+			);
 		} else {
+			log.warn(
+				"[Booking] 예매 환불 메시지 수신 - 실패: {} | userId={}, bookingId={}",
+				ResponseCode.BOOKING_REFUND_FAILED_EXCEPTION.getMessage(),
+				message.getUserId(),
+				message.getBookingId()
+			);
 			throw new BookingException(ResponseCode.BOOKING_REFUND_FAILED_EXCEPTION);
 		}
 	}
@@ -384,6 +539,8 @@ public class BookingServiceImpl implements BookingService {
 	@Override
 	@Transactional
 	public void expireBooking(UUID bookingId) {
+
+		log.info("[Booking] 예매 만기 - 시도: | bookingId={}", bookingId);
 
 		Booking booking = bookingRepository.findById(bookingId)
 			.orElseThrow(() -> new BookingException(ResponseCode.BOOKING_NOT_FOUND_EXCEPTION));
@@ -402,8 +559,15 @@ public class BookingServiceImpl implements BookingService {
 			BookingSeatClientResponseDto responseDto = bookingClientService.cancelSeatStatus(dto);
 
 			if (responseDto.reserved()) {
+				log.warn(
+					"[Booking] 예매 만기 - 실패: {} | bookingId={}",
+					ResponseCode.BOOKING_SEAT_CANCEL_FAILED_EXCEPTION.getMessage(),
+					bookingId
+				);
 				throw new BookingException(ResponseCode.BOOKING_SEAT_CANCEL_FAILED_EXCEPTION);
 			}
+
+			log.info("[Booking] 예매 만기 - 성공: | bookingId={}", bookingId);
 		}
 	}
 
@@ -411,13 +575,31 @@ public class BookingServiceImpl implements BookingService {
 	@Transactional
 	public void updateBenefitUsageHistory(UserBenefitMessage message) {
 
+		log.info(
+			"[Booking] 예매 쿠폰, 마일리지 사용 내역 환불처리 - 시도: | userId={}, bookingId={}",
+			message.getUserId(),
+			message.getBookingId()
+		);
+
 		if (message.getStatus() == UserBenefitMessage.UserBenefitStatus.SUCCESS) {
 			BenefitUsageHistory history = benefitUsageHistoryRepository.findByBookingIdAndRefundedIsFalse(
 					message.getBookingId())
 				.orElseThrow(() -> new BookingException(ResponseCode.BOOKING_BENEFIT_USAGE_NOT_FOUND_EXCEPTION));
 
 			history.refunded(message.getUserId());
+
+			log.info(
+				"[Booking] 예매 쿠폰, 마일리지 사용 내역 환불처리 - 성공: | userId={}, bookingId={}",
+				message.getUserId(),
+				message.getBookingId()
+			);
 		} else {
+			log.warn(
+				"[Booking] 예매 쿠폰, 마일리지 사용 내역 환불처리 - 실패: {} | userId={}, bookingId={}",
+				ResponseCode.BOOKING_BENEFIT_USAGE_REFUND_FAILED_EXCEPTION.getMessage(),
+				message.getUserId(),
+				message.getBookingId()
+			);
 			throw new BookingException(ResponseCode.BOOKING_BENEFIT_USAGE_REFUND_FAILED_EXCEPTION);
 		}
 	}
