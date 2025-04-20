@@ -58,7 +58,7 @@ public class BookingController {
 	}
 
 	@PatchMapping("/{id}")
-	public ResponseEntity<ApiResponseData<Void>> updateBooking(AuthenticatedUser authenticatedUser,
+	public ResponseEntity<ApiResponseData<Void>> cancelBooking(AuthenticatedUser authenticatedUser,
 		@PathVariable("id") UUID id) {
 		bookingService.cancelBooking(authenticatedUser, id);
 
@@ -78,14 +78,6 @@ public class BookingController {
 		@PathVariable("id") UUID id,
 		@RequestBody BookingPayRequest request) {
 		bookingService.createPayment(authenticatedUser, id, request);
-
-		return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseData.success());
-	}
-
-	@PostMapping("/{id}/refund")
-	public ResponseEntity<ApiResponseData<Void>> refundBooking(AuthenticatedUser authenticatedUser,
-		@PathVariable("id") UUID id) {
-		bookingService.refundBooking(authenticatedUser, id);
 
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseData.success());
 	}

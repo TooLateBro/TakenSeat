@@ -114,13 +114,19 @@ public class BookingServiceImpl implements BookingService {
 
 		if (status == BookingStatus.CANCELED) {
 			throw new BookingException(ResponseCode.BOOKING_ALREADY_CANCELED_EXCEPTION);
-		}
+		} else if (status == BookingStatus.COMPLETED) {
+			// 환불 요청 전송
+			PaymentRefundMessage message = PaymentRefundMessage.builder()
+				.bookingId(booking.getId())
+				.paymentId(booking.getPaymentId())
+				.userId(booking.getUserId())
+				.price(booking.getDiscountedPrice())
+				.type(PaymentRefundMessage.MessageType.REQUEST)
+				.build();
 
+			bookingProducer.sendPaymentRefundRequest(message);
+		}
 		booking.cancel(authenticatedUser.getUserId());
-
-		if (status == BookingStatus.COMPLETED) {
-			// TODO: 환불 요청 보내기
-		}
 
 		// 좌석 선점 해제 요청 보내기
 		BookingSeatClientRequestDto dto = BookingSeatClientRequestDto.builder()
@@ -352,7 +358,7 @@ public class BookingServiceImpl implements BookingService {
 
 				UserBenefitMessage benefitMessage = UserBenefitMessage.builder()
 					.bookingId(booking.getId())
-					.userId(booking.getId())
+					.userId(booking.getUserId())
 					.couponId(history.getCouponId())
 					.mileage(history.getMileage())
 					.price(booking.getPrice())
@@ -389,23 +395,6 @@ public class BookingServiceImpl implements BookingService {
 				throw new BookingException(ResponseCode.BOOKING_SEAT_CANCEL_FAILED_EXCEPTION);
 			}
 		}
-	}
-
-	@Override
-	public void refundBooking(AuthenticatedUser authenticatedUser, UUID id) {
-		// TODO: 공연 도메인에서 시작시간 FeignClient 로 가져오기
-
-		Booking booking = findBookingByIdAndUserId(id, authenticatedUser.getUserId());
-
-		PaymentRefundMessage message = PaymentRefundMessage.builder()
-			.bookingId(booking.getId())
-			.paymentId(booking.getPaymentId())
-			.userId(booking.getUserId())
-			.price(booking.getDiscountedPrice())
-			.type(PaymentRefundMessage.MessageType.REQUEST)
-			.build();
-
-		bookingProducer.sendPaymentRefundRequest(message);
 	}
 
 	@Override
