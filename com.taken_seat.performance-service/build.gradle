@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.4.4'
     id 'io.spring.dependency-management' version '1.1.7'
+    id 'com.epages.restdocs-api-spec' version "0.19.2"
 }
 
 group = 'com.taken-seat'
@@ -28,30 +29,54 @@ ext {
 }
 
 dependencies {
+    // 환경 변수 설정
     implementation 'me.paulschwarz:spring-dotenv:4.0.0'
 
+    // 공통 모듈
     implementation project(':com.taken_seat.common-service')
     annotationProcessor project(':com.taken_seat.common-service')
 
+    // 모니터링
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'io.micrometer:micrometer-registry-prometheus'
     implementation 'com.github.loki4j:loki-logback-appender:1.5.1'
+
+    // SpringBoot
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.springframework.boot:spring-boot-starter-data-redis-reactive'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    // 마이크로서비스 통신
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+
+    // Kafka
     implementation 'org.springframework.kafka:spring-kafka'
+
+    // Redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis-reactive'
+
+    // Zipkin
     implementation 'io.micrometer:micrometer-tracing-bridge-brave'
     implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
+
+    // Lombok
     compileOnly 'org.projectlombok:lombok'
-    runtimeOnly 'com.mysql:mysql-connector-j'
     annotationProcessor 'org.projectlombok:lombok'
+
+    // MySQL
+    runtimeOnly 'com.mysql:mysql-connector-j'
+
+    // 문서화 (Swagger + RestDocs)
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0'
+    testImplementation 'com.epages:restdocs-api-spec-mockmvc:0.19.2'
+
+    // 테스트
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'io.projectreactor:reactor-test'
     testImplementation 'org.springframework.kafka:spring-kafka-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
 }
 
 dependencyManagement {
