@@ -4,7 +4,6 @@ on:
     branches:
       - master
       - dev
-      - feature/#327
   pull_request:
     branches:
       - master
