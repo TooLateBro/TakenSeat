@@ -30,7 +30,7 @@ spring:
         - id: performance-service
           uri: lb://performance-service
           predicates:
-            - Path=/api/v1/performances/**, /api/v1/performancehalls/**, /performance-service/v3/api-docs
+            - Path=/api/v1/performances/**, /api/v1/performancehalls/**, /api/v1/performencetickets/**, /performance-service/v3/api-docs
           filters:
             - RewritePath=/performance-service/(?<segment>.*), /$\{segment}
 
