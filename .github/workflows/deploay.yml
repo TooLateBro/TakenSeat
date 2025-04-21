@@ -65,7 +65,7 @@ jobs:
       - name: Docker 이미지 빌드 및 푸시
         run: |
           ORG_NAME=${{ secrets.MY_GITHUB_USERNAME }}  # GitHub 계정명
-          MODULE_NAME=$(basename "${{ matrix.module }}" | tr '.' '-' | tr '_' '-')
+          MODULE_NAME=$(basename "${{ matrix.module }}" | tr '.' '-' | tr '_' '-'| tr '[:upper:]' '[:lower:]')  # 소문자로 변환
           MODULE_PATH=${{ matrix.module }}
           IMAGE_NAME=ghcr.io/${ORG_NAME}/${MODULE_NAME}:latest
 
