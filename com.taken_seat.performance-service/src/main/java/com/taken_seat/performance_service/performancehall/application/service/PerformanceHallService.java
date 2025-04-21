@@ -15,9 +15,9 @@ import com.taken_seat.common_service.dto.request.BookingSeatClientRequestDto;
 import com.taken_seat.common_service.dto.response.BookingSeatClientResponseDto;
 import com.taken_seat.common_service.exception.customException.PerformanceException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
+import com.taken_seat.performance_service.performance.domain.facade.PerformanceFacade;
 import com.taken_seat.performance_service.performance.domain.model.Performance;
 import com.taken_seat.performance_service.performance.domain.model.PerformanceSchedule;
-import com.taken_seat.performance_service.performance.domain.repository.PerformanceRepository;
 import com.taken_seat.performance_service.performancehall.application.dto.mapper.HallResponseMapper;
 import com.taken_seat.performance_service.performancehall.application.dto.request.CreateRequestDto;
 import com.taken_seat.performance_service.performancehall.application.dto.request.SearchFilterParam;
@@ -32,6 +32,7 @@ import com.taken_seat.performance_service.performancehall.domain.model.Performan
 import com.taken_seat.performance_service.performancehall.domain.model.Seat;
 import com.taken_seat.performance_service.performancehall.domain.model.SeatStatus;
 import com.taken_seat.performance_service.performancehall.domain.repository.PerformanceHallRepository;
+import com.taken_seat.performance_service.performancehall.domain.validation.PerformanceHallExistenceValidator;
 import com.taken_seat.performance_service.performancehall.domain.validation.PerformanceHallValidator;
 
 import lombok.RequiredArgsConstructor;
@@ -42,23 +43,24 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class PerformanceHallService {
 
-	public final PerformanceHallRepository performanceHallRepository;
-
-	public final HallResponseMapper hallResponseMapper;
-
-	public final PerformanceRepository performanceRepository;
+	private final PerformanceHallRepository performanceHallRepository;
+	private final HallResponseMapper hallResponseMapper;
+	private final PerformanceFacade performanceFacade;
+	private final PerformanceHallExistenceValidator performanceHallExistenceValidator;
 
 	@Transactional
 	public CreateResponseDto create(CreateRequestDto request, AuthenticatedUser authenticatedUser) {
 
 		PerformanceHallValidator.validateAuthorized(authenticatedUser);
 
-		PerformanceHallValidator.createValidateDuplicateHall(request.getName(), request.getAddress(),
+		PerformanceHallValidator.createValidateDuplicateHall(
+			request.getName(), request.getAddress(),
 			performanceHallRepository);
 
 		PerformanceHallValidator.validateDuplicateSeats(request.getSeats());
 
-		PerformanceHall performanceHall = PerformanceHall.create(request, authenticatedUser.getUserId());
+		PerformanceHall performanceHall =
+			PerformanceHall.create(request, authenticatedUser.getUserId());
 
 		PerformanceHall saved = performanceHallRepository.save(performanceHall);
 
@@ -68,7 +70,8 @@ public class PerformanceHallService {
 	@Transactional(readOnly = true)
 	public PageResponseDto search(SearchFilterParam filterParam, Pageable pageable) {
 
-		Page<PerformanceHall> pages = performanceHallRepository.findAll(filterParam, pageable);
+		Page<PerformanceHall> pages =
+			performanceHallRepository.findAll(filterParam, pageable);
 
 		return hallResponseMapper.toPage(pages);
 	}
@@ -76,8 +79,8 @@ public class PerformanceHallService {
 	@Transactional(readOnly = true)
 	public DetailResponseDto getDetail(UUID id) {
 
-		PerformanceHall performanceHall = performanceHallRepository.findById(id)
-			.orElseThrow(() -> new PerformanceException(ResponseCode.PERFORMANCE_HALL_NOT_FOUND_EXCEPTION));
+		PerformanceHall performanceHall =
+			performanceHallExistenceValidator.validateByPerformanceHallId(id);
 
 		return toDetail(performanceHall);
 	}
@@ -87,8 +90,8 @@ public class PerformanceHallService {
 
 		PerformanceHallValidator.validateAuthorized(authenticatedUser);
 
-		PerformanceHall performanceHall = performanceHallRepository.findById(id)
-			.orElseThrow(() -> new PerformanceException(ResponseCode.PERFORMANCE_HALL_NOT_FOUND_EXCEPTION));
+		PerformanceHall performanceHall =
+			performanceHallExistenceValidator.validateByPerformanceHallId(id);
 
 		PerformanceHallValidator.updateValidateDuplicateHall(
 			id, request.getName(), request.getAddress(), performanceHallRepository);
@@ -107,18 +110,16 @@ public class PerformanceHallService {
 
 		PerformanceHallValidator.validateAuthorized(authenticatedUser);
 
-		PerformanceHall performanceHall = performanceHallRepository.findById(id)
-			.orElseThrow(() -> new PerformanceException(ResponseCode.PERFORMANCE_HALL_NOT_FOUND_EXCEPTION,
-				"이미 삭제되었거나 존재하지 않는 공연장입니다."));
+		PerformanceHall performanceHall =
+			performanceHallExistenceValidator.validateByPerformanceHallId(id);
 
 		performanceHall.delete(authenticatedUser.getUserId());
-		performanceHallRepository.save(performanceHall);
 	}
 
 	public BookingSeatClientResponseDto updateSeatStatus(BookingSeatClientRequestDto request) {
 
-		PerformanceHall performanceHall = performanceHallRepository.findBySeatId(request.getSeatId())
-			.orElseThrow(() -> new PerformanceException(ResponseCode.PERFORMANCE_HALL_NOT_FOUND_EXCEPTION));
+		PerformanceHall performanceHall =
+			performanceHallExistenceValidator.validateBySeatId(request.getSeatId());
 
 		Seat seat = performanceHall.getSeatById(request.getSeatId());
 
@@ -132,8 +133,7 @@ public class PerformanceHallService {
 
 		performanceHallRepository.saveAndFlush(performanceHall);
 
-		Performance performance = performanceRepository.findById(request.getPerformanceId())
-			.orElseThrow(() -> new PerformanceException(ResponseCode.PERFORMANCE_NOT_FOUND_EXCEPTION));
+		Performance performance = performanceFacade.getByPerformanceId(request.getPerformanceId());
 
 		Integer price = performance.findPriceByScheduleAndSeatType(request.getPerformanceScheduleId(),
 			seat.getSeatType());
@@ -149,8 +149,8 @@ public class PerformanceHallService {
 	@Transactional
 	public BookingSeatClientResponseDto cancelSeatStatus(BookingSeatClientRequestDto request) {
 
-		PerformanceHall performanceHall = performanceHallRepository.findBySeatId(request.getSeatId())
-			.orElseThrow(() -> new PerformanceException(ResponseCode.PERFORMANCE_HALL_NOT_FOUND_EXCEPTION));
+		PerformanceHall performanceHall =
+			performanceHallExistenceValidator.validateBySeatId(request.getSeatId());
 
 		Seat seat = performanceHall.getSeatById(request.getSeatId());
 
@@ -171,15 +171,13 @@ public class PerformanceHallService {
 	@Transactional(readOnly = true)
 	public SeatLayoutResponseDto getSeatLayout(UUID performanceScheduleId) {
 
-		Performance performance = performanceRepository.findByPerformanceScheduleId(performanceScheduleId)
-			.orElseThrow(() -> new PerformanceException(ResponseCode.PERFORMANCE_SCHEDULE_NOT_FOUND_EXCEPTION));
-
+		Performance performance = performanceFacade.getByPerformanceScheduleId(performanceScheduleId);
 		PerformanceSchedule schedule = performance.getScheduleById(performanceScheduleId);
 
 		UUID performanceHallId = schedule.getPerformanceHallId();
 
-		PerformanceHall performanceHall = performanceHallRepository.findById(performanceHallId)
-			.orElseThrow(() -> new PerformanceException(ResponseCode.PERFORMANCE_HALL_NOT_FOUND_EXCEPTION));
+		PerformanceHall performanceHall =
+			performanceHallExistenceValidator.validateByPerformanceHallId(performanceHallId);
 
 		log.info("[Performance] 좌석 배치도 조회 - scheduleId={}, hallId={}, 좌석 수={}",
 			performanceScheduleId, performanceHallId, performanceHall.getSeats().size());
