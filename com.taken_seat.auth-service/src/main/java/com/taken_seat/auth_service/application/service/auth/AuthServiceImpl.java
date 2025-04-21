@@ -77,5 +77,26 @@ class AuthServiceImpl implements AuthService{
 
         redisTemplate.delete(user.getEmail()+" :: refresh_token"); // 기존 refreshToken 삭제
     }
+
+    @Override
+    public String newAccessToken(String token) {
+        try {
+            String accessToken = jwtUtil.extractToken(token);
+            Claims claims = jwtUtil.parseClaimsAllowExpired(accessToken);
+            String email = claims.get("email", String.class);
+
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new AuthException(ResponseCode.USER_NOT_FOUND));
+
+            String refreshToken = redisTemplate.opsForValue().get(user.getEmail() + " :: refresh_token");
+            if (refreshToken == null) {
+                throw new IllegalArgumentException("refresh_token이 존재하지 않습니다.");
+            }else{
+                return jwtUtil.createToken(user);
+            }
+        } catch (AuthException e) {
+            throw new AuthException(ResponseCode.INTERNAL_SERVER_ERROR);
+        }
+    }
 }
 

@@ -1,10 +1,7 @@
 package com.taken_seat.auth_service.infrastructure.util;
 
 import com.taken_seat.auth_service.domain.entity.user.User;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import lombok.Data;
@@ -62,7 +59,6 @@ public class JwtUtil {
                 .compact();
     }
 
-
     public String createRefreshToken(UUID userId){
         return Jwts.builder()
                 .claim("userId", userId.toString())
@@ -79,20 +75,23 @@ public class JwtUtil {
                 .parseClaimsJws(token)
                 .getBody();
     }
+
+    public Claims parseClaimsAllowExpired(String token) {
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (ExpiredJwtException e) {
+            return e.getClaims(); // 토큰이 만료됐지만 claims 추출 가능
+        }
+    }
+
     public String extractToken(String token) {
         if (token == null || !token.startsWith("Bearer ")) {
             return null;
         }
         return token.substring(7);
-    }
-    public boolean validateToken(String token) {
-        try {
-            Jwts.parserBuilder()
-                    .setSigningKey(key)
-                    .build().parseClaimsJws(token);
-            return true;
-        } catch (JwtException e) {
-            return false;
-        }
     }
 }

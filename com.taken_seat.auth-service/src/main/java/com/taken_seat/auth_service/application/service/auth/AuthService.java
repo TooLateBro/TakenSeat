@@ -12,4 +12,6 @@ public interface AuthService {
     AuthLoginResponseDto login(AuthLoginDto dto);
 
     void logout(String token);
+
+    String newAccessToken(String token);
 }

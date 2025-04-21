@@ -49,7 +49,7 @@ common:
 
 service:
   jwt:
-    access-expiration: 600000       # 10분
+    access-expiration: 10000      # 10초
     refresh-expiration: 3600000     # 1시간
     secret:
       key: ${JWT_SECRET}

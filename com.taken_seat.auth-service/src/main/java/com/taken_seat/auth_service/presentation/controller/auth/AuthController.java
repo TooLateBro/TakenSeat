@@ -45,4 +45,10 @@ public class AuthController implements AuthControllerDocs {
         authService.logout(token);
         return ResponseEntity.ok(ApiResponseData.success(null));
     }
+
+    @PostMapping("/receive/newAccessToken")
+    public ResponseEntity<String> newAccessToken(@RequestHeader(value = "Authorization") String token){
+        String newAccessToken = authService.newAccessToken(token);
+        return ResponseEntity.ok(newAccessToken);
+    }
 }
