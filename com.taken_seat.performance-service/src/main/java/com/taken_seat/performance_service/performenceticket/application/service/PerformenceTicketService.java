@@ -4,12 +4,12 @@ import org.springframework.stereotype.Service;
 
 import com.taken_seat.common_service.dto.request.TicketPerformanceClientRequest;
 import com.taken_seat.common_service.dto.response.TicketPerformanceClientResponse;
+import com.taken_seat.performance_service.performance.domain.facade.PerformanceFacade;
 import com.taken_seat.performance_service.performance.domain.model.Performance;
 import com.taken_seat.performance_service.performance.domain.model.PerformanceSchedule;
-import com.taken_seat.performance_service.performance.domain.repository.PerformanceRepository;
+import com.taken_seat.performance_service.performancehall.domain.facade.PerformanceHallFacade;
 import com.taken_seat.performance_service.performancehall.domain.model.PerformanceHall;
 import com.taken_seat.performance_service.performancehall.domain.model.Seat;
-import com.taken_seat.performance_service.performancehall.domain.repository.PerformanceHallRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -17,18 +17,16 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class PerformenceTicketService {
 
-	public final PerformanceRepository performanceRepository;
-	public final PerformanceHallRepository performanceHallRepository;
+	public final PerformanceFacade performanceFacade;
+	public final PerformanceHallFacade performanceHallFacade;
 
 	public TicketPerformanceClientResponse getPerformanceInfo(TicketPerformanceClientRequest request) {
 
-		Performance performance = performanceRepository.findById(request.getPerformanceId())
-			.orElseThrow(() -> new IllegalArgumentException("공연 정보가 존재하지 않습니다"));
+		Performance performance = performanceFacade.getByPerformanceId(request.getPerformanceId());
 
 		PerformanceSchedule schedule = performance.getScheduleById(request.getPerformanceScheduleId());
 
-		PerformanceHall performanceHall = performanceHallRepository.findById((schedule.getPerformanceHallId()))
-			.orElseThrow(() -> new IllegalArgumentException("공연장 정보가 존재하지 않습니다"));
+		PerformanceHall performanceHall = performanceHallFacade.getByPerformanceHallId(schedule.getPerformanceHallId());
 
 		Seat seat = performanceHall.getSeatById(request.getSeatId());
 
