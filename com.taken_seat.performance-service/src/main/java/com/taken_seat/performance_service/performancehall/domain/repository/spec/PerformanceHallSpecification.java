@@ -14,11 +14,20 @@ import jakarta.persistence.criteria.Root;
 
 public class PerformanceHallSpecification {
 
+	private static final String DELETE_AT = "deletedAt";
+	private static final String NAME = "name";
+	private static final String ADDRESS = "address";
+	private static final String TOTAL_SEATS = "totalSeats";
+
+	private static String wildcard(String keyword) {
+		return "%" + keyword + "%";
+	}
+
 	public static Specification<PerformanceHall> withFilter(SearchFilterParam filterParam) {
 		return ((root, query, criteriaBuilder) -> {
 			List<Predicate> predicates = new ArrayList<>();
 
-			predicates.add(criteriaBuilder.isNull(root.get("deletedAt")));
+			predicates.add(criteriaBuilder.isNull(root.get(DELETE_AT)));
 
 			addNameCondition(predicates, root, criteriaBuilder, filterParam);
 			addAddressCondition(predicates, root, criteriaBuilder, filterParam);
@@ -35,7 +44,7 @@ public class PerformanceHallSpecification {
 		SearchFilterParam filterParam) {
 
 		if (filterParam.getName() != null && !filterParam.getName().isBlank()) {
-			predicates.add(cb.like(root.get("name"), "%" + filterParam.getName() + "%"));
+			predicates.add(cb.like(root.get(NAME), wildcard(filterParam.getName())));
 		}
 	}
 
@@ -46,7 +55,7 @@ public class PerformanceHallSpecification {
 		SearchFilterParam filterParam) {
 
 		if (filterParam.getAddress() != null && !filterParam.getAddress().isBlank()) {
-			predicates.add(cb.like(root.get("address"), "%" + filterParam.getAddress() + "%"));
+			predicates.add(cb.like(root.get(ADDRESS), wildcard(filterParam.getAddress())));
 		}
 	}
 
@@ -60,11 +69,11 @@ public class PerformanceHallSpecification {
 		Integer max = filterParam.getMaxSeats();
 
 		if (min != null && max != null) {
-			predicates.add(cb.between(root.get("totalSeats"), min, max));
+			predicates.add(cb.between(root.get(TOTAL_SEATS), min, max));
 		} else if (min != null) {
-			predicates.add(cb.greaterThanOrEqualTo(root.get("totalSeats"), min));
+			predicates.add(cb.greaterThanOrEqualTo(root.get(TOTAL_SEATS), min));
 		} else if (max != null) {
-			predicates.add(cb.lessThanOrEqualTo(root.get("totalSeats"), max));
+			predicates.add(cb.lessThanOrEqualTo(root.get(TOTAL_SEATS), max));
 		}
 	}
 }
