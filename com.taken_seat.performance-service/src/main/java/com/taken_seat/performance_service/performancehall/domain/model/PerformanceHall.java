@@ -105,4 +105,9 @@ public class PerformanceHall extends BaseTimeEntity {
 		}
 		this.totalSeats = this.seats.size();
 	}
+
+	public boolean isSoldOut() {
+		return seats.stream()
+			.noneMatch(seat -> seat.getStatus() == SeatStatus.AVAILABLE);
+	}
 }
