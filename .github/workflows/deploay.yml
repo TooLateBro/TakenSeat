@@ -64,7 +64,7 @@ jobs:
 
       - name: Docker 이미지 빌드 및 푸시
         run: |
-          ORG_NAME=taken-seat  # GitHub 계정명
+          ORG_NAME=toolatebro
           MODULE_NAME=$(basename "${{ matrix.module }}" | sed 's/com.taken_seat.//')  # com.taken_seat 부분을 제거
           MODULE_PATH=${{ matrix.module }}
           
