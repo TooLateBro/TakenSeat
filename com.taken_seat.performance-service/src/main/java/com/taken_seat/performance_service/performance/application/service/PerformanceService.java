@@ -28,10 +28,9 @@ import com.taken_seat.performance_service.performance.domain.model.PerformanceSc
 import com.taken_seat.performance_service.performance.domain.model.PerformanceScheduleStatus;
 import com.taken_seat.performance_service.performance.domain.model.PerformanceStatus;
 import com.taken_seat.performance_service.performance.domain.repository.PerformanceRepository;
+import com.taken_seat.performance_service.performance.domain.validator.PerformanceExistenceValidator;
 import com.taken_seat.performance_service.performance.domain.validator.PerformanceValidator;
-import com.taken_seat.performance_service.performancehall.domain.model.PerformanceHall;
-import com.taken_seat.performance_service.performancehall.domain.model.SeatStatus;
-import com.taken_seat.performance_service.performancehall.domain.repository.PerformanceHallRepository;
+import com.taken_seat.performance_service.performancehall.domain.facade.PerformanceHallFacade;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,7 +42,8 @@ public class PerformanceService {
 
 	private final PerformanceRepository performanceRepository;
 	private final ResponseMapper responseMapper;
-	private final PerformanceHallRepository performanceHallRepository;
+	private final PerformanceHallFacade performanceHallFacade;
+	private final PerformanceExistenceValidator performanceExistenceValidator;
 
 	@Transactional
 	public CreateResponseDto create(CreateRequestDto request, AuthenticatedUser authenticatedUser) {
@@ -72,8 +72,7 @@ public class PerformanceService {
 	@Transactional(readOnly = true)
 	public DetailResponseDto getDetail(UUID id) {
 
-		Performance performance = performanceRepository.findById(id)
-			.orElseThrow(() -> new PerformanceException(ResponseCode.PERFORMANCE_NOT_FOUND_EXCEPTION));
+		Performance performance = performanceExistenceValidator.validateByPerformanceId(id);
 
 		return detailToDto(performance);
 	}
@@ -93,8 +92,7 @@ public class PerformanceService {
 
 		PerformanceValidator.validateDuplicateSchedulesForUpdate(request.getSchedules());
 
-		Performance performance = performanceRepository.findById(id)
-			.orElseThrow(() -> new PerformanceException(ResponseCode.PERFORMANCE_NOT_FOUND_EXCEPTION));
+		Performance performance = performanceExistenceValidator.validateByPerformanceId(id);
 
 		performance.update(request, authenticatedUser.getUserId());
 
@@ -108,9 +106,7 @@ public class PerformanceService {
 			throw new PerformanceException(ResponseCode.ACCESS_DENIED_EXCEPTION, "접근 권한이 없습니다.");
 		}
 
-		Performance performance = performanceRepository.findById(id)
-			.orElseThrow(() -> new PerformanceException(ResponseCode.PERFORMANCE_NOT_FOUND_EXCEPTION,
-				"이미 삭제되었거나 존재하지 않는 공연입니다."));
+		Performance performance = performanceExistenceValidator.validateByPerformanceId(id);
 
 		performance.delete(authenticatedUser.getUserId());
 		performanceRepository.save(performance);
@@ -118,8 +114,7 @@ public class PerformanceService {
 
 	@Transactional
 	public PerformanceEndTimeDto getPerformanceEndTime(UUID performanceId, UUID performanceScheduleId) {
-		Performance performance = performanceRepository.findById(performanceId)
-			.orElseThrow(() -> new PerformanceException(ResponseCode.PERFORMANCE_NOT_FOUND_EXCEPTION));
+		Performance performance = performanceExistenceValidator.validateByPerformanceId(performanceId);
 
 		PerformanceSchedule schedule = performance.getScheduleById(performanceScheduleId);
 
@@ -139,8 +134,7 @@ public class PerformanceService {
 			throw new PerformanceException(ResponseCode.ACCESS_DENIED_EXCEPTION, "접근 권한이 없습니다");
 		}
 
-		Performance performance = performanceRepository.findById(id)
-			.orElseThrow(() -> new PerformanceException(ResponseCode.PERFORMANCE_NOT_FOUND_EXCEPTION));
+		Performance performance = performanceExistenceValidator.validateByPerformanceId(id);
 
 		PerformanceStatus oldPerformanceStatus = performance.getStatus();
 		PerformanceStatus newPerformanceStatus = PerformanceStatus.status(
@@ -160,11 +154,7 @@ public class PerformanceService {
 
 			UUID performanceHallId = schedule.getPerformanceHallId();
 
-			PerformanceHall performanceHall = performanceHallRepository.findById(performanceHallId)
-				.orElseThrow(() -> new PerformanceException(ResponseCode.PERFORMANCE_HALL_NOT_FOUND_EXCEPTION));
-
-			boolean isSoldOut = performanceHall.getSeats().stream()
-				.noneMatch(seat -> seat.getStatus() == SeatStatus.AVAILABLE);
+			boolean isSoldOut = performanceHallFacade.isSoldOut(performanceHallId);
 
 			PerformanceScheduleStatus oldScheduleStatus = schedule.getStatus();
 			PerformanceScheduleStatus newPerformanceScheduleStatus =
@@ -187,8 +177,7 @@ public class PerformanceService {
 
 	@Transactional
 	public PerformanceStartTimeDto getPerformanceStartTime(UUID performanceId, UUID performanceScheduleId) {
-		Performance performance = performanceRepository.findById(performanceId)
-			.orElseThrow(() -> new PerformanceException(ResponseCode.PERFORMANCE_NOT_FOUND_EXCEPTION));
+		Performance performance = performanceExistenceValidator.validateByPerformanceId(performanceId);
 
 		PerformanceSchedule schedule = performance.getScheduleById(performanceScheduleId);
 
