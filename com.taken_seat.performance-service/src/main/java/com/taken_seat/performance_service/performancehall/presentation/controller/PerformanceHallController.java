@@ -31,6 +31,7 @@ import com.taken_seat.performance_service.performancehall.application.dto.respon
 import com.taken_seat.performance_service.performancehall.application.dto.response.SeatLayoutResponseDto;
 import com.taken_seat.performance_service.performancehall.application.dto.response.UpdateResponseDto;
 import com.taken_seat.performance_service.performancehall.application.service.PerformanceHallService;
+import com.taken_seat.performance_service.performancehall.presentation.docs.PerformanceHallControllerDocs;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -38,7 +39,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/performancehalls")
-public class PerformanceHallController {
+public class PerformanceHallController implements PerformanceHallControllerDocs {
 
 	private final PerformanceHallService performanceHallService;
 

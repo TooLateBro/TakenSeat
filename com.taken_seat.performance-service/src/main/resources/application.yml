@@ -59,14 +59,13 @@ eureka:
 common:
   trust-package: "com.taken_seat.common_service.message"
 
-
 logging:
   loki:
     url: ${LOKI_URL}
 
-
-# 로컬
-#eureka:
-#  client:
-#    register-with-eureka: false
-#    fetch-registry: false
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html

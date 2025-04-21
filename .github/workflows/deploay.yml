@@ -10,32 +10,14 @@ on:
       - dev
 
 jobs:
-  eureka:
+  build:
+    name: Multi-Module Build & Docker Push
     runs-on: ubuntu-latest
-    steps:
-      - name: 소스 코드 체크아웃
-        uses: actions/checkout@v4
 
-      - name: JDK 17 설정
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: Gradle 실행 권한 부여
-        run: chmod +x ./gradlew
-
-      - name: Eureka 서버 빌드
-        run: |
-          ./gradlew :com.taken_seat.eureka-service:bootJar
-
-
-  services:
-    runs-on: ubuntu-latest
-    needs: eureka  # Eureka가 실행된 후 실행
-    strategy:
-      matrix:
+    strategy: # 각 서비스 모듈에 대해 병렬로 빌드를 진행
+      matrix: # 여기서 정의된 모듈들에 대해 각각 빌드 작업을 실행
         module:
+          - com.taken_seat.eureka-service
           - com.taken_seat.common-service
           - com.taken_seat.auth-service
           - com.taken_seat.coupon-service
@@ -44,12 +26,13 @@ jobs:
           - com.taken_seat.performance-service
           - com.taken_seat.payment-service
           - com.taken_seat.review-service
-      fail-fast: false
-      max-parallel: 5
+          - com.taken_seat.gateway-service
+      fail-fast: true  # 하나의 작업이 실패하면 나머지 작업 취소
+      max-parallel: 5 # 최대 5개의 모듈을 병렬로 빌드 진행
 
     steps:
       - name: 소스 코드 체크아웃
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4 # GitHub Actions에서 제공하는 `checkout` 액션 사용
 
       - name: JDK 17 설정
         uses: actions/setup-java@v3
@@ -60,7 +43,7 @@ jobs:
       - name: Gradle 실행 권한 부여
         run: chmod +x ./gradlew
 
-      - name: 환경 변수 설정
+      - name: 환경 변수 설정   # Docker 빌드 및 실행에 필요한 환경 변수 설정
         run: |
           echo "SPRING_DATASOURCE_URL=${{ secrets.SPRING_DATASOURCE_URL }}" >> $GITHUB_ENV
           echo "SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_DATASOURCE_USERNAME }}" >> $GITHUB_ENV
@@ -69,24 +52,26 @@ jobs:
           echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> $GITHUB_ENV
           echo "LOKI_URL=${{ secrets.LOKI_URL }}" >> $GITHUB_ENV
 
-      - name: Gradle 빌드 (서비스 모듈)
-        run: ./gradlew :${{ matrix.module }}:build --parallel --no-daemon
+      - name: Gradle 빌드 (서비스 모듈) # 각 모듈에 대해 Gradle 빌드를 실행
+        run: ./gradlew :${{ matrix.module }}:build --parallel --no-daemon # 병렬로 빌드 실행
 
-  gateway:
-    runs-on: ubuntu-latest
-    needs: services  # 모든 서비스 모듈이 빌드된 후 실행
-    steps:
-      - name: 소스 코드 체크아웃
-        uses: actions/checkout@v4
-
-      - name: JDK 17 설정
-        uses: actions/setup-java@v3
+      - name: Docker 로그인 (GitHub Container Registry)  # GitHub Container Registry에 로그인
+        uses: docker/login-action@v2 # `docker/login-action` 사용
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          registry: ghcr.io # GitHub Container Registry URL
+          username: ${{ secrets.MY_GITHUB_USERNAME }}
+          password: ${{ secrets.MY_GITHUB_TOKEN }}
 
-      - name: Gradle 실행 권한 부여
-        run: chmod +x ./gradlew
-
-      - name: Gradle 빌드 (Gateway)
-        run: ./gradlew :com.taken_seat.gateway-service:build --no-daemon
+      - name: Docker 이미지 빌드 및 푸시
+        run: |
+          ORG_NAME=toolatebro # Docker 이미지의 조직 이름 설정
+          MODULE_NAME=$(basename "${{ matrix.module }}" | sed 's/com.taken_seat.//') # 모듈 이름에서 접두어 제거
+          MODULE_PATH=${{ matrix.module }}
+          
+          IMAGE_NAME=ghcr.io/${ORG_NAME}/${MODULE_NAME}:latest # Docker 이미지 이름 설정
+          
+          # Docker 이미지 빌드 명령어 실행
+          docker build -t $IMAGE_NAME -f $MODULE_PATH/Dockerfile $MODULE_PATH
+          
+          # Docker 이미지를 GitHub Container Registry에 푸시
+          docker push $IMAGE_NAME

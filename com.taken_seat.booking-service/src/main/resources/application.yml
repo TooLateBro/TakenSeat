@@ -55,6 +55,8 @@ kafka:
     payment-response: payment.response
     ticket-reissue-request: ticket.reissue.request
     ticket-request: ticket.request
+    queue-request: waitingQueue.request
+    queue-response: waitingQueue.response
   consumer:
     group-id:
       booking-service: booking-service

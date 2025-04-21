@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 
 import com.taken_seat.booking_service.booking.application.service.BookingService;
 import com.taken_seat.booking_service.booking.presentation.BookingConsumer;
+import com.taken_seat.common_service.message.BookingRequestMessage;
 import com.taken_seat.common_service.message.PaymentMessage;
 import com.taken_seat.common_service.message.PaymentRefundMessage;
 import com.taken_seat.common_service.message.UserBenefitMessage;
@@ -42,5 +43,12 @@ public class BookingKafkaConsumer implements BookingConsumer {
 	public void updateBenefitUsageHistory(UserBenefitMessage message) {
 
 		bookingService.updateBenefitUsageHistory(message);
+	}
+
+	@Override
+	@KafkaListener(topics = "${kafka.topic.queue-request}", groupId = "${kafka.consumer.group-id.booking-service}")
+	public void acceptFromQueue(BookingRequestMessage message) {
+
+		bookingService.acceptFromQueue(message);
 	}
 }

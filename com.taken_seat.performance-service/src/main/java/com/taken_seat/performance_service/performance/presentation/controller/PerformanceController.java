@@ -30,6 +30,7 @@ import com.taken_seat.performance_service.performance.application.dto.response.P
 import com.taken_seat.performance_service.performance.application.dto.response.PerformanceEndTimeDto;
 import com.taken_seat.performance_service.performance.application.dto.response.UpdateResponseDto;
 import com.taken_seat.performance_service.performance.application.service.PerformanceService;
+import com.taken_seat.performance_service.performance.presentation.docs.PerformanceControllerDocs;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -37,7 +38,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/performances")
-public class PerformanceController {
+public class PerformanceController implements PerformanceControllerDocs {
 
 	private final PerformanceService performanceService;
 
@@ -84,12 +85,8 @@ public class PerformanceController {
 		return ResponseEntity.noContent().build();
 	}
 
-	/**
-	 * 공연 종료 시간 조회 API
-	 * 리뷰 등록하기 전 해당 공연이 종료되었는지 검사하기 위해 종료 시간을 받아오는 메서드
-	 */
 	@GetMapping("/{performanceId}/schedules/{performanceScheduleId}/end-time")
-	ResponseEntity<ApiResponseData<PerformanceEndTimeDto>> getPerformanceEndTime(
+	public ResponseEntity<ApiResponseData<PerformanceEndTimeDto>> getPerformanceEndTime(
 		@PathVariable("performanceId") UUID performanceId,
 		@PathVariable("performanceScheduleId") UUID performanceScheduleId) {
 
@@ -106,12 +103,8 @@ public class PerformanceController {
 		return ResponseEntity.noContent().build();
 	}
 
-	/**
-	 * 공연 시작 시간 조회 API
-	 * 환불 가능 여부를 판단하기 위해 공연 시작 시간을 받아오는 메서드
-	 */
 	@GetMapping("/{performanceId}/schedules/{performanceScheduleId}/start-time")
-	ResponseEntity<ApiResponseData<PerformanceStartTimeDto>> getPerformanceStartTime(
+	public ResponseEntity<ApiResponseData<PerformanceStartTimeDto>> getPerformanceStartTime(
 		@PathVariable("performanceId") UUID performanceId,
 		@PathVariable("performanceScheduleId") UUID performanceScheduleId) {
 
