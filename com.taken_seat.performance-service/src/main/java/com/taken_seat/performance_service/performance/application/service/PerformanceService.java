@@ -11,8 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.common_service.dto.response.PerformanceStartTimeDto;
-import com.taken_seat.common_service.exception.customException.PerformanceException;
-import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.performance_service.performance.application.dto.mapper.ResponseMapper;
 import com.taken_seat.performance_service.performance.application.dto.request.CreateRequestDto;
 import com.taken_seat.performance_service.performance.application.dto.request.SearchFilterParam;
@@ -48,9 +46,7 @@ public class PerformanceService {
 	@Transactional
 	public CreateResponseDto create(CreateRequestDto request, AuthenticatedUser authenticatedUser) {
 
-		if (!isAuthorized(authenticatedUser)) {
-			throw new PerformanceException(ResponseCode.ACCESS_DENIED_EXCEPTION, "접근 권한이 없습니다.");
-		}
+		PerformanceValidator.validateAuthorized(authenticatedUser);
 
 		PerformanceValidator.validateDuplicateSchedules(request.getSchedules());
 
@@ -80,9 +76,7 @@ public class PerformanceService {
 	@Transactional
 	public UpdateResponseDto update(UUID id, UpdateRequestDto request, AuthenticatedUser authenticatedUser) {
 
-		if (!isAuthorized(authenticatedUser)) {
-			throw new PerformanceException(ResponseCode.ACCESS_DENIED_EXCEPTION, "접근 권한이 없습니다.");
-		}
+		PerformanceValidator.validateAuthorized(authenticatedUser);
 
 		PerformanceValidator.validatePerformanceData(request);
 
@@ -102,9 +96,7 @@ public class PerformanceService {
 	@Transactional
 	public void delete(UUID id, AuthenticatedUser authenticatedUser) {
 
-		if (!isAuthorized(authenticatedUser)) {
-			throw new PerformanceException(ResponseCode.ACCESS_DENIED_EXCEPTION, "접근 권한이 없습니다.");
-		}
+		PerformanceValidator.validateAuthorized(authenticatedUser);
 
 		Performance performance = performanceExistenceValidator.validateByPerformanceId(id);
 
@@ -121,18 +113,10 @@ public class PerformanceService {
 		return new PerformanceEndTimeDto(schedule.getEndAt());
 	}
 
-	private boolean isAuthorized(AuthenticatedUser authenticatedUser) {
-
-		String role = authenticatedUser.getRole();
-		return role.equals("ADMIN") || role.equals("MANAGER") || role.equals("PRODUCER");
-	}
-
 	@Transactional
 	public void updateStatus(UUID id, AuthenticatedUser authenticatedUser) {
 
-		if (!isAuthorized(authenticatedUser)) {
-			throw new PerformanceException(ResponseCode.ACCESS_DENIED_EXCEPTION, "접근 권한이 없습니다");
-		}
+		PerformanceValidator.validateAuthorized(authenticatedUser);
 
 		Performance performance = performanceExistenceValidator.validateByPerformanceId(id);
 
