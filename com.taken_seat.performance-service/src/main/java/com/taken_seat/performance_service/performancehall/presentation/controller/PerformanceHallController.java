@@ -1,11 +1,11 @@
 package com.taken_seat.performance_service.performancehall.presentation.controller;
 
+import java.net.URI;
 import java.util.UUID;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -47,7 +47,8 @@ public class PerformanceHallController {
 		AuthenticatedUser authenticatedUser) {
 
 		CreateResponseDto response = performanceHallService.create(request, authenticatedUser);
-		return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponseData.success(response));
+		URI location = URI.create("/api/v1/performancehalls/" + response.getPerformanceHallId());
+		return ResponseEntity.created(location).body(ApiResponseData.success(response));
 	}
 
 	@GetMapping("/search")
@@ -56,14 +57,14 @@ public class PerformanceHallController {
 		@PageableDefault(page = 0, size = 10, sort = "name", direction = Sort.Direction.ASC) Pageable pageable) {
 
 		PageResponseDto response = performanceHallService.search(filterParam, pageable);
-		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
+		return ResponseEntity.ok(ApiResponseData.success(response));
 	}
 
 	@GetMapping("/{id}")
 	public ResponseEntity<ApiResponseData<DetailResponseDto>> getDetail(@PathVariable("id") UUID id) {
 
 		DetailResponseDto response = performanceHallService.getDetail(id);
-		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
+		return ResponseEntity.ok(ApiResponseData.success(response));
 	}
 
 	@PatchMapping("/{id}")
@@ -73,7 +74,7 @@ public class PerformanceHallController {
 		AuthenticatedUser authenticatedUser) {
 
 		UpdateResponseDto response = performanceHallService.update(id, request, authenticatedUser);
-		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
+		return ResponseEntity.ok(ApiResponseData.success(response));
 	}
 
 	@DeleteMapping("/{id}")
@@ -81,7 +82,7 @@ public class PerformanceHallController {
 		AuthenticatedUser authenticatedUser) {
 
 		performanceHallService.delete(id, authenticatedUser);
-		return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseData.success());
+		return ResponseEntity.noContent().build();
 	}
 
 	@PutMapping("/seat/status")
@@ -89,7 +90,7 @@ public class PerformanceHallController {
 		@Valid @RequestBody BookingSeatClientRequestDto request) {
 
 		BookingSeatClientResponseDto response = performanceHallService.updateSeatStatus(request);
-		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
+		return ResponseEntity.ok(ApiResponseData.success(response));
 	}
 
 	@PutMapping("/seat/status/cancel")
@@ -97,7 +98,7 @@ public class PerformanceHallController {
 		@Valid @RequestBody BookingSeatClientRequestDto request) {
 
 		BookingSeatClientResponseDto response = performanceHallService.cancelSeatStatus(request);
-		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
+		return ResponseEntity.ok(ApiResponseData.success(response));
 	}
 
 	@GetMapping("/seats/{performanceScheduleId}")
@@ -105,6 +106,6 @@ public class PerformanceHallController {
 		@PathVariable("performanceScheduleId") UUID performanceScheduleId) {
 
 		SeatLayoutResponseDto response = performanceHallService.getSeatLayout(performanceScheduleId);
-		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
+		return ResponseEntity.ok(ApiResponseData.success(response));
 	}
 }
