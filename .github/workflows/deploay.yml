@@ -68,8 +68,6 @@ jobs:
           MODULE_NAME=$(basename "${{ matrix.module }}" | sed 's/com.taken_seat.//')  # com.taken_seat 부분을 제거
           MODULE_PATH=${{ matrix.module }}
           
-            MODULE_NAME=$(echo $MODULE_NAME | tr '-' '.')
-          
           IMAGE_NAME=ghcr.io/${ORG_NAME}/${MODULE_NAME}:latest
 
           docker build -t $IMAGE_NAME -f $MODULE_PATH/Dockerfile $MODULE_PATH
