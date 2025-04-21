@@ -41,7 +41,5 @@ public interface BookingService {
 
 	void expireBooking(UUID bookingId);
 
-	void refundBooking(AuthenticatedUser authenticatedUser, UUID id);
-
 	void updateBenefitUsageHistory(UserBenefitMessage message);
 }

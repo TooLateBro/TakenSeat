@@ -12,6 +12,7 @@ import com.taken_seat.common_service.dto.ApiResponseData;
 import com.taken_seat.common_service.dto.request.BookingSeatClientRequestDto;
 import com.taken_seat.common_service.dto.response.BookingSeatClientResponseDto;
 import com.taken_seat.common_service.dto.response.BookingStatusDto;
+import com.taken_seat.common_service.dto.response.PerformanceStartTimeDto;
 import com.taken_seat.common_service.exception.customException.BookingException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
 
@@ -42,6 +43,14 @@ public class BookingClientServiceImpl implements BookingClientService {
 	@Override
 	public BookingSeatClientResponseDto cancelSeatStatus(BookingSeatClientRequestDto requestDto) {
 		ApiResponseData<BookingSeatClientResponseDto> response = performanceClient.cancelSeatStatus(requestDto);
+
+		return response.body();
+	}
+
+	@Override
+	public PerformanceStartTimeDto getPerformanceStartTime(UUID performanceId, UUID performanceScheduleId) {
+		ApiResponseData<PerformanceStartTimeDto> response = performanceClient.getPerformanceStartTime(performanceId,
+			performanceScheduleId);
 
 		return response.body();
 	}
