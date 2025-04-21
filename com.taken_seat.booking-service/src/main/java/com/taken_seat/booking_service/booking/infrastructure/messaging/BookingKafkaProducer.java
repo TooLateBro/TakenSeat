@@ -8,6 +8,7 @@ import com.taken_seat.booking_service.booking.application.service.BookingProduce
 import com.taken_seat.booking_service.common.message.TicketRequestMessage;
 import com.taken_seat.common_service.message.PaymentMessage;
 import com.taken_seat.common_service.message.PaymentRefundMessage;
+import com.taken_seat.common_service.message.QueueEnterMessage;
 import com.taken_seat.common_service.message.UserBenefitMessage;
 
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,9 @@ public class BookingKafkaProducer implements BookingProducer {
 
 	@Value("${kafka.topic.payment-refund-request}")
 	private String PAYMENT_REFUND_REQUEST_TOPIC;
+
+	@Value("${kafka.topic.queue-response}")
+	private String QUEUE_RESPONSE_TOPIC;
 
 	@Override
 	public void sendPaymentRequest(PaymentMessage message) {
@@ -61,5 +65,11 @@ public class BookingKafkaProducer implements BookingProducer {
 	public void sendPaymentRefundRequest(PaymentRefundMessage message) {
 
 		kafkaTemplate.send(PAYMENT_REFUND_REQUEST_TOPIC, message);
+	}
+
+	@Override
+	public void sendQueueEnterResponse(QueueEnterMessage message) {
+
+		kafkaTemplate.send(QUEUE_RESPONSE_TOPIC, message);
 	}
 }

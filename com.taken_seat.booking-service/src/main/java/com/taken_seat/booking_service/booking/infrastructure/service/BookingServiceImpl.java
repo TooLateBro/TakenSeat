@@ -1,7 +1,9 @@
 package com.taken_seat.booking_service.booking.infrastructure.service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -16,6 +18,7 @@ import com.taken_seat.booking_service.booking.application.dto.response.AdminBook
 import com.taken_seat.booking_service.booking.application.dto.response.BookingCreateResponse;
 import com.taken_seat.booking_service.booking.application.dto.response.BookingPageResponse;
 import com.taken_seat.booking_service.booking.application.dto.response.BookingReadResponse;
+import com.taken_seat.booking_service.booking.application.dto.response.SeatLayoutResponseDto;
 import com.taken_seat.booking_service.booking.application.service.BookingClientService;
 import com.taken_seat.booking_service.booking.application.service.BookingProducer;
 import com.taken_seat.booking_service.booking.application.service.BookingService;
@@ -33,8 +36,10 @@ import com.taken_seat.common_service.dto.request.BookingSeatClientRequestDto;
 import com.taken_seat.common_service.dto.response.BookingSeatClientResponseDto;
 import com.taken_seat.common_service.exception.customException.BookingException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
+import com.taken_seat.common_service.message.BookingRequestMessage;
 import com.taken_seat.common_service.message.PaymentMessage;
 import com.taken_seat.common_service.message.PaymentRefundMessage;
+import com.taken_seat.common_service.message.QueueEnterMessage;
 import com.taken_seat.common_service.message.UserBenefitMessage;
 
 import lombok.RequiredArgsConstructor;
@@ -92,6 +97,13 @@ public class BookingServiceImpl implements BookingService {
 
 		// 예매 만료 설정
 		redisService.setBookingExpire(saved.getId());
+
+		// 대기열 입장 메시지 전송
+		QueueEnterMessage queueEnterMessage = QueueEnterMessage.builder()
+			.performanceId(request.getPerformanceId())
+			.performanceScheduleId(request.getPerformanceScheduleId())
+			.build();
+		bookingProducer.sendQueueEnterResponse(queueEnterMessage);
 
 		log.info("[Booking] 예약 생성 - 성공: | userId={}", authenticatedUser.getUserId());
 		return BookingCreateResponse.toDto(saved);
@@ -602,6 +614,37 @@ public class BookingServiceImpl implements BookingService {
 			);
 			throw new BookingException(ResponseCode.BOOKING_BENEFIT_USAGE_REFUND_FAILED_EXCEPTION);
 		}
+	}
+
+	@Override
+	@Transactional
+	public void acceptFromQueue(BookingRequestMessage message) {
+
+		log.info(
+			"[Booking] 대기열에서 입장: | userId={}, performanceId={}, performanceScheduleId={}",
+			message.getUserId(),
+			message.getPerformanceId(),
+			message.getPerformanceScheduleId()
+		);
+
+		SeatLayoutResponseDto layout = bookingClientService.getSeatLayout(message.getPerformanceScheduleId());
+		List<UUID> seatIds = layout.getSeats().stream()
+			.filter(e -> e.getStatus().equals(SeatLayoutResponseDto.SeatDto.SeatStatus.AVAILABLE))
+			.map(SeatLayoutResponseDto.SeatDto::getSeatId)
+			.toList();
+
+		Random random = new Random();
+		int i = random.nextInt(seatIds.size());
+		UUID seatId = seatIds.get(i);
+
+		AuthenticatedUser authenticatedUser = new AuthenticatedUser(message.getUserId(), "", "");
+		BookingCreateRequest request = BookingCreateRequest.builder()
+			.performanceId(message.getPerformanceId())
+			.performanceScheduleId(message.getPerformanceScheduleId())
+			.seatId(seatId)
+			.build();
+
+		createBooking(authenticatedUser, request);
 	}
 
 	private boolean isValidPrice(int price) {

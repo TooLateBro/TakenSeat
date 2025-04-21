@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
+import com.taken_seat.booking_service.booking.application.dto.response.SeatLayoutResponseDto;
 import com.taken_seat.booking_service.booking.application.service.BookingClientService;
 import com.taken_seat.booking_service.booking.domain.Booking;
 import com.taken_seat.booking_service.booking.domain.repository.BookingRepository;
@@ -51,6 +52,13 @@ public class BookingClientServiceImpl implements BookingClientService {
 	public PerformanceStartTimeDto getPerformanceStartTime(UUID performanceId, UUID performanceScheduleId) {
 		ApiResponseData<PerformanceStartTimeDto> response = performanceClient.getPerformanceStartTime(performanceId,
 			performanceScheduleId);
+
+		return response.body();
+	}
+
+	@Override
+	public SeatLayoutResponseDto getSeatLayout(UUID performanceScheduleId) {
+		ApiResponseData<SeatLayoutResponseDto> response = performanceClient.getSeatLayout(performanceScheduleId);
 
 		return response.body();
 	}
