@@ -1,6 +1,5 @@
 package com.taken_seat.performance_service.performance.application.dto.mapper;
 
-import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -85,29 +84,10 @@ public class ResponseMapper {
 			.build();
 	}
 
-	public SearchResponseDto toSearch(Performance performance) {
+	public PageResponseDto toPage(Page<SearchResponseDto> pages) {
 
-		return SearchResponseDto.builder()
-			.performanceId(performance.getId())
-			.title(performance.getTitle())
-			.startAt(performance.getStartAt())
-			.endAt(performance.getEndAt())
-			.status(performance.getStatus())
-			.posterUrl(performance.getPosterUrl())
-			.build();
-	}
-
-	public List<SearchResponseDto> toSearchList(List<Performance> performances) {
-		return performances.stream()
-			.map(this::toSearch)
-			.collect(Collectors.toList());
-	}
-
-	public PageResponseDto toPage(Page<Performance> pages) {
-
-		List<SearchResponseDto> content = toSearchList(pages.getContent());
 		return PageResponseDto.builder()
-			.content(content)
+			.content(pages.getContent())
 			.pageSize(pages.getSize())
 			.pageNumber(pages.getNumber() + 1)
 			.totalPages(pages.getTotalPages())
