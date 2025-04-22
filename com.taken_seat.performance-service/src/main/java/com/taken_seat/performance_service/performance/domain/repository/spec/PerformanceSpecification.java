@@ -15,11 +15,20 @@ import jakarta.persistence.criteria.Root;
 
 public class PerformanceSpecification {
 
+	private static final String DELETED_AT = "deletedAt";
+	private static final String TITLE = "title";
+	private static final String START_AT = "startAt";
+	private static final String STATUS = "status";
+
+	private static String wildcard(String keyword) {
+		return "%" + keyword + "%";
+	}
+
 	public static Specification<Performance> withFilter(SearchFilterParam filterParam) {
 		return (root, query, criteriaBuilder) -> {
 			List<Predicate> predicates = new ArrayList<>();
 
-			predicates.add(criteriaBuilder.isNull(root.get("deletedAt")));
+			predicates.add(criteriaBuilder.isNull(root.get(DELETED_AT)));
 
 			addTitleCondition(predicates, root, criteriaBuilder, filterParam);
 			addDateCondition(predicates, root, criteriaBuilder, filterParam);
@@ -35,7 +44,7 @@ public class PerformanceSpecification {
 	private static void addTitleCondition(List<Predicate> predicates, Root<Performance> root,
 		CriteriaBuilder cb, SearchFilterParam filterParam) {
 		if (filterParam.getTitle() != null && !filterParam.getTitle().isBlank()) {
-			predicates.add(cb.like(root.get("title"), "%" + filterParam.getTitle() + "%"));
+			predicates.add(cb.like(root.get(TITLE), wildcard(filterParam.getTitle())));
 		}
 	}
 
@@ -52,11 +61,11 @@ public class PerformanceSpecification {
 		LocalDateTime end = filterParam.getEndAt();
 
 		if (start != null && end != null) {
-			predicates.add(cb.between(root.get("startAt"), start, end));
+			predicates.add(cb.between(root.get(START_AT), start, end));
 		} else if (start != null) {
-			predicates.add(cb.greaterThanOrEqualTo(root.get("startAt"), start));
+			predicates.add(cb.greaterThanOrEqualTo(root.get(START_AT), start));
 		} else if (end != null) {
-			predicates.add(cb.lessThanOrEqualTo(root.get("startAt"), end));
+			predicates.add(cb.lessThanOrEqualTo(root.get(START_AT), end));
 		}
 	}
 
@@ -66,7 +75,7 @@ public class PerformanceSpecification {
 	private static void addStatusCondition(List<Predicate> predicates, Root<Performance> root,
 		CriteriaBuilder cb, SearchFilterParam filterParam) {
 		if (filterParam.getStatus() != null) {
-			predicates.add(cb.equal(root.get("status"), filterParam.getStatus()));
+			predicates.add(cb.equal(root.get(STATUS), filterParam.getStatus()));
 		}
 	}
 }
