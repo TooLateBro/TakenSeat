@@ -66,6 +66,7 @@ variable:
   lock-wait-time: 3 # 초
   lock-lease-time: 5 # 초
   booking-expiration-time: 600 # 초
+  cache-duration: 600 # 초
 
 common:
   trust-package: "com.taken_seat.common_service.message, com.taken_seat.booking_service.common.message"
