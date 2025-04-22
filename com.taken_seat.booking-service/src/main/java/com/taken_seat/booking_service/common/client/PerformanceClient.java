@@ -1,4 +1,4 @@
-package com.taken_seat.booking_service.booking.infrastructure.client;
+package com.taken_seat.booking_service.common.client;
 
 import java.util.UUID;
 
@@ -13,8 +13,9 @@ import com.taken_seat.common_service.dto.ApiResponseData;
 import com.taken_seat.common_service.dto.request.BookingSeatClientRequestDto;
 import com.taken_seat.common_service.dto.response.BookingSeatClientResponseDto;
 import com.taken_seat.common_service.dto.response.PerformanceStartTimeDto;
+import com.taken_seat.common_service.dto.response.TicketPerformanceClientResponse;
 
-@FeignClient(name = "performance-service", path = "/api/v1", contextId = "booking")
+@FeignClient(name = "performance-service", path = "/api/v1")
 public interface PerformanceClient {
 
 	@PutMapping("/performancehalls/seat/status")
@@ -30,4 +31,11 @@ public interface PerformanceClient {
 	@GetMapping("/performancehalls/seats/{performanceScheduleId}")
 	ApiResponseData<SeatLayoutResponseDto> getSeatLayout(
 		@PathVariable("performanceScheduleId") UUID performanceScheduleId);
+
+	@GetMapping("/performancetickets/{performanceId}/schedules/{performanceScheduleId}/seats/{seatId}")
+	ApiResponseData<TicketPerformanceClientResponse> getPerformanceInfo(
+		@PathVariable("performanceId") UUID performanceId,
+		@PathVariable("performanceScheduleId") UUID performanceScheduleId,
+		@PathVariable("seatId") UUID seatId
+	);
 }
