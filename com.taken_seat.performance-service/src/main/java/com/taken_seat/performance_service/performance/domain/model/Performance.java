@@ -117,4 +117,9 @@ public class Performance extends BaseTimeEntity {
 	public void updateStatus(PerformanceStatus newStatus) {
 		this.status = newStatus;
 	}
+
+	public void updateScheduleStatus(UUID performanceScheduleId, PerformanceScheduleStatus newStatus) {
+		PerformanceSchedule schedule = getScheduleById(performanceScheduleId);
+		schedule.updateStatus(newStatus);
+	}
 }
