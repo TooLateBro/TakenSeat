@@ -28,6 +28,20 @@ ext {
     set('springCloudVersion', "2024.0.1")
 }
 
+def querydslDir = "$buildDir/generated/sources/annotationProcessor/java/main"
+
+sourceSets {
+    main {
+        java {
+            srcDirs += querydslDir
+        }
+    }
+}
+
+clean.doLast {
+    file(querydslDir).deleteDir()
+}
+
 dependencies {
     // 환경 변수 설정
     implementation 'me.paulschwarz:spring-dotenv:4.0.0'
@@ -70,6 +84,13 @@ dependencies {
     // 문서화 (Swagger + RestDocs)
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0'
     testImplementation 'com.epages:restdocs-api-spec-mockmvc:0.19.2'
+
+    //queryDSL 의존성
+    implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
+    implementation 'com.google.code.findbugs:jsr305:3.0.2'
+    annotationProcessor "com.querydsl:querydsl-apt:5.0.0:jakarta"
+    annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+    annotationProcessor "jakarta.persistence:jakarta.persistence-api"
 
     // 테스트
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

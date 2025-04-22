@@ -25,12 +25,15 @@ import com.taken_seat.performance_service.performancehall.application.dto.reques
 import com.taken_seat.performance_service.performancehall.application.dto.response.CreateResponseDto;
 import com.taken_seat.performance_service.performancehall.application.dto.response.DetailResponseDto;
 import com.taken_seat.performance_service.performancehall.application.dto.response.PageResponseDto;
+import com.taken_seat.performance_service.performancehall.application.dto.response.SearchResponseDto;
 import com.taken_seat.performance_service.performancehall.application.dto.response.SeatDto;
 import com.taken_seat.performance_service.performancehall.application.dto.response.SeatLayoutResponseDto;
 import com.taken_seat.performance_service.performancehall.application.dto.response.UpdateResponseDto;
+import com.taken_seat.performance_service.performancehall.application.event.SeatStatusEventPublisher;
 import com.taken_seat.performance_service.performancehall.domain.model.PerformanceHall;
 import com.taken_seat.performance_service.performancehall.domain.model.Seat;
 import com.taken_seat.performance_service.performancehall.domain.model.SeatStatus;
+import com.taken_seat.performance_service.performancehall.domain.repository.PerformanceHallQueryRepository;
 import com.taken_seat.performance_service.performancehall.domain.repository.PerformanceHallRepository;
 import com.taken_seat.performance_service.performancehall.domain.validation.PerformanceHallExistenceValidator;
 import com.taken_seat.performance_service.performancehall.domain.validation.PerformanceHallValidator;
@@ -47,6 +50,8 @@ public class PerformanceHallService {
 	private final HallResponseMapper hallResponseMapper;
 	private final PerformanceFacade performanceFacade;
 	private final PerformanceHallExistenceValidator performanceHallExistenceValidator;
+	private final PerformanceHallQueryRepository performanceHallQueryRepository;
+	private final SeatStatusEventPublisher seatStatusEventPublisher;
 
 	@Transactional
 	public CreateResponseDto create(CreateRequestDto request, AuthenticatedUser authenticatedUser) {
@@ -70,8 +75,8 @@ public class PerformanceHallService {
 	@Transactional(readOnly = true)
 	public PageResponseDto search(SearchFilterParam filterParam, Pageable pageable) {
 
-		Page<PerformanceHall> pages =
-			performanceHallRepository.findAll(filterParam, pageable);
+		Page<SearchResponseDto> pages =
+			performanceHallQueryRepository.searchByFilter(filterParam, pageable);
 
 		return hallResponseMapper.toPage(pages);
 	}
@@ -133,10 +138,19 @@ public class PerformanceHallService {
 
 		performanceHallRepository.saveAndFlush(performanceHall);
 
+		seatStatusEventPublisher.publish(
+			request.getPerformanceId(),
+			request.getPerformanceScheduleId(),
+			request.getSeatId(),
+			SeatStatus.SOLDOUT
+		);
+
 		Performance performance = performanceFacade.getByPerformanceId(request.getPerformanceId());
 
-		Integer price = performance.findPriceByScheduleAndSeatType(request.getPerformanceScheduleId(),
-			seat.getSeatType());
+		Integer price = performance.findPriceByScheduleAndSeatType(
+			request.getPerformanceScheduleId(),
+			seat.getSeatType()
+		);
 
 		log.info(
 			"[Performance] 좌석 선점 - 성공 - seatId={}, scheduleId={}, performanceId={}, performanceHallId={}, seatType={}, price={}",
@@ -161,6 +175,13 @@ public class PerformanceHallService {
 		}
 
 		seat.updateStatus(SeatStatus.AVAILABLE);
+
+		seatStatusEventPublisher.publish(
+			request.getPerformanceId(),
+			request.getPerformanceScheduleId(),
+			request.getSeatId(),
+			SeatStatus.AVAILABLE
+		);
 
 		log.info("[Performance] 좌석 선점 취소 - 성공 - seatId={}, scheduleId={}",
 			request.getSeatId(), request.getPerformanceScheduleId());

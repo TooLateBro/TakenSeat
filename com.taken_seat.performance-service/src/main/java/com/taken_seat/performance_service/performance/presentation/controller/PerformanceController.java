@@ -1,5 +1,6 @@
 package com.taken_seat.performance_service.performance.presentation.controller;
 
+import java.net.URI;
 import java.util.UUID;
 
 import org.springframework.data.domain.Pageable;
@@ -47,7 +48,8 @@ public class PerformanceController implements PerformanceControllerDocs {
 		AuthenticatedUser authenticatedUser) {
 
 		CreateResponseDto response = performanceService.create(request, authenticatedUser);
-		return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponseData.success(response));
+		URI location = URI.create("/api/v1/performances/" + response.getPerformanceId());
+		return ResponseEntity.created(location).body(ApiResponseData.success(response));
 	}
 
 	@GetMapping("/search")
@@ -63,7 +65,7 @@ public class PerformanceController implements PerformanceControllerDocs {
 	public ResponseEntity<ApiResponseData<DetailResponseDto>> getDetail(@PathVariable("id") UUID id) {
 
 		DetailResponseDto response = performanceService.getDetail(id);
-		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
+		return ResponseEntity.ok(ApiResponseData.success(response));
 	}
 
 	@PatchMapping("/{id}")
@@ -72,7 +74,7 @@ public class PerformanceController implements PerformanceControllerDocs {
 		AuthenticatedUser authenticatedUser) {
 
 		UpdateResponseDto response = performanceService.update(id, request, authenticatedUser);
-		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
+		return ResponseEntity.ok(ApiResponseData.success(response));
 	}
 
 	@DeleteMapping("/{id}")
@@ -80,7 +82,7 @@ public class PerformanceController implements PerformanceControllerDocs {
 		AuthenticatedUser authenticatedUser) {
 
 		performanceService.delete(id, authenticatedUser);
-		return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseData.success());
+		return ResponseEntity.noContent().build();
 	}
 
 	@GetMapping("/{performanceId}/schedules/{performanceScheduleId}/end-time")
@@ -89,7 +91,7 @@ public class PerformanceController implements PerformanceControllerDocs {
 		@PathVariable("performanceScheduleId") UUID performanceScheduleId) {
 
 		PerformanceEndTimeDto response = performanceService.getPerformanceEndTime(performanceId, performanceScheduleId);
-		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
+		return ResponseEntity.ok(ApiResponseData.success(response));
 	}
 
 	@PatchMapping("/{id}/status")
@@ -98,7 +100,7 @@ public class PerformanceController implements PerformanceControllerDocs {
 		AuthenticatedUser authenticatedUser) {
 
 		performanceService.updateStatus(id, authenticatedUser);
-		return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseData.success());
+		return ResponseEntity.noContent().build();
 	}
 
 	@GetMapping("/{performanceId}/schedules/{performanceScheduleId}/start-time")
@@ -108,6 +110,6 @@ public class PerformanceController implements PerformanceControllerDocs {
 
 		PerformanceStartTimeDto response = performanceService.getPerformanceStartTime(performanceId,
 			performanceScheduleId);
-		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
+		return ResponseEntity.ok(ApiResponseData.success(response));
 	}
 }

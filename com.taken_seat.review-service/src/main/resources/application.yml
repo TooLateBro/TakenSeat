@@ -7,10 +7,10 @@ spring:
 
   data:
     redis:
-      host: localhost
-      port: 6379
-      username: default
-      password: systempass
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      username: ${REDIS_USERNAME}
+      password: ${REDIS_PASSWORD}
   datasource:
     url: ${SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
@@ -38,7 +38,7 @@ management:
       application: review-service
   zipkin:
     tracing:
-      endpoint: "http://localhost:9411/api/v2/spans" # zipkin에서 정해진 엔드포인트
+      endpoint: ${ZIPKIN_ENDPOINT}
   tracing:
     sampling:
       probability: 1.0
@@ -49,18 +49,16 @@ common:
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:19090/eureka/
+      defaultZone: ${EUREKA_DEFAULT_ZONE}
 
 feign:
   client:
     performance:
       name: performance-service
-      url:
-        http://localhost:19096/api/v1/performances
+      url: ${PERFORMANCE_URL}
     booking:
       name: booking-service
-      url:
-        http://localhost:19095/api/v1/bookings
+      url: ${BOOKING_URL}
 
 
 logging:
