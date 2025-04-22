@@ -1,4 +1,4 @@
-package com.taken_seat.performance_service.performenceticket.application.service;
+package com.taken_seat.performance_service.Performanceticket.application.service;
 
 import org.springframework.stereotype.Service;
 
@@ -15,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class PerformenceTicketService {
+public class PerformanceTicketService {
 
 	public final PerformanceFacade performanceFacade;
 	public final PerformanceHallFacade performanceHallFacade;

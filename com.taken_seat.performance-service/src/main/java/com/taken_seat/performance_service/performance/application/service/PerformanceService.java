@@ -20,6 +20,7 @@ import com.taken_seat.performance_service.performance.application.dto.response.C
 import com.taken_seat.performance_service.performance.application.dto.response.DetailResponseDto;
 import com.taken_seat.performance_service.performance.application.dto.response.PageResponseDto;
 import com.taken_seat.performance_service.performance.application.dto.response.PerformanceEndTimeDto;
+import com.taken_seat.performance_service.performance.application.dto.response.SearchResponseDto;
 import com.taken_seat.performance_service.performance.application.dto.response.UpdateResponseDto;
 import com.taken_seat.performance_service.performance.domain.helper.PerformanceUpdateHelper;
 import com.taken_seat.performance_service.performance.domain.model.Performance;
@@ -59,7 +60,7 @@ public class PerformanceService {
 	@Transactional(readOnly = true)
 	public PageResponseDto search(SearchFilterParam filterParam, Pageable pageable) {
 
-		Page<Performance> pages = performanceRepository.findAll(filterParam, pageable);
+		Page<SearchResponseDto> pages = performanceRepository.findAll(filterParam, pageable);
 
 		return responseMapper.toPage(pages);
 	}
