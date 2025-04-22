@@ -19,10 +19,10 @@ spring:
 
   data:
     redis:
-      host: localhost
-      port: 6379
-      username: default
-      password: systempass
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      username: ${REDIS_USERNAME}
+      password: ${REDIS_PASSWORD}
 
 server:
   port: 19096
@@ -43,7 +43,7 @@ management:
 
   zipkin:
     tracing:
-      endpoint: "http://localhost:9411/api/v2/spans"
+      endpoint: ${ZIPKIN_ENDPOINT}
 
   tracing:
     sampling:
@@ -54,7 +54,7 @@ eureka:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      defaultZone: http://localhost:19090/eureka/
+      defaultZone: ${EUREKA_DEFAULT_ZONE}
 
 common:
   trust-package: "com.taken_seat.common_service.message"
