@@ -84,103 +84,112 @@
 TakenSeat                                                  # 루트 프로젝트
 ├──com.taken_seat.eureka-service                           # 서비스 디스커버리
 │  ├──src/main/java/com/taken_seat/eureka_service
+│  ├──Dockerfile
 │
-│──com.taken_seat.gateway-service                          # API 게이트 웨이
+├──com.taken_seat.gateway-service                          # API 게이트 웨이
 │  ├──src/main/java/com/taken_seat/gateway_service
-│          ├──config/
-│          ├──exception/
-│          ├──filter/
-│          ├──util/
-│ 
-│──com.taken_seat.auth-service                             # 유저 서비스 
+│  │       ├──config/
+│  │       ├──exception/
+│  │       ├──filter/
+│  │       ├──util/
+│  ├──Dockerfile
+│
+├──com.taken_seat.auth-service                             # 유저 서비스 
 │  ├──src/main/java/com/taken_seat/auth_service
-│      │   ├──application/
-│      │   ├──domain/
-│      │   ├──infrastructure/
-│      │   ├──presentation/
-│      │   ├──common/
-│      │──test/java/com/taken_seat/auth_service
-│   
-│──com.taken_seat.coupon-service                           # 쿠폰 서비스
+│  │   ├──application/
+│  │   ├──domain/
+│  │   ├──infrastructure/
+│  │   ├──presentation/
+│  │   ├──common/
+│  ├──test/java/com/taken_seat/auth_service
+│  ├──Dockerfile
+│
+├──com.taken_seat.coupon-service                           # 쿠폰 서비스
 │  ├──src/main/java/com/taken_seat/coupon_service
-│      │   ├──application/
-│      │   ├──domain/
-│      │   ├──infrastructure/
-│      │   ├──presentation/
-│      │   ├──common/
-│      │──test/java/com/taken_seat/coupon_service
+│  │   ├──application/
+│  │   ├──domain/
+│  │   ├──infrastructure/
+│  │   ├──presentation/
+│  │   ├──common/
+│  ├──test/java/com/taken_seat/coupon_service
+│  ├──Dockerfile
 │
-│──com.taken_seat.queue-service                            # 대기열 서비스
+├──com.taken_seat.queue-service                            # 대기열 서비스
 │  ├──src/main/java/com/taken_seat/queue_service
-│      │   ├──application/
-│      │   ├──infrastructure/
-│      │   ├──presentation/    
-│      │──test/java/com/taken_seat/queue_service
+│  │   ├──application/
+│  │   ├──infrastructure/
+│  │   ├──presentation/    
+│  ├──test/java/com/taken_seat/queue_service
+│  ├──Dockerfile
 │
-│──com.taken_seat.booking-service                          # 예매 서비스
+├──com.taken_seat.booking-service                          # 예매 서비스
 │  ├──src/main/java/com/taken_seat/booking_service
-│      │   ├──booking/
-│      │   │     ├──application/
-│      │   │     ├──domain/
-│      │   │     ├──infrastructure/
-│      │   │     ├──presentation/
-│      │   ├──ticket/
-│      │         ├──application/
-│      │         ├──domain/
-│      │         ├──infrastructure/
-│      │         ├──presentation/
-│      ├──common/
-│      │──test/java/com/taken_seat/booking_service
+│  │   ├──booking/
+│  │   │   ├──application/
+│  │   │   ├──domain/
+│  │   │   ├──infrastructure/
+│  │   │   ├──presentation/
+│  │   ├──ticket/
+│  │       ├──application/
+│  │       ├──domain/
+│  │       ├──infrastructure/
+│  │       ├──presentation/
+│  ├──common/
+│  ├──test/java/com/taken_seat/booking_service
+│  ├──Dockerfile
 │
-│──com.taken_seat.performance-service                      # 공연 서비스
+├──com.taken_seat.performance-service                      # 공연 서비스
 │  ├──src/main/java/com/taken_seat/performance_service
-│      │   ├──performance/
-│      │   │     ├──application/
-│      │   │     ├──domain/
-│      │   │     ├──infrastructure/
-│      │   │     ├──presentation/
-│      │   ├──performancehall/
-│      │   │     ├──application/
-│      │   │     ├──domain/
-│      │   │     ├──infrastructure/
-│      │   │     ├──presentation/
-│      │   ├──performanceticket/
-│      │   │     ├──application/
-│      │   │     ├──presentation/
-│      │   ├──common/
-│      │──test/java/com/taken_seat/performance_service
+│  │   ├──performance/
+│  │   │   ├──application/
+│  │   │   ├──domain/
+│  │   │   ├──infrastructure/
+│  │   │   ├──presentation/
+│  │   ├──performancehall/
+│  │   │   ├──application/
+│  │   │   ├──domain/
+│  │   │   ├──infrastructure/
+│  │   │   ├──presentation/
+│  │   ├──performanceticket/
+│  │   │   ├──application/
+│  │   │   ├──presentation/
+│  ├──common/
+│  ├──test/java/com/taken_seat/performance_service
+│  ├──Dockerfile
 │
-│──com.taken_seat.payment-service                          # 결제 서비스
+├──com.taken_seat.payment-service                          # 결제 서비스
 │  ├──src/main/java/com/taken_seat/payment_service
-│      │   ├──application/
-│      │   ├──domain/
-│      │   ├──infrastructure/
-│      │   ├──presentation/
-│      │   ├──common/
-│      │──test/java/com/taken_seat/payment_service
+│  │   ├──application/
+│  │   ├──domain/
+│  │   ├──infrastructure/
+│  │   ├──presentation/
+│  │   ├──common/
+│  ├──test/java/com/taken_seat/payment_service
+│  ├──Dockerfile
 │
-│──com.taken_seat.review-service                           # 리뷰 서비스
+├──com.taken_seat.review-service                           # 리뷰 서비스
 │  ├──src/main/java/com/taken_seat/review_service
-│      │   ├──application/
-│      │   ├──domain/
-│      │   ├──infrastructure/
-│      │   ├──presentation/
-│      │   ├──common/
-│      │──test/java/com/taken_seat/review_service
+│  │   ├──application/
+│  │   ├──domain/
+│  │   ├──infrastructure/
+│  │   ├──presentation/
+│  │   ├──common/
+│  ├──test/java/com/taken_seat/review_service
+│  ├──Dockerfile
 │
-│──com.taken_seat.common-service                           # 공통 모듈
+├──com.taken_seat.common-service                           # 공통 모듈
 │  ├──prometheus/
 │  ├──docker-compose.common.yml
 │  ├──Dockerfile
 │  ├──src/main/java/com/taken_seat/review_service
-│          ├──component/
-│          ├──config/
-│          ├──dto/
-│          ├──entity/
-│          ├──exception/
-│          ├──message/
+│  │   ├──component/
+│  │   ├──config/
+│  │   ├──dto/
+│  │   ├──entity/
+│  │   ├──exception/
+│  │   ├──message/
 │
-│──loki-config.yml                                        # loki 설정
+├──loki-config.yml                                          # loki 설정
 ```
 
 <br>
