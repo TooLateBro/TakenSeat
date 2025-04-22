@@ -1,4 +1,4 @@
-package com.taken_seat.performance_service.performenceticket.presentation.controller;
+package com.taken_seat.performance_service.Performanceticket.presentation.controller;
 
 import java.util.UUID;
 
@@ -11,17 +11,17 @@ import org.springframework.web.bind.annotation.RestController;
 import com.taken_seat.common_service.dto.ApiResponseData;
 import com.taken_seat.common_service.dto.request.TicketPerformanceClientRequest;
 import com.taken_seat.common_service.dto.response.TicketPerformanceClientResponse;
-import com.taken_seat.performance_service.performenceticket.application.dto.mapper.RequestMapper;
-import com.taken_seat.performance_service.performenceticket.application.service.PerformenceTicketService;
+import com.taken_seat.performance_service.Performanceticket.application.dto.mapper.RequestMapper;
+import com.taken_seat.performance_service.Performanceticket.application.service.PerformanceTicketService;
 
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/performencetickets")
-public class PerformenceTicketController {
+@RequestMapping("/api/v1/performancetickets")
+public class PerformanceTicketController {
 
-	private final PerformenceTicketService performenceTicketService;
+	private final PerformanceTicketService performenceTicketService;
 
 	@GetMapping("/{performanceId}/schedules/{performanceScheduleId}/seats/{seatId}")
 	public ResponseEntity<ApiResponseData<TicketPerformanceClientResponse>> getPerformanceInfo(
