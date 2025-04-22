@@ -4,9 +4,9 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-@AllArgsConstructor
 @Getter
-public class RankDto {
+@AllArgsConstructor
+public class TokenReqDto {
     @NotBlank(message = "token은 필수값입니다.")
     private String token;
 }
