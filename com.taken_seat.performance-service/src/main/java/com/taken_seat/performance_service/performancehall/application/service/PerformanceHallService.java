@@ -25,12 +25,14 @@ import com.taken_seat.performance_service.performancehall.application.dto.reques
 import com.taken_seat.performance_service.performancehall.application.dto.response.CreateResponseDto;
 import com.taken_seat.performance_service.performancehall.application.dto.response.DetailResponseDto;
 import com.taken_seat.performance_service.performancehall.application.dto.response.PageResponseDto;
+import com.taken_seat.performance_service.performancehall.application.dto.response.SearchResponseDto;
 import com.taken_seat.performance_service.performancehall.application.dto.response.SeatDto;
 import com.taken_seat.performance_service.performancehall.application.dto.response.SeatLayoutResponseDto;
 import com.taken_seat.performance_service.performancehall.application.dto.response.UpdateResponseDto;
 import com.taken_seat.performance_service.performancehall.domain.model.PerformanceHall;
 import com.taken_seat.performance_service.performancehall.domain.model.Seat;
 import com.taken_seat.performance_service.performancehall.domain.model.SeatStatus;
+import com.taken_seat.performance_service.performancehall.domain.repository.PerformanceHallQueryRepository;
 import com.taken_seat.performance_service.performancehall.domain.repository.PerformanceHallRepository;
 import com.taken_seat.performance_service.performancehall.domain.validation.PerformanceHallExistenceValidator;
 import com.taken_seat.performance_service.performancehall.domain.validation.PerformanceHallValidator;
@@ -47,6 +49,7 @@ public class PerformanceHallService {
 	private final HallResponseMapper hallResponseMapper;
 	private final PerformanceFacade performanceFacade;
 	private final PerformanceHallExistenceValidator performanceHallExistenceValidator;
+	private final PerformanceHallQueryRepository performanceHallQueryRepository;
 
 	@Transactional
 	public CreateResponseDto create(CreateRequestDto request, AuthenticatedUser authenticatedUser) {
@@ -70,8 +73,8 @@ public class PerformanceHallService {
 	@Transactional(readOnly = true)
 	public PageResponseDto search(SearchFilterParam filterParam, Pageable pageable) {
 
-		Page<PerformanceHall> pages =
-			performanceHallRepository.findAll(filterParam, pageable);
+		Page<SearchResponseDto> pages =
+			performanceHallQueryRepository.searchByFilter(filterParam, pageable);
 
 		return hallResponseMapper.toPage(pages);
 	}

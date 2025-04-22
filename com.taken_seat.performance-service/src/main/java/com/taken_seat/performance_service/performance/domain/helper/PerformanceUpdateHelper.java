@@ -4,12 +4,19 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.performance_service.performance.application.dto.request.UpdatePerformanceScheduleDto;
 import com.taken_seat.performance_service.performance.application.dto.request.UpdateSeatPriceDto;
 import com.taken_seat.performance_service.performance.domain.model.Performance;
 import com.taken_seat.performance_service.performance.domain.model.PerformanceSchedule;
+import com.taken_seat.performance_service.performance.domain.model.PerformanceScheduleStatus;
 import com.taken_seat.performance_service.performance.domain.model.PerformanceSeatPrice;
+import com.taken_seat.performance_service.performance.domain.model.PerformanceStatus;
+import com.taken_seat.performance_service.performancehall.domain.facade.PerformanceHallFacade;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class PerformanceUpdateHelper {
 
 	// 공연 전체 회차 목록 업데이트
@@ -81,6 +88,47 @@ public class PerformanceUpdateHelper {
 					.build();
 				newPrice.prePersist(updatedBy);
 				schedule.getSeatPrices().add(newPrice);
+			}
+		}
+	}
+
+	public static void updateStatus(Performance performance, AuthenticatedUser authenticatedUser,
+		PerformanceHallFacade performanceHallFacade) {
+
+		PerformanceStatus oldPerformanceStatus = performance.getStatus();
+		PerformanceStatus newPerformanceStatus = PerformanceStatus.status(
+			performance.getStartAt(), performance.getEndAt());
+
+		if (!performance.getStatus().equals(newPerformanceStatus)) {
+			performance.updateStatus(newPerformanceStatus);
+
+			log.info("[Performance] 공연 상태 변경 - 성공 - performanceId={}, oldStatus={}, newStatus={}, 변경자={}",
+				performance.getId(),
+				oldPerformanceStatus,
+				newPerformanceStatus,
+				authenticatedUser.getUserId());
+		}
+
+		for (PerformanceSchedule schedule : performance.getSchedules()) {
+
+			UUID performanceHallId = schedule.getPerformanceHallId();
+
+			boolean isSoldOut = performanceHallFacade.isSoldOut(performanceHallId);
+
+			PerformanceScheduleStatus oldScheduleStatus = schedule.getStatus();
+			PerformanceScheduleStatus newPerformanceScheduleStatus =
+				PerformanceScheduleStatus.status(schedule.getSaleStartAt(), schedule.getSaleEndAt(), isSoldOut);
+
+			if (!schedule.getStatus().equals(newPerformanceScheduleStatus)) {
+				schedule.updateStatus(newPerformanceScheduleStatus);
+				schedule.preUpdate(authenticatedUser.getUserId());
+
+				log.info("[Performance] 회차 상태 변경 - 성공 - 공연회차 ID={}, oldStatus={}, newStatus={}, 공연 ID={}, 변경자={}",
+					schedule.getId(),
+					oldScheduleStatus,
+					newPerformanceScheduleStatus,
+					performance.getId(),
+					authenticatedUser.getUserId());
 			}
 		}
 	}

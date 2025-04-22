@@ -1,4 +1,4 @@
-package com.taken_seat.performance_service.performenceticket.application.dto.mapper;
+package com.taken_seat.performance_service.Performanceticket.application.dto.mapper;
 
 import java.util.UUID;
 

@@ -8,9 +8,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import com.taken_seat.performance_service.performancehall.application.dto.request.SearchFilterParam;
+import com.taken_seat.performance_service.performancehall.application.dto.response.SearchResponseDto;
 import com.taken_seat.performance_service.performancehall.domain.model.PerformanceHall;
+import com.taken_seat.performance_service.performancehall.domain.repository.PerformanceHallQueryRepository;
 import com.taken_seat.performance_service.performancehall.domain.repository.PerformanceHallRepository;
-import com.taken_seat.performance_service.performancehall.domain.repository.spec.PerformanceHallSpecification;
 
 import lombok.RequiredArgsConstructor;
 
@@ -19,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 public class PerformanceHallRepositoryImpl implements PerformanceHallRepository {
 
 	private final PerformanceHallJpaRepository performanceHallJpaRepository;
+	private final PerformanceHallQueryRepository performanceHallQueryRepository;
 
 	@Override
 	public PerformanceHall save(PerformanceHall performanceHall) {
@@ -36,10 +38,8 @@ public class PerformanceHallRepositoryImpl implements PerformanceHallRepository 
 	}
 
 	@Override
-	public Page<PerformanceHall> findAll(SearchFilterParam filterParam, Pageable pageable) {
-		return performanceHallJpaRepository.findAll(
-			PerformanceHallSpecification.withFilter(filterParam), pageable
-		);
+	public Page<SearchResponseDto> findAll(SearchFilterParam filterParam, Pageable pageable) {
+		return performanceHallQueryRepository.searchByFilter(filterParam, pageable);
 	}
 
 	@Override

@@ -3,10 +3,10 @@ spring:
     name: gateway-service
   data:
     redis:
-      host: localhost
-      port: 6379
-      username: default
-      password: systempass
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      username: ${REDIS_USERNAME}
+      password: ${REDIS_PASSWORD}
 
   main:
     web-application-type: reactive
@@ -73,7 +73,7 @@ server:
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:19090/eureka/
+      defaultZone: ${EUREKA_DEFAULT_ZONE}
 
 service:
   jwt:

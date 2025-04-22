@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.common_service.exception.customException.PerformanceException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.performance_service.performance.application.dto.request.CreatePerformanceScheduleDto;
@@ -15,6 +16,13 @@ import com.taken_seat.performance_service.performance.application.dto.request.Up
 import com.taken_seat.performance_service.performance.application.dto.request.UpdateRequestDto;
 
 public class PerformanceValidator {
+
+	public static void validateAuthorized(AuthenticatedUser authenticatedUser) {
+		String role = authenticatedUser.getRole();
+		if (!(role.equals("ADMIN") || role.equals("MANAGER") || role.equals("PRODUCER"))) {
+			throw new PerformanceException(ResponseCode.ACCESS_DENIED_EXCEPTION, "접근 권한이 없습니다.");
+		}
+	}
 
 	public static void validateDuplicateSchedules(List<CreatePerformanceScheduleDto> schedules) {
 
