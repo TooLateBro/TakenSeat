@@ -58,25 +58,10 @@ public class HallResponseMapper {
 			.build();
 	}
 
-	public SearchResponseDto toSearch(PerformanceHall performanceHall) {
-		return SearchResponseDto.builder()
-			.performanceHallId(performanceHall.getId())
-			.name(performanceHall.getName())
-			.totalSeats(performanceHall.getTotalSeats())
-			.build();
-	}
+	public PageResponseDto toPage(Page<SearchResponseDto> pages) {
 
-	public List<SearchResponseDto> toSearchList(List<PerformanceHall> performanceHalls) {
-		return performanceHalls.stream()
-			.map(this::toSearch)
-			.collect(Collectors.toList());
-	}
-
-	public PageResponseDto toPage(Page<PerformanceHall> pages) {
-
-		List<SearchResponseDto> content = toSearchList(pages.getContent());
 		return PageResponseDto.builder()
-			.content(content)
+			.content(pages.getContent())
 			.pageSize(pages.getSize())
 			.pageNumber(pages.getNumber() + 1)
 			.totalPages(pages.getTotalPages())
