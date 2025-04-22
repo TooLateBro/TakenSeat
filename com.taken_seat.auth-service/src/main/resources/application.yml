@@ -7,10 +7,10 @@ spring:
     name: auth-service
   data:
     redis:
-      host: localhost
-      port: 6379
-      username: default
-      password: systempass
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      username: ${REDIS_USERNAME}
+      password: ${REDIS_PASSWORD}
 
   datasource:
     url: ${SPRING_DATASOURCE_URL}
@@ -43,7 +43,7 @@ server:
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:19090/eureka/
+      defaultZone: ${EUREKA_DEFAULT_ZONE}
 common:
   trust-package: "com.taken_seat.common_service.message"
 
@@ -70,6 +70,12 @@ management:
       show-details: always
     prometheus:
       access: unrestricted
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_ENDPOINT}
+  tracing:
+    sampling:
+      probability: 1.0
   endpoints:
     web:
       exposure:
