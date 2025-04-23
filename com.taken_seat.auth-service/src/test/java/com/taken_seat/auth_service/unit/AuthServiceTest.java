@@ -1,11 +1,16 @@
 package com.taken_seat.auth_service.unit;
 
+import com.taken_seat.auth_service.application.dto.auth.AuthLoginResponseDto;
 import com.taken_seat.auth_service.application.dto.auth.AuthSignUpResponseDto;
 import com.taken_seat.auth_service.application.service.auth.AuthServiceImpl;
 import com.taken_seat.auth_service.domain.entity.user.User;
 import com.taken_seat.auth_service.domain.repository.user.UserRepository;
 import com.taken_seat.auth_service.domain.vo.Role;
+import com.taken_seat.auth_service.infrastructure.util.JwtUtil;
+import com.taken_seat.auth_service.presentation.dto.auth.AuthLoginRequestDto;
 import com.taken_seat.auth_service.presentation.dto.auth.AuthSignUpRequestDto;
+import com.taken_seat.common_service.exception.customException.AuthException;
+import com.taken_seat.common_service.exception.enums.ResponseCode;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -17,6 +22,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.Optional;
@@ -34,6 +41,15 @@ public class AuthServiceTest {
     @Mock
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
+    @Mock
+    private RedisTemplate<String, String> redisTemplate;
+
+    @Mock
+    private ValueOperations<String, String> valueOperations;
+
+    @Mock
+    private JwtUtil jwtUtil;
+
     @InjectMocks
     private AuthServiceImpl authService;
 
@@ -45,6 +61,11 @@ public class AuthServiceTest {
         // Jakarta Bean Validation을 사용하여 DTO의 유효성을 검사
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         validator = factory.getValidator();
+
+        user = User.create(
+                "testuser1","test@test.com","010-1111-1111"
+                ,"testPassword1!",Role.ADMIN
+        );
     }
 
     private User user;
@@ -108,5 +129,72 @@ public class AuthServiceTest {
         assertNotNull(result);
         assertFalse(constraintViolations.isEmpty());
         assertEquals(email, result.getEmail());
+    }
+
+    @Test
+    @DisplayName("로그인 성공 테스트")
+    public void loginSuccess() {
+        String email = "test@test.com";
+        String password = "testPassword1!";
+
+        AuthLoginRequestDto requestDto = AuthLoginRequestDto.builder()
+                .email(email)
+                .password(password)
+                .build();
+
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+        when(bCryptPasswordEncoder.matches(password, "testPassword1!")).thenReturn(true);
+        when(jwtUtil.createToken(user)).thenReturn("access_token");
+        when(jwtUtil.createRefreshToken(user.getId())).thenReturn("refresh_token");
+        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+
+        // 실제 서비스 메서드 실행
+        AuthLoginResponseDto result = authService.login(requestDto.toDto());
+
+        // 결과 검증
+        assertNotNull(result);
+        assertEquals("access_token", result.getAccessToken());  // token 검증
+        assertEquals("refresh_token", result.getRefreshToken());  // token 검증
+    }
+
+    @Test
+    @DisplayName("로그인 실패 테스트 - 이메일 존재하지 않음")
+    public void loginFail_userNotFound() {
+        String email = "fail@fail.com";
+        String password = "failPassword1!";
+
+        AuthLoginRequestDto requestDto = AuthLoginRequestDto.builder()
+                .email(email)
+                .password(password)
+                .build();
+        
+        when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
+
+        AuthException exception = assertThrows(AuthException.class, () -> {
+            authService.login(requestDto.toDto());
+        });
+
+        assertEquals(ResponseCode.USER_NOT_FOUND, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("로그인 실패 테스트 - 비밀번호 불일치")
+    public void loginFail_wrongPassword() {
+        String email = "test@test.com";
+        String password = "wrongPassword1!";
+
+        AuthLoginRequestDto requestDto = AuthLoginRequestDto.builder()
+                .email(email)
+                .password(password)
+                .build();
+
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+        when(bCryptPasswordEncoder.matches(password, user.getPassword())).thenReturn(false);
+
+        AuthException exception = assertThrows(AuthException.class, () -> {
+            authService.login(requestDto.toDto());
+        });
+
+        assertEquals(ResponseCode.USER_BAD_PASSWORD, exception.getErrorCode());
     }
 }
