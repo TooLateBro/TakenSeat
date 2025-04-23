@@ -47,7 +47,14 @@ public class JwtAuthenticationFilter implements GlobalFilter {
                 log.warn("로그아웃 요청의 토큰이 유효하지 않음");
             }
             String tokenId = jwtUtil.parseClaims(token).getId();
-            redisTemplate.opsForValue().set("BLACKLIST:" + tokenId, tokenId, 1, TimeUnit.HOURS);
+
+            long expiration = jwtUtil.parseClaims(token).getExpiration().getTime();
+            long now = System.currentTimeMillis();
+            long duration = (expiration - now) / 1000;
+            if (!redisTemplate.hasKey("BLACKLIST:" + tokenId)) {
+                redisTemplate.opsForValue().set("BLACKLIST:" + tokenId, tokenId, duration, TimeUnit.SECONDS);
+            }
+
             log.info("로그아웃 요청 토큰 블랙리스트 등록 완료");
             return chain.filter(exchange); // 이후 컨트롤러에서 refreshToken 삭제
         }
