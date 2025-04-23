@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.UUID;
 
 import com.taken_seat.common_service.entity.BaseTimeEntity;
-import com.taken_seat.performance_service.performance.application.dto.request.UpdatePerformanceScheduleDto;
+import com.taken_seat.performance_service.performance.application.dto.command.UpdatePerformanceScheduleCommand;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -65,14 +65,14 @@ public class PerformanceSchedule extends BaseTimeEntity {
 	@Builder.Default
 	private List<PerformanceSeatPrice> seatPrices = new ArrayList<>();
 
-	public void update(UpdatePerformanceScheduleDto dto) {
+	public void update(UpdatePerformanceScheduleCommand command) {
 
-		this.performanceHallId = dto.getPerformanceHallId();
-		this.startAt = dto.getStartAt();
-		this.endAt = dto.getEndAt();
-		this.saleStartAt = dto.getSaleStartAt();
-		this.saleEndAt = dto.getSaleEndAt();
-		this.status = dto.getStatus();
+		this.performanceHallId = command.performanceHallId();
+		this.startAt = command.startAt();
+		this.endAt = command.endAt();
+		this.saleStartAt = command.saleStartAt();
+		this.saleEndAt = command.saleEndAt();
+		this.status = command.status();
 	}
 
 	public void updateStatus(PerformanceScheduleStatus newStatus) {
