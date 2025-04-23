@@ -11,6 +11,7 @@ import com.taken_seat.auth_service.presentation.dto.auth.AuthLoginRequestDto;
 import com.taken_seat.auth_service.presentation.dto.auth.AuthSignUpRequestDto;
 import com.taken_seat.common_service.exception.customException.AuthException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
+import io.jsonwebtoken.Claims;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -30,6 +31,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -49,6 +51,9 @@ public class AuthServiceTest {
 
     @Mock
     private JwtUtil jwtUtil;
+
+    @Mock
+    private Claims claims;
 
     @InjectMocks
     private AuthServiceImpl authService;
@@ -167,7 +172,7 @@ public class AuthServiceTest {
                 .email(email)
                 .password(password)
                 .build();
-        
+
         when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
 
         AuthException exception = assertThrows(AuthException.class, () -> {
@@ -196,5 +201,40 @@ public class AuthServiceTest {
         });
 
         assertEquals(ResponseCode.USER_BAD_PASSWORD, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("로그아웃 성공 테스트")
+    public void logoutSuccess() {
+        String email = "test@test.com";
+        String token = "Bearer faketoken";
+        String accessToken = "faketoken";
+
+        when(jwtUtil.extractToken(token)).thenReturn(accessToken);
+        when(jwtUtil.parseClaims(accessToken)).thenReturn(claims);
+        when(claims.get("email", String.class)).thenReturn(email);
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+
+        authService.logout(token);
+
+        verify(redisTemplate).delete(email + " :: refresh_token");
+    }
+
+    @Test
+    @DisplayName("로그아웃 실패 테스트")
+    public void logoutFail() {
+        String email = "fake@fake.com";
+        String token = "Bearer faketoken";
+        String accessToken = "faketoken";
+
+        when(jwtUtil.extractToken(token)).thenReturn(accessToken);
+        when(jwtUtil.parseClaims(accessToken)).thenReturn(claims);
+        when(claims.get("email", String.class)).thenReturn(email);
+        when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
+
+        AuthException exception = assertThrows(AuthException.class, () -> {
+            authService.logout(token);
+        });
+        assertEquals(ResponseCode.USER_NOT_FOUND, exception.getErrorCode());
     }
 }
