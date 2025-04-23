@@ -80,15 +80,15 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findByIdAndDeletedAtIsNull(userId)
                 .orElseThrow(()-> new AuthException(ResponseCode.USER_NOT_FOUND));
 
-        if(userRepository.findByEmail(String.valueOf(dto.getEmail())).isPresent()){
+        if(userRepository.findByEmail(String.valueOf(dto.email())).isPresent()){
             throw new AuthException(ResponseCode.USER_BAD_EMAIL);
         }
         user.update(
-                dto.getUsername(),
-                dto.getEmail(),
-                dto.getPhone(),
-                dto.getPassword(),
-                dto.getRole(),
+                dto.username(),
+                dto.email(),
+                dto.phone(),
+                dto.password(),
+                dto.role(),
                 userId
         );
         return UserInfoResponseDto.of(user);

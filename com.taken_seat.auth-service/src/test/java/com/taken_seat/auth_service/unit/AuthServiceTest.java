@@ -99,7 +99,7 @@ public class AuthServiceTest {
         // 유효성 검사에서 위반 사항이 없는지 확인
         // constraintViolations가 비어 있어야 함
         assertTrue(constraintViolations.isEmpty());
-        assertEquals(email, result.getEmail());
+        assertEquals(email, result.email());
     }
     @Test
     @DisplayName("회원가입 실패 테스트")
@@ -121,7 +121,7 @@ public class AuthServiceTest {
 
         assertNotNull(result);
         assertFalse(constraintViolations.isEmpty());
-        assertEquals(email, result.getEmail());
+        assertEquals(email, result.email());
     }
 
     @Test
@@ -143,8 +143,8 @@ public class AuthServiceTest {
 
         // 결과 검증
         assertNotNull(result);
-        assertEquals("access_token", result.getAccessToken());  // token 검증
-        assertEquals("refresh_token", result.getRefreshToken());  // token 검증
+        assertEquals("access_token", result.accessToken());  // token 검증
+        assertEquals("refresh_token", result.refreshToken());  // token 검증
     }
 
     @Test
