@@ -68,7 +68,7 @@ public class UserController implements UserControllerDocs {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<ApiResponseData<PageResponseDto<UserInfoResponseDto>>> searchUser(@RequestParam(required = false) String q,
+    public ResponseEntity<ApiResponseData<PageResponseDto<UserInfoResponseDto>>> searchUser(@RequestParam(required = false) String username,
                                                                                             @RequestParam(required = false) String role,
                                                                                             @RequestParam(defaultValue = "0") int page,
                                                                                             @RequestParam(defaultValue = "10") int size,
@@ -81,7 +81,7 @@ public class UserController implements UserControllerDocs {
                     .body(ApiResponseData.failure(ResponseCode.ACCESS_DENIED_EXCEPTION.getCode()
                             ,"접근 권한이 없습니다."));
         }
-        PageResponseDto<UserInfoResponseDto> userInfo = userService.searchUser(q, role, page, size);
+        PageResponseDto<UserInfoResponseDto> userInfo = userService.searchUser(username, role, page, size);
         return ResponseEntity.ok(ApiResponseData.success(userInfo));
     }
 

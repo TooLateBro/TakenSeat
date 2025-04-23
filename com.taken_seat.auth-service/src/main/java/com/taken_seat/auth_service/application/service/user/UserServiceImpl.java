@@ -51,17 +51,21 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(()-> new AuthException(ResponseCode.USER_NOT_FOUND));
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        Page<UserCoupon> userCoupons = userCouponRepository.findCouponIdByUserIdAndIsActiveTrue(user.getId(), pageable);
+        Page<UserCoupon> userCoupons = userCouponRepository.findCouponIdByUserIdAndIsActiveTrue(userId, pageable);
 
         return UserInfoResponseDto.detailsOf(user, userCoupons);
     }
 
     @Transactional(readOnly = true)
     @Override
-    @Cacheable(cacheNames = "searchUser", key = "#q + '-' + #role + '-' + #page + '-' + #size")
-    public PageResponseDto<UserInfoResponseDto> searchUser(String q, String role, int page, int size) {
+    @Cacheable(cacheNames = "searchUser", key = "#username + '-' + #role + '-' + #page + '-' + #size")
+    public PageResponseDto<UserInfoResponseDto> searchUser(String username, String role, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        Page<User> userInfos = userQueryRepository.findAllByDeletedAtIsNull(q, role, pageable);
+        Page<User> userInfos = userQueryRepository.findAllByDeletedAtIsNull(username, role, pageable);
+
+        if (userInfos.isEmpty()) {
+            throw new AuthException(ResponseCode.USER_NOT_FOUND);
+        }
 
         Page<UserInfoResponseDto> userInfoPage = userInfos.map(user -> {
             List<UserCoupon> coupons = user.getUserCoupons();

@@ -126,4 +126,40 @@ public class UserServiceTest {
         assertEquals(ResponseCode.USER_NOT_FOUND, exception.getErrorCode());
     }
 
+    @Test
+    @DisplayName("유저 전체 조회 성공 테스트")
+    public void searchUserSuccess() {
+        int page = 0;
+        int size = 10;
+
+        User mockedUser = Mockito.mock(User.class);
+        when(mockedUser.getUserCoupons()).thenReturn(List.of());
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        List<User> userList = List.of(mockedUser);
+        Page<User> userPage = new PageImpl<>(userList, pageable, userList.size());
+        when(userQueryRepository.findAllByDeletedAtIsNull(null, null, pageable)).thenReturn(userPage);
+
+        PageResponseDto<UserInfoResponseDto> result = userService.searchUser(null, null, page, size);
+
+        assertNotNull(result);
+    }
+    @Test
+    @DisplayName("유저 전체 조회 실패 테스트 - 유저 없음")
+    public void searchUserFail_NoUserFound() {
+        int page = 0;
+        int size = 10;
+        String username = "testuser1";
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        Page<User> emptyUserPage = new PageImpl<>(List.of(), pageable, 0);
+        when(userQueryRepository.findAllByDeletedAtIsNull(username, null, pageable)).thenReturn(emptyUserPage);
+
+        AuthException exception = assertThrows(AuthException.class, () ->
+                userService.searchUser(username, null, page, size));
+
+        assertNotNull(exception);
+    }
 }
