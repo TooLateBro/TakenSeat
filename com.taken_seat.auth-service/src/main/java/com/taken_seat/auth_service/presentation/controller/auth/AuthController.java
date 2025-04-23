@@ -36,7 +36,7 @@ public class AuthController implements AuthControllerDocs {
         AuthLoginResponseDto userinfo = authService.login(requestDto.toDto());
 
         return ResponseEntity.ok()
-                .header("Authorization", userinfo.getAccessToken())
+                .header("Authorization", userinfo.accessToken())
                 .body(ApiResponseData.success(userinfo));
     }
 
