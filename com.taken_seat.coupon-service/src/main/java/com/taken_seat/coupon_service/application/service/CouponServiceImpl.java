@@ -1,6 +1,8 @@
 package com.taken_seat.coupon_service.application.service;
 
 import com.taken_seat.common_service.dto.AuthenticatedUser;
+import com.taken_seat.common_service.exception.customException.CouponException;
+import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.coupon_service.application.dto.CouponDto;
 import com.taken_seat.coupon_service.application.dto.CouponResponseDto;
 import com.taken_seat.coupon_service.application.dto.CouponUpdateDto;
@@ -36,11 +38,13 @@ public class CouponServiceImpl implements CouponService {
     @Override
     @CachePut(cacheNames = "couponCache", key = "#result.id")
     public CouponResponseDto createCoupon(CouponDto dto, AuthenticatedUser authenticatedUser) {
+        if (couponRepository.findByCode(dto.code()).isPresent()) {
+            throw new CouponException(ResponseCode.COUPON_EXISTS);
+        }
         Coupon coupon = Coupon.create(
-                dto.getName(), dto.getCode(), dto.getQuantity(),
-                dto.getDiscount(), dto.getExpiredAt(), authenticatedUser.getUserId()
+                dto.name(), dto.code(), dto.quantity(),
+                dto.discount(), dto.expiredAt(), authenticatedUser.getUserId()
         );
-
         couponRepository.save(coupon);
 
         return CouponResponseDto.of(coupon);
@@ -50,7 +54,7 @@ public class CouponServiceImpl implements CouponService {
     @Override
     public CouponResponseDto getCoupon(UUID couponId) {
         Coupon coupon = couponRepository.findByIdAndDeletedAtIsNull(couponId)
-                .orElseThrow(()-> new IllegalArgumentException("쿠폰이 존재하지 않습니다."));
+                .orElseThrow(()-> new CouponException(ResponseCode.COUPON_NOT_FOUND));
 
         return CouponResponseDto.of(coupon);
     }
@@ -75,12 +79,15 @@ public class CouponServiceImpl implements CouponService {
     })
     public CouponResponseDto updateCoupon(UUID couponId, AuthenticatedUser authenticatedUser, CouponUpdateDto dto) {
         Coupon coupon = couponRepository.findByIdAndDeletedAtIsNull(couponId)
-                .orElseThrow(()-> new IllegalArgumentException("쿠폰이 존재하지 않습니다."));
+                .orElseThrow(()-> new CouponException(ResponseCode.COUPON_NOT_FOUND));
 
         coupon.update(
-                dto.getName().orElse(coupon.getName()), dto.getCode().orElse(coupon.getCode()),
-                dto.getQuantity().orElse(coupon.getQuantity()), dto.getDiscount().orElse(coupon.getDiscount()),
-                dto.getExpiredAt().orElse(coupon.getExpiredAt()), authenticatedUser.getUserId()
+                dto.name() != null ? dto.name() : coupon.getName(),
+                dto.code() != null ? dto.code() : coupon.getCode(),
+                dto.quantity() != null ? dto.quantity() : coupon.getQuantity(),
+                dto.discount() != null ? dto.discount() : coupon.getDiscount(),
+                dto.expiredAt() != null ? dto.expiredAt() : coupon.getExpiredAt(),
+                authenticatedUser.getUserId()
         );
         return CouponResponseDto.of(coupon);
     }
@@ -93,7 +100,7 @@ public class CouponServiceImpl implements CouponService {
     })
     public void deleteCoupon(UUID couponId, AuthenticatedUser authenticatedUser) {
         Coupon coupon = couponRepository.findByIdAndDeletedAtIsNull(couponId)
-                .orElseThrow(()-> new IllegalArgumentException("쿠폰이 존재하지 않습니다."));
+                .orElseThrow(()-> new CouponException(ResponseCode.COUPON_NOT_FOUND));
 
         coupon.delete(authenticatedUser.getUserId());
     }
