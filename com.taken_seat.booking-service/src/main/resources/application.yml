@@ -68,7 +68,9 @@ variable:
   booking-expiration-time: 600 # 초
 
 common:
-  trust-package: "com.taken_seat.common_service.message, com.taken_seat.booking_service.common.message"
+  kafka:
+    bootstrap-servers: "${KAFKA_BOOTSTRAP_SERVERS}"
+  trust-package: "com.taken_seat.common_service.message"
 
 logging:
   loki:
