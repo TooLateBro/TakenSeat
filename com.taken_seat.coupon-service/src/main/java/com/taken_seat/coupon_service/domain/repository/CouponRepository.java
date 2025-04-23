@@ -12,4 +12,6 @@ public interface CouponRepository {
     Coupon save(Coupon coupon);
 
     Optional<Coupon> findByIdAndDeletedAtIsNull(UUID couponId);
+
+    Optional<Coupon> findByCode(String code);
 }

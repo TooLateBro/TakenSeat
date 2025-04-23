@@ -9,6 +9,7 @@ import com.taken_seat.coupon_service.application.service.CouponService;
 import com.taken_seat.coupon_service.presentation.docs.CouponControllerDocs;
 import com.taken_seat.coupon_service.presentation.dto.CreateCouponRequestDto;
 import com.taken_seat.coupon_service.presentation.dto.UpdateCouponRequestDto;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +28,7 @@ public class CouponController implements CouponControllerDocs {
 
     @PostMapping
     public ResponseEntity<ApiResponseData<CouponResponseDto>> createCoupon(AuthenticatedUser authenticatedUser,
-                                                                           @RequestBody CreateCouponRequestDto requestDto){
+                                                                           @Valid @RequestBody CreateCouponRequestDto requestDto){
         if (authenticatedUser.getRole() == null ||
                 !(authenticatedUser.getRole().equals("ADMIN") ||
                         authenticatedUser.getRole().equals("MANAGER"))) {
@@ -75,7 +76,7 @@ public class CouponController implements CouponControllerDocs {
     @PatchMapping("/{couponId}")
     public ResponseEntity<ApiResponseData<CouponResponseDto>> updateCoupon(@PathVariable UUID couponId,
                                                                            AuthenticatedUser authenticatedUser,
-                                                                           @RequestBody UpdateCouponRequestDto requestDto){
+                                                                           @Valid @RequestBody UpdateCouponRequestDto requestDto){
         if (authenticatedUser.getRole() == null ||
                 !(authenticatedUser.getRole().equals("ADMIN") ||
                         authenticatedUser.getRole().equals("MANAGER"))) {
