@@ -29,6 +29,7 @@ import com.taken_seat.performance_service.performancehall.application.dto.respon
 import com.taken_seat.performance_service.performancehall.application.dto.response.SeatDto;
 import com.taken_seat.performance_service.performancehall.application.dto.response.SeatLayoutResponseDto;
 import com.taken_seat.performance_service.performancehall.application.dto.response.UpdateResponseDto;
+import com.taken_seat.performance_service.performancehall.application.event.SeatStatusEventPublisher;
 import com.taken_seat.performance_service.performancehall.domain.model.PerformanceHall;
 import com.taken_seat.performance_service.performancehall.domain.model.Seat;
 import com.taken_seat.performance_service.performancehall.domain.model.SeatStatus;
@@ -50,6 +51,7 @@ public class PerformanceHallService {
 	private final PerformanceFacade performanceFacade;
 	private final PerformanceHallExistenceValidator performanceHallExistenceValidator;
 	private final PerformanceHallQueryRepository performanceHallQueryRepository;
+	private final SeatStatusEventPublisher seatStatusEventPublisher;
 
 	@Transactional
 	public CreateResponseDto create(CreateRequestDto request, AuthenticatedUser authenticatedUser) {
@@ -136,10 +138,19 @@ public class PerformanceHallService {
 
 		performanceHallRepository.saveAndFlush(performanceHall);
 
+		seatStatusEventPublisher.publish(
+			request.getPerformanceId(),
+			request.getPerformanceScheduleId(),
+			request.getSeatId(),
+			SeatStatus.SOLDOUT
+		);
+
 		Performance performance = performanceFacade.getByPerformanceId(request.getPerformanceId());
 
-		Integer price = performance.findPriceByScheduleAndSeatType(request.getPerformanceScheduleId(),
-			seat.getSeatType());
+		Integer price = performance.findPriceByScheduleAndSeatType(
+			request.getPerformanceScheduleId(),
+			seat.getSeatType()
+		);
 
 		log.info(
 			"[Performance] 좌석 선점 - 성공 - seatId={}, scheduleId={}, performanceId={}, performanceHallId={}, seatType={}, price={}",
@@ -164,6 +175,13 @@ public class PerformanceHallService {
 		}
 
 		seat.updateStatus(SeatStatus.AVAILABLE);
+
+		seatStatusEventPublisher.publish(
+			request.getPerformanceId(),
+			request.getPerformanceScheduleId(),
+			request.getSeatId(),
+			SeatStatus.AVAILABLE
+		);
 
 		log.info("[Performance] 좌석 선점 취소 - 성공 - seatId={}, scheduleId={}",
 			request.getSeatId(), request.getPerformanceScheduleId());
