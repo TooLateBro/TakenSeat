@@ -84,7 +84,7 @@ public class AuthServiceTest {
         String email = "test@test.com";
         Role role = Role.ADMIN;
 
-        AuthSignUpRequestDto requestDto = new AuthSignUpRequestDto(username, password, phone, email, role);
+        AuthSignUpRequestDto requestDto = new AuthSignUpRequestDto(username, password, email, phone, role);
 
         // DTO 객체의 유효성 검사 수행
         // @NotNull, @Email, @Pattern 등의 어노테이션에 따라 검사
@@ -110,7 +110,7 @@ public class AuthServiceTest {
         String email = "testtestcom";
         Role role = Role.ADMIN;
 
-        AuthSignUpRequestDto requestDto = new AuthSignUpRequestDto(username, password, phone, email, role);
+        AuthSignUpRequestDto requestDto = new AuthSignUpRequestDto(username, password, email, phone, role);
 
         Set<ConstraintViolation<AuthSignUpRequestDto>> constraintViolations = validator.validate(requestDto);
 
