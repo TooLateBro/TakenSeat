@@ -6,50 +6,50 @@ import com.taken_seat.auth_service.domain.entity.mileage.Mileage;
 import com.taken_seat.auth_service.domain.entity.user.User;
 import com.taken_seat.auth_service.domain.entity.user.UserCoupon;
 import com.taken_seat.auth_service.domain.vo.Role;
-import lombok.*;
 import org.springframework.data.domain.Page;
 
 import java.util.Comparator;
 import java.util.UUID;
 
-@Getter
-@Builder(access = AccessLevel.PRIVATE)
-@NoArgsConstructor
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @JsonInclude(JsonInclude.Include.NON_NULL) // null 필드 제외
-public class UserInfoResponseDto {
-
-    private UUID userId;
-    private String username;
-    private String email;
-    private String phone;
-    private Role role;
-    private Integer mileage;
-    private PageResponseDto<UUID> userCoupons;
+public record UserInfoResponseDto (
+        UUID userId,
+        String username,
+        String email,
+        String phone,
+        Role role,
+        Integer mileage,
+        PageResponseDto<UUID> userCoupons
+){
 
     public static UserInfoResponseDto of(User user) {
-        return UserInfoResponseDto.builder()
-                .userId(user.getId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .phone(user.getPhone())
-                .role(user.getRole())
-                .build();
+        return new UserInfoResponseDto(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getPhone(),
+                user.getRole(),
+                null,
+                null
+        );
     }
 
-    public static UserInfoResponseDto listOf(User user, Page<UserCoupon> userCoupons) {
+    public static UserInfoResponseDto detailsOf(User user, Page<UserCoupon> userCoupons) {
         PageResponseDto<UUID> couponsPage = PageResponseDto.of(userCoupons.map(UserCoupon::getCouponId));
-        return UserInfoResponseDto.builder()
-                .userId(user.getId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .phone(user.getPhone())
-                .role(user.getRole())
-                .mileage(user.getMileages().stream()
-                        .max(Comparator.comparing(Mileage::getUpdatedAt))
-                        .map(Mileage::getMileage)
-                .orElse(0))
-                .userCoupons(couponsPage)
-                .build();
+
+        Integer latestMileage = user.getMileages().stream()
+                .max(Comparator.comparing(Mileage::getUpdatedAt))
+                .map(Mileage::getMileage)
+                .orElse(0);
+
+        return new UserInfoResponseDto(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getPhone(),
+                user.getRole(),
+                latestMileage,
+                couponsPage
+        );
     }
 }

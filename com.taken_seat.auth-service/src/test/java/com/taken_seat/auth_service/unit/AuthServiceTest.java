@@ -84,13 +84,7 @@ public class AuthServiceTest {
         String email = "test@test.com";
         Role role = Role.ADMIN;
 
-        AuthSignUpRequestDto requestDto = AuthSignUpRequestDto.builder()
-                .username(username)
-                .password(password)
-                .phone(phone)
-                .email(email)
-                .role(role)
-                .build();
+        AuthSignUpRequestDto requestDto = new AuthSignUpRequestDto(username, password, email, phone, role);
 
         // DTO 객체의 유효성 검사 수행
         // @NotNull, @Email, @Pattern 등의 어노테이션에 따라 검사
@@ -105,7 +99,7 @@ public class AuthServiceTest {
         // 유효성 검사에서 위반 사항이 없는지 확인
         // constraintViolations가 비어 있어야 함
         assertTrue(constraintViolations.isEmpty());
-        assertEquals(email, result.getEmail());
+        assertEquals(email, result.email());
     }
     @Test
     @DisplayName("회원가입 실패 테스트")
@@ -116,13 +110,7 @@ public class AuthServiceTest {
         String email = "testtestcom";
         Role role = Role.ADMIN;
 
-        AuthSignUpRequestDto requestDto = AuthSignUpRequestDto.builder()
-                .username(username)
-                .password(password)
-                .phone(phone)
-                .email(email)
-                .role(role)
-                .build();
+        AuthSignUpRequestDto requestDto = new AuthSignUpRequestDto(username, password, email, phone, role);
 
         Set<ConstraintViolation<AuthSignUpRequestDto>> constraintViolations = validator.validate(requestDto);
 
@@ -133,7 +121,7 @@ public class AuthServiceTest {
 
         assertNotNull(result);
         assertFalse(constraintViolations.isEmpty());
-        assertEquals(email, result.getEmail());
+        assertEquals(email, result.email());
     }
 
     @Test
@@ -142,10 +130,7 @@ public class AuthServiceTest {
         String email = "test@test.com";
         String password = "testPassword1!";
 
-        AuthLoginRequestDto requestDto = AuthLoginRequestDto.builder()
-                .email(email)
-                .password(password)
-                .build();
+        AuthLoginRequestDto requestDto = new AuthLoginRequestDto(email, password);
 
         when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
         when(bCryptPasswordEncoder.matches(password, "testPassword1!")).thenReturn(true);
@@ -158,8 +143,8 @@ public class AuthServiceTest {
 
         // 결과 검증
         assertNotNull(result);
-        assertEquals("access_token", result.getAccessToken());  // token 검증
-        assertEquals("refresh_token", result.getRefreshToken());  // token 검증
+        assertEquals("access_token", result.accessToken());  // token 검증
+        assertEquals("refresh_token", result.refreshToken());  // token 검증
     }
 
     @Test
@@ -168,10 +153,7 @@ public class AuthServiceTest {
         String email = "fail@fail.com";
         String password = "failPassword1!";
 
-        AuthLoginRequestDto requestDto = AuthLoginRequestDto.builder()
-                .email(email)
-                .password(password)
-                .build();
+        AuthLoginRequestDto requestDto = new AuthLoginRequestDto(email, password);
 
         when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
 
@@ -188,10 +170,7 @@ public class AuthServiceTest {
         String email = "test@test.com";
         String password = "wrongPassword1!";
 
-        AuthLoginRequestDto requestDto = AuthLoginRequestDto.builder()
-                .email(email)
-                .password(password)
-                .build();
+        AuthLoginRequestDto requestDto = new AuthLoginRequestDto(email, password);
 
         when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
         when(bCryptPasswordEncoder.matches(password, user.getPassword())).thenReturn(false);
