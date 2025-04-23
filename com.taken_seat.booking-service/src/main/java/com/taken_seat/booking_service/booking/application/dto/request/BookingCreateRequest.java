@@ -3,11 +3,15 @@ package com.taken_seat.booking_service.booking.application.dto.request;
 import java.util.UUID;
 
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-@Getter
+@AllArgsConstructor
 @Builder
+@Getter
+@NoArgsConstructor
 public class BookingCreateRequest {
 	@NotNull(message = "공연 ID는 필수값입니다.")
 	private UUID performanceId;
