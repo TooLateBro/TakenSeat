@@ -22,16 +22,16 @@ import com.taken_seat.common_service.dto.ApiResponseData;
 import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.common_service.dto.request.BookingSeatClientRequestDto;
 import com.taken_seat.common_service.dto.response.BookingSeatClientResponseDto;
-import com.taken_seat.performance_service.performancehall.application.dto.request.CreateRequestDto;
-import com.taken_seat.performance_service.performancehall.application.dto.request.SearchFilterParam;
-import com.taken_seat.performance_service.performancehall.application.dto.request.UpdateRequestDto;
-import com.taken_seat.performance_service.performancehall.application.dto.response.CreateResponseDto;
-import com.taken_seat.performance_service.performancehall.application.dto.response.DetailResponseDto;
-import com.taken_seat.performance_service.performancehall.application.dto.response.PageResponseDto;
-import com.taken_seat.performance_service.performancehall.application.dto.response.SeatLayoutResponseDto;
-import com.taken_seat.performance_service.performancehall.application.dto.response.UpdateResponseDto;
 import com.taken_seat.performance_service.performancehall.application.service.PerformanceHallService;
 import com.taken_seat.performance_service.performancehall.presentation.docs.PerformanceHallControllerDocs;
+import com.taken_seat.performance_service.performancehall.presentation.dto.request.CreateRequestDto;
+import com.taken_seat.performance_service.performancehall.presentation.dto.request.SearchFilterParam;
+import com.taken_seat.performance_service.performancehall.presentation.dto.request.UpdateRequestDto;
+import com.taken_seat.performance_service.performancehall.presentation.dto.response.CreateResponseDto;
+import com.taken_seat.performance_service.performancehall.presentation.dto.response.DetailResponseDto;
+import com.taken_seat.performance_service.performancehall.presentation.dto.response.PageResponseDto;
+import com.taken_seat.performance_service.performancehall.presentation.dto.response.SeatLayoutResponseDto;
+import com.taken_seat.performance_service.performancehall.presentation.dto.response.UpdateResponseDto;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -48,7 +48,7 @@ public class PerformanceHallController implements PerformanceHallControllerDocs 
 		AuthenticatedUser authenticatedUser) {
 
 		CreateResponseDto response = performanceHallService.create(request, authenticatedUser);
-		URI location = URI.create("/api/v1/performancehalls/" + response.getPerformanceHallId());
+		URI location = URI.create("/api/v1/performancehalls/" + response.performanceHallId());
 		return ResponseEntity.created(location).body(ApiResponseData.success(response));
 	}
 
