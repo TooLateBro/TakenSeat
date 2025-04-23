@@ -44,7 +44,7 @@ public class MileageServiceImpl implements MileageService {
         User user = userRepository.findByIdAndDeletedAtIsNull(userId)
                 .orElseThrow(()-> new AuthException(ResponseCode.USER_NOT_FOUND));
 
-        Mileage mileage = Mileage.create(user, dto.getMileage());
+        Mileage mileage = Mileage.create(user, dto.mileage());
 
         if (mileage.getCreatedBy() != null){
             mileage.preUpdate(userId);
@@ -98,7 +98,7 @@ public class MileageServiceImpl implements MileageService {
         Mileage mileage = mileageRepository.findByIdAndDeletedAtIsNull(mileageId)
                 .orElseThrow(()-> new AuthException(ResponseCode.MILEAGE_NOT_FOUND));
 
-        mileage.update(dto.getMileage(), authenticatedUser.getUserId());
+        mileage.update(dto.mileage(), authenticatedUser.getUserId());
 
         return UserMileageResponseDto.of(mileage);
     }
