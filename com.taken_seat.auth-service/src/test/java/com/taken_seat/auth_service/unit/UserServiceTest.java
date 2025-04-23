@@ -85,5 +85,45 @@ public class UserServiceTest {
         assertEquals(ResponseCode.USER_NOT_FOUND, exception.getErrorCode());
     }
 
+    @Test
+    @DisplayName("유저 단건 상세 조회 성공 테스트")
+    public void getUserDetailsSuccess() {
+        userId = UUID.randomUUID();
+        int page = 0;
+        int size = 10;
+
+        User mockedUser = Mockito.mock(User.class);
+
+        when(mockedUser.getId()).thenReturn(userId);
+        when(mockedUser.getUsername()).thenReturn("testuser1");
+        when(mockedUser.getMileages()).thenReturn(List.of());
+
+        when(userRepository.findByIdAndDeletedAtIsNull(userId)).thenReturn(Optional.of(mockedUser));
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<UserCoupon> userCouponPage = new PageImpl<>(List.of());
+
+        when(userCouponRepository.findCouponIdByUserIdAndIsActiveTrue(any(UUID.class), eq(pageable)))
+                .thenReturn(userCouponPage);
+
+        UserInfoResponseDto result = userService.getUserDetails(userId, page, size);
+
+        assertNotNull(result);
+        assertEquals("testuser1", result.username());
+    }
+    @Test
+    @DisplayName("유저 단건 상세 조회 실패 테스트")
+    public void getUserDetailsFail() {
+        userId = UUID.randomUUID();
+        int page = 0;
+        int size = 10;
+
+        when(userRepository.findByIdAndDeletedAtIsNull(userId)).thenReturn(Optional.empty());
+
+        AuthException exception = assertThrows(AuthException.class, () ->
+                userService.getUserDetails(userId, page, size)
+        );
+        assertEquals(ResponseCode.USER_NOT_FOUND, exception.getErrorCode());
+    }
 
 }
