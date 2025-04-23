@@ -7,9 +7,9 @@ import java.util.UUID;
 import com.taken_seat.common_service.entity.BaseTimeEntity;
 import com.taken_seat.common_service.exception.customException.PerformanceException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
-import com.taken_seat.performance_service.performancehall.application.dto.request.CreateRequestDto;
-import com.taken_seat.performance_service.performancehall.application.dto.request.UpdateRequestDto;
-import com.taken_seat.performance_service.performancehall.application.dto.request.UpdateSeatDto;
+import com.taken_seat.performance_service.performancehall.application.dto.command.CreatePerformanceHallCommand;
+import com.taken_seat.performance_service.performancehall.application.dto.command.UpdatePerformanceHallCommand;
+import com.taken_seat.performance_service.performancehall.application.dto.command.UpdateSeatCommand;
 import com.taken_seat.performance_service.performancehall.domain.helper.PerformanceHallCreateHelper;
 
 import jakarta.persistence.CascadeType;
@@ -53,12 +53,12 @@ public class PerformanceHall extends BaseTimeEntity {
 	@Builder.Default
 	private List<Seat> seats = new ArrayList<>();
 
-	public static PerformanceHall create(CreateRequestDto request, UUID createBy) {
+	public static PerformanceHall create(CreatePerformanceHallCommand command, UUID createBy) {
 
 		PerformanceHall performanceHall =
-			PerformanceHallCreateHelper.createPerformanceHall(request, createBy);
+			PerformanceHallCreateHelper.createPerformanceHall(command, createBy);
 
-		PerformanceHallCreateHelper.createSeats(request, performanceHall, createBy);
+		PerformanceHallCreateHelper.createSeats(command, performanceHall, createBy);
 
 		return performanceHall;
 	}
@@ -70,35 +70,35 @@ public class PerformanceHall extends BaseTimeEntity {
 			.orElseThrow(() -> new PerformanceException(ResponseCode.SEAT_NOT_FOUND_EXCEPTION));
 	}
 
-	public void update(UpdateRequestDto request) {
-		this.updatePerformanceHall(request);
-		this.updateSeats(request.getSeats());
+	public void update(UpdatePerformanceHallCommand command) {
+		this.updatePerformanceHall(command);
+		this.updateSeats(command.seats());
 	}
 
-	public void updatePerformanceHall(UpdateRequestDto request) {
-		this.name = request.getName();
-		this.address = request.getAddress();
-		this.description = request.getDescription();
+	public void updatePerformanceHall(UpdatePerformanceHallCommand command) {
+		this.name = command.name();
+		this.address = command.address();
+		this.description = command.description();
 	}
 
-	public void updateSeats(List<UpdateSeatDto> seatDtoList) {
+	public void updateSeats(List<UpdateSeatCommand> seatDtoList) {
 
 		if (seatDtoList == null) {
 			return;
 		}
 
-		for (UpdateSeatDto seatDto : seatDtoList) {
-			Seat existingSeat = this.getSeatById(seatDto.getSeatId());
+		for (UpdateSeatCommand seatDto : seatDtoList) {
+			Seat existingSeat = this.getSeatById(seatDto.seatId());
 
 			if (existingSeat != null) {
 				existingSeat.update(seatDto);
 			} else {
 				Seat newSeat = Seat.builder()
 					.performanceHall(this)
-					.rowNumber(seatDto.getRowNumber())
-					.seatNumber(seatDto.getSeatNumber())
-					.seatType(seatDto.getSeatType())
-					.status(seatDto.getStatus())
+					.rowNumber(seatDto.rowNumber())
+					.seatNumber(seatDto.seatNumber())
+					.seatType(seatDto.seatType())
+					.status(seatDto.status())
 					.build();
 				this.seats.add(newSeat);
 			}
