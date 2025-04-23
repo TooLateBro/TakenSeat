@@ -104,7 +104,12 @@ public enum ResponseCode {
 	PERFORMANCE_HALL_DUPLICATE_SEAT(HttpStatus.CONFLICT, HttpStatus.CONFLICT.value(), "중복된 좌석이 존재합니다."),
 	SEAT_NOT_FOUND_EXCEPTION(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "해당 좌석은 존재하지 않습니다."),
 	SEAT_STATUS_CHANGE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, HttpStatus.NOT_FOUND.value(), "비활성 좌석은 상태를 변경할 수 없습니다."),
-	SEAT_PRICE_NOT_FOUND_EXCEPTION(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "좌석 가격 정보를 찾을 수 없습니다.");
+	SEAT_PRICE_NOT_FOUND_EXCEPTION(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "좌석 가격 정보를 찾을 수 없습니다."),
+
+	//Queue
+	QUEUE_UNAUTHORIZED_TOKEN_EXCEPTION(HttpStatus.UNAUTHORIZED, HttpStatus.UNAUTHORIZED.value(), "유효하지 않은 토큰입니다."),
+	QUEUE_NOT_FOUND_TOKEN_EXCEPTION(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "대기열에 존재하지 않는 사용자입니다.");
+
 
 	private final HttpStatus status;
 	private final Integer code;
