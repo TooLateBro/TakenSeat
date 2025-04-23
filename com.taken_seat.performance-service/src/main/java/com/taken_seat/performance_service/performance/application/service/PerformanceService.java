@@ -1,6 +1,6 @@
 package com.taken_seat.performance_service.performance.application.service;
 
-import static com.taken_seat.performance_service.performance.application.dto.mapper.ResponseMapper.*;
+import static com.taken_seat.performance_service.performance.application.dto.mapper.PerformanceResponseMapper.*;
 
 import java.util.UUID;
 
@@ -10,24 +10,28 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.taken_seat.common_service.dto.AuthenticatedUser;
+import com.taken_seat.common_service.dto.response.PerformanceEndTimeDto;
 import com.taken_seat.common_service.dto.response.PerformanceStartTimeDto;
-import com.taken_seat.performance_service.performance.application.dto.mapper.ResponseMapper;
-import com.taken_seat.performance_service.performance.application.dto.request.CreateRequestDto;
-import com.taken_seat.performance_service.performance.application.dto.request.SearchFilterParam;
-import com.taken_seat.performance_service.performance.application.dto.request.UpdatePerformanceScheduleDto;
-import com.taken_seat.performance_service.performance.application.dto.request.UpdateRequestDto;
-import com.taken_seat.performance_service.performance.application.dto.response.CreateResponseDto;
-import com.taken_seat.performance_service.performance.application.dto.response.DetailResponseDto;
-import com.taken_seat.performance_service.performance.application.dto.response.PageResponseDto;
-import com.taken_seat.performance_service.performance.application.dto.response.PerformanceEndTimeDto;
-import com.taken_seat.performance_service.performance.application.dto.response.SearchResponseDto;
-import com.taken_seat.performance_service.performance.application.dto.response.UpdateResponseDto;
+import com.taken_seat.performance_service.performance.application.dto.command.CreatePerformanceCommand;
+import com.taken_seat.performance_service.performance.application.dto.command.UpdatePerformanceCommand;
+import com.taken_seat.performance_service.performance.application.dto.command.UpdatePerformanceScheduleCommand;
+import com.taken_seat.performance_service.performance.application.dto.mapper.PerformanceCreateCommandMapper;
+import com.taken_seat.performance_service.performance.application.dto.mapper.PerformanceResponseMapper;
+import com.taken_seat.performance_service.performance.application.dto.mapper.PerformanceUpdateCommandMapper;
 import com.taken_seat.performance_service.performance.domain.helper.PerformanceUpdateHelper;
 import com.taken_seat.performance_service.performance.domain.model.Performance;
 import com.taken_seat.performance_service.performance.domain.model.PerformanceSchedule;
 import com.taken_seat.performance_service.performance.domain.repository.PerformanceRepository;
 import com.taken_seat.performance_service.performance.domain.validator.PerformanceExistenceValidator;
 import com.taken_seat.performance_service.performance.domain.validator.PerformanceValidator;
+import com.taken_seat.performance_service.performance.presentation.dto.request.CreateRequestDto;
+import com.taken_seat.performance_service.performance.presentation.dto.request.SearchFilterParam;
+import com.taken_seat.performance_service.performance.presentation.dto.request.UpdateRequestDto;
+import com.taken_seat.performance_service.performance.presentation.dto.response.CreateResponseDto;
+import com.taken_seat.performance_service.performance.presentation.dto.response.DetailResponseDto;
+import com.taken_seat.performance_service.performance.presentation.dto.response.PageResponseDto;
+import com.taken_seat.performance_service.performance.presentation.dto.response.SearchResponseDto;
+import com.taken_seat.performance_service.performance.presentation.dto.response.UpdateResponseDto;
 import com.taken_seat.performance_service.performancehall.domain.facade.PerformanceHallFacade;
 
 import lombok.RequiredArgsConstructor;
@@ -39,18 +43,22 @@ import lombok.extern.slf4j.Slf4j;
 public class PerformanceService {
 
 	private final PerformanceRepository performanceRepository;
-	private final ResponseMapper responseMapper;
+	private final PerformanceResponseMapper performanceResponseMapper;
 	private final PerformanceHallFacade performanceHallFacade;
 	private final PerformanceExistenceValidator performanceExistenceValidator;
+	private final PerformanceCreateCommandMapper performanceCreateCommandMapper;
+	private final PerformanceUpdateCommandMapper performanceUpdateCommandMapper;
 
 	@Transactional
 	public CreateResponseDto create(CreateRequestDto request, AuthenticatedUser authenticatedUser) {
 
 		PerformanceValidator.validateAuthorized(authenticatedUser);
 
-		PerformanceValidator.validateDuplicateSchedules(request.getSchedules());
+		CreatePerformanceCommand command = performanceCreateCommandMapper.toCommand(request);
 
-		Performance performance = Performance.create(request, authenticatedUser.getUserId());
+		PerformanceValidator.validateDuplicateSchedules(command.schedules());
+
+		Performance performance = Performance.create(command, authenticatedUser.getUserId());
 
 		Performance saved = performanceRepository.save(performance);
 
@@ -62,7 +70,7 @@ public class PerformanceService {
 
 		Page<SearchResponseDto> pages = performanceRepository.findAll(filterParam, pageable);
 
-		return responseMapper.toPage(pages);
+		return performanceResponseMapper.toPage(pages);
 	}
 
 	@Transactional(readOnly = true)
@@ -78,17 +86,19 @@ public class PerformanceService {
 
 		PerformanceValidator.validateAuthorized(authenticatedUser);
 
-		PerformanceValidator.validatePerformanceData(request);
+		Performance performance = performanceExistenceValidator.validateByPerformanceId(id);
 
-		for (UpdatePerformanceScheduleDto schedule : request.getSchedules()) {
+		UpdatePerformanceCommand command = performanceUpdateCommandMapper.toCommand(request);
+
+		PerformanceValidator.validatePerformanceData(command);
+
+		for (UpdatePerformanceScheduleCommand schedule : command.schedules()) {
 			PerformanceValidator.validateScheduleDataForUpdate(schedule);
 		}
 
-		PerformanceValidator.validateDuplicateSchedulesForUpdate(request.getSchedules());
+		PerformanceValidator.validateDuplicateSchedulesForUpdate(command.schedules());
 
-		Performance performance = performanceExistenceValidator.validateByPerformanceId(id);
-
-		performance.update(request, authenticatedUser.getUserId());
+		performance.update(command, authenticatedUser.getUserId());
 
 		return toUpdate(performance);
 	}
