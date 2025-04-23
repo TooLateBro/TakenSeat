@@ -57,6 +57,8 @@ eureka:
       defaultZone: ${EUREKA_DEFAULT_ZONE}
 
 common:
+  kafka:
+    bootstrap-servers: "${KAFKA_BOOTSTRAP_SERVERS}"
   trust-package: "com.taken_seat.common_service.message"
 
 logging:
