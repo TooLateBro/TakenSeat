@@ -18,17 +18,11 @@ import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.performance_service.performance.domain.facade.PerformanceFacade;
 import com.taken_seat.performance_service.performance.domain.model.Performance;
 import com.taken_seat.performance_service.performance.domain.model.PerformanceSchedule;
+import com.taken_seat.performance_service.performancehall.application.dto.command.CreatePerformanceHallCommand;
+import com.taken_seat.performance_service.performancehall.application.dto.command.UpdatePerformanceHallCommand;
+import com.taken_seat.performance_service.performancehall.application.dto.mapper.HallCreateCommandMapper;
 import com.taken_seat.performance_service.performancehall.application.dto.mapper.HallResponseMapper;
-import com.taken_seat.performance_service.performancehall.application.dto.request.CreateRequestDto;
-import com.taken_seat.performance_service.performancehall.application.dto.request.SearchFilterParam;
-import com.taken_seat.performance_service.performancehall.application.dto.request.UpdateRequestDto;
-import com.taken_seat.performance_service.performancehall.application.dto.response.CreateResponseDto;
-import com.taken_seat.performance_service.performancehall.application.dto.response.DetailResponseDto;
-import com.taken_seat.performance_service.performancehall.application.dto.response.PageResponseDto;
-import com.taken_seat.performance_service.performancehall.application.dto.response.SearchResponseDto;
-import com.taken_seat.performance_service.performancehall.application.dto.response.SeatDto;
-import com.taken_seat.performance_service.performancehall.application.dto.response.SeatLayoutResponseDto;
-import com.taken_seat.performance_service.performancehall.application.dto.response.UpdateResponseDto;
+import com.taken_seat.performance_service.performancehall.application.dto.mapper.HallUpdateCommandMapper;
 import com.taken_seat.performance_service.performancehall.application.event.SeatStatusEventPublisher;
 import com.taken_seat.performance_service.performancehall.domain.model.PerformanceHall;
 import com.taken_seat.performance_service.performancehall.domain.model.Seat;
@@ -37,6 +31,16 @@ import com.taken_seat.performance_service.performancehall.domain.repository.Perf
 import com.taken_seat.performance_service.performancehall.domain.repository.PerformanceHallRepository;
 import com.taken_seat.performance_service.performancehall.domain.validation.PerformanceHallExistenceValidator;
 import com.taken_seat.performance_service.performancehall.domain.validation.PerformanceHallValidator;
+import com.taken_seat.performance_service.performancehall.presentation.dto.request.CreateRequestDto;
+import com.taken_seat.performance_service.performancehall.presentation.dto.request.SearchFilterParam;
+import com.taken_seat.performance_service.performancehall.presentation.dto.request.UpdateRequestDto;
+import com.taken_seat.performance_service.performancehall.presentation.dto.response.CreateResponseDto;
+import com.taken_seat.performance_service.performancehall.presentation.dto.response.DetailResponseDto;
+import com.taken_seat.performance_service.performancehall.presentation.dto.response.PageResponseDto;
+import com.taken_seat.performance_service.performancehall.presentation.dto.response.SearchResponseDto;
+import com.taken_seat.performance_service.performancehall.presentation.dto.response.SeatDto;
+import com.taken_seat.performance_service.performancehall.presentation.dto.response.SeatLayoutResponseDto;
+import com.taken_seat.performance_service.performancehall.presentation.dto.response.UpdateResponseDto;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -52,20 +56,24 @@ public class PerformanceHallService {
 	private final PerformanceHallExistenceValidator performanceHallExistenceValidator;
 	private final PerformanceHallQueryRepository performanceHallQueryRepository;
 	private final SeatStatusEventPublisher seatStatusEventPublisher;
+	private final HallCreateCommandMapper hallCreateCommandMapper;
+	private final HallUpdateCommandMapper hallUpdateCommandMapper;
 
 	@Transactional
 	public CreateResponseDto create(CreateRequestDto request, AuthenticatedUser authenticatedUser) {
 
 		PerformanceHallValidator.validateAuthorized(authenticatedUser);
 
+		CreatePerformanceHallCommand command = hallCreateCommandMapper.toCommand(request);
+
 		PerformanceHallValidator.createValidateDuplicateHall(
-			request.getName(), request.getAddress(),
+			command.name(), command.address(),
 			performanceHallRepository);
 
-		PerformanceHallValidator.validateDuplicateSeats(request.getSeats());
+		PerformanceHallValidator.validateDuplicateSeats(command.seats());
 
 		PerformanceHall performanceHall =
-			PerformanceHall.create(request, authenticatedUser.getUserId());
+			PerformanceHall.create(command, authenticatedUser.getUserId());
 
 		PerformanceHall saved = performanceHallRepository.save(performanceHall);
 
@@ -98,12 +106,14 @@ public class PerformanceHallService {
 		PerformanceHall performanceHall =
 			performanceHallExistenceValidator.validateByPerformanceHallId(id);
 
+		UpdatePerformanceHallCommand command = hallUpdateCommandMapper.toCommand(request);
+
 		PerformanceHallValidator.updateValidateDuplicateHall(
-			id, request.getName(), request.getAddress(), performanceHallRepository);
+			id, command.name(), command.address(), performanceHallRepository);
 
-		PerformanceHallValidator.validateDuplicateSeats(request.getSeats());
+		PerformanceHallValidator.validateDuplicateSeats(command.seats());
 
-		performanceHall.update(request);
+		performanceHall.update(command);
 
 		performanceHallRepository.save(performanceHall);
 
