@@ -53,7 +53,7 @@ public class UserServiceImpl implements UserService {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<UserCoupon> userCoupons = userCouponRepository.findCouponIdByUserIdAndIsActiveTrue(user.getId(), pageable);
 
-        return UserInfoResponseDto.listOf(user, userCoupons);
+        return UserInfoResponseDto.detailsOf(user, userCoupons);
     }
 
     @Transactional(readOnly = true)
@@ -66,7 +66,7 @@ public class UserServiceImpl implements UserService {
         Page<UserInfoResponseDto> userInfoPage = userInfos.map(user -> {
             List<UserCoupon> coupons = user.getUserCoupons();
             Page<UserCoupon> userCouponsPage = new PageImpl<>(coupons, pageable, coupons.size());
-            return UserInfoResponseDto.listOf(user, userCouponsPage);
+            return UserInfoResponseDto.detailsOf(user, userCouponsPage);
         });
 
         return PageResponseDto.of(userInfoPage);
@@ -80,15 +80,15 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findByIdAndDeletedAtIsNull(userId)
                 .orElseThrow(()-> new AuthException(ResponseCode.USER_NOT_FOUND));
 
-        if(userRepository.findByEmail(String.valueOf(dto.getEmail())).isPresent()){
+        if(userRepository.findByEmail(String.valueOf(dto.email())).isPresent()){
             throw new AuthException(ResponseCode.USER_BAD_EMAIL);
         }
         user.update(
-                dto.getUsername(),
-                dto.getEmail(),
-                dto.getPhone(),
-                dto.getPassword(),
-                dto.getRole(),
+                dto.username(),
+                dto.email(),
+                dto.phone(),
+                dto.password(),
+                dto.role(),
                 userId
         );
         return UserInfoResponseDto.of(user);
@@ -112,6 +112,6 @@ public class UserServiceImpl implements UserService {
     public String getCoupon(UUID couponId) {
         UserCoupon userCoupon = userCouponRepository.findByCouponId(couponId)
                 .orElseThrow(()-> new IllegalArgumentException("쿠폰이 소진되어 수령에 실패했습니다."));
-        return "축하합니다!";
+        return "축하합니다!" + userCoupon + " 수령에 성공했습니다!";
     }
 }

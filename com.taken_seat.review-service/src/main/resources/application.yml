@@ -44,6 +44,8 @@ management:
       probability: 1.0
 
 common:
+  kafka:
+    bootstrap-servers: "${KAFKA_BOOTSTRAP_SERVERS}"
   trust-package: "com.taken_seat.common_service.message"
 
 eureka:

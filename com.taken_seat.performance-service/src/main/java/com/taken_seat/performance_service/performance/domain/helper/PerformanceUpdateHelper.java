@@ -97,7 +97,10 @@ public class PerformanceUpdateHelper {
 
 		PerformanceStatus oldPerformanceStatus = performance.getStatus();
 		PerformanceStatus newPerformanceStatus = PerformanceStatus.status(
-			performance.getStartAt(), performance.getEndAt());
+			performance.getStartAt(),
+			performance.getEndAt(),
+			performance.getSchedules()
+		);
 
 		if (!performance.getStatus().equals(newPerformanceStatus)) {
 			performance.updateStatus(newPerformanceStatus);

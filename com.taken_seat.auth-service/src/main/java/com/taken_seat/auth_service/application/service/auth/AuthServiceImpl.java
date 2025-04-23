@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.concurrent.TimeUnit;
 
 @Service
-class AuthServiceImpl implements AuthService{
+public class AuthServiceImpl implements AuthService{
 
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
@@ -35,13 +35,13 @@ class AuthServiceImpl implements AuthService{
     @Transactional
     @Override
     public AuthSignUpResponseDto signUp(AuthSignUpDto dto) {
-        if(userRepository.findByEmail(dto.getEmail()).isPresent()){
+        if(userRepository.findByEmail(dto.email()).isPresent()){
             throw new AuthException(ResponseCode.USER_BAD_EMAIL);
         }
         User user = User.create(
-                dto.getUsername(), dto.getEmail(),
-                dto.getPhone(), bCryptPasswordEncoder.encode(dto.getPassword()),
-                dto.getRole()
+                dto.username(), dto.email(),
+                dto.phone(), bCryptPasswordEncoder.encode(dto.password()),
+                dto.role()
         );
         userRepository.save(user);
 
@@ -51,10 +51,10 @@ class AuthServiceImpl implements AuthService{
     @Transactional(readOnly = true)
     @Override
     public AuthLoginResponseDto login(AuthLoginDto dto) {
-        User user = userRepository.findByEmail(dto.getEmail())
+        User user = userRepository.findByEmail(dto.email())
                 .orElseThrow(() -> new AuthException(ResponseCode.USER_NOT_FOUND));
 
-        if (!bCryptPasswordEncoder.matches(dto.getPassword(), user.getPassword())) {
+        if (!bCryptPasswordEncoder.matches(dto.password(), user.getPassword())) {
             throw new AuthException(ResponseCode.USER_BAD_PASSWORD);
         }
 

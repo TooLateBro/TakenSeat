@@ -1,9 +1,11 @@
 package com.taken_seat.performance_service.performancehall.application.event;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.taken_seat.performance_service.performance.domain.event.ScheduleStatusChangedEvent;
 import com.taken_seat.performance_service.performance.domain.facade.PerformanceFacade;
 import com.taken_seat.performance_service.performance.domain.model.Performance;
 import com.taken_seat.performance_service.performance.domain.model.PerformanceScheduleStatus;
@@ -19,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 public class SeatStatusEventHandler {
 
 	private final PerformanceFacade performanceFacade;
+	private final ApplicationEventPublisher applicationEventPublisher;
 
 	@EventListener
 	@Transactional
@@ -44,5 +47,9 @@ public class SeatStatusEventHandler {
 				PerformanceScheduleStatus.ONSALE
 			);
 		}
+
+		applicationEventPublisher.publishEvent(
+			new ScheduleStatusChangedEvent(seatStatusChangedEvent.performanceId())
+		);
 	}
 }
