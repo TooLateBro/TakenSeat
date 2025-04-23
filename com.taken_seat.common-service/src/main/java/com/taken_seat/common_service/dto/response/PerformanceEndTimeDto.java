@@ -1,4 +1,4 @@
-package com.taken_seat.performance_service.performance.application.dto.response;
+package com.taken_seat.common_service.dto.response;
 
 import java.time.LocalDateTime;
 
