@@ -11,11 +11,11 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.taken_seat.performance_service.common.support.QueryDslOrderUtil;
-import com.taken_seat.performance_service.performancehall.application.dto.request.SearchFilterParam;
-import com.taken_seat.performance_service.performancehall.application.dto.response.SearchResponseDto;
 import com.taken_seat.performance_service.performancehall.domain.model.PerformanceHall;
 import com.taken_seat.performance_service.performancehall.domain.model.QPerformanceHall;
 import com.taken_seat.performance_service.performancehall.domain.repository.PerformanceHallQueryRepository;
+import com.taken_seat.performance_service.performancehall.presentation.dto.request.SearchFilterParam;
+import com.taken_seat.performance_service.performancehall.presentation.dto.response.SearchResponseDto;
 
 import lombok.RequiredArgsConstructor;
 
@@ -44,16 +44,16 @@ public class PerformanceHallQueryRepositoryImpl implements PerformanceHallQueryR
 		BooleanBuilder builder = new BooleanBuilder();
 		builder.and(performanceHall.deletedAt.isNull());
 
-		if (searchFilterParam.getName() != null && !searchFilterParam.getName().isBlank()) {
-			builder.and(performanceHall.name.containsIgnoreCase(searchFilterParam.getName()));
+		if (searchFilterParam.name() != null && !searchFilterParam.name().isBlank()) {
+			builder.and(performanceHall.name.containsIgnoreCase(searchFilterParam.name()));
 		}
 
-		if (searchFilterParam.getAddress() != null && !searchFilterParam.getAddress().isBlank()) {
-			builder.and(performanceHall.address.containsIgnoreCase(searchFilterParam.getAddress()));
+		if (searchFilterParam.address() != null && !searchFilterParam.address().isBlank()) {
+			builder.and(performanceHall.address.containsIgnoreCase(searchFilterParam.address()));
 		}
 
-		Integer min = searchFilterParam.getMinSeats();
-		Integer max = searchFilterParam.getMaxSeats();
+		Integer min = searchFilterParam.minSeats();
+		Integer max = searchFilterParam.maxSeats();
 
 		if (min != null && max != null) {
 			builder.and(performanceHall.totalSeats.between(min, max));
