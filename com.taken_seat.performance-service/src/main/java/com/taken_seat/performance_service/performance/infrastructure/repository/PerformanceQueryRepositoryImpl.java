@@ -11,11 +11,11 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.taken_seat.performance_service.common.support.QueryDslOrderUtil;
-import com.taken_seat.performance_service.performance.application.dto.request.SearchFilterParam;
-import com.taken_seat.performance_service.performance.application.dto.response.SearchResponseDto;
 import com.taken_seat.performance_service.performance.domain.model.Performance;
 import com.taken_seat.performance_service.performance.domain.model.QPerformance;
 import com.taken_seat.performance_service.performance.domain.repository.PerformanceQueryRepository;
+import com.taken_seat.performance_service.performance.presentation.dto.request.SearchFilterParam;
+import com.taken_seat.performance_service.performance.presentation.dto.response.SearchResponseDto;
 
 import lombok.RequiredArgsConstructor;
 
@@ -44,20 +44,20 @@ public class PerformanceQueryRepositoryImpl implements PerformanceQueryRepositor
 		BooleanBuilder builder = new BooleanBuilder();
 		builder.and(performance.deletedAt.isNull());
 
-		if (searchFilterParam.getTitle() != null && !searchFilterParam.getTitle().isBlank()) {
-			builder.and(performance.title.containsIgnoreCase(searchFilterParam.getTitle()));
+		if (searchFilterParam.title() != null && !searchFilterParam.title().isBlank()) {
+			builder.and(performance.title.containsIgnoreCase(searchFilterParam.title()));
 		}
 
-		if (searchFilterParam.getStartAt() != null && searchFilterParam.getEndAt() != null) {
-			builder.and(performance.startAt.between(searchFilterParam.getStartAt(), searchFilterParam.getEndAt()));
-		} else if (searchFilterParam.getStartAt() != null) {
-			builder.and(performance.startAt.goe(searchFilterParam.getStartAt()));
-		} else if (searchFilterParam.getEndAt() != null) {
-			builder.and(performance.startAt.loe(searchFilterParam.getEndAt()));
+		if (searchFilterParam.startAt() != null && searchFilterParam.endAt() != null) {
+			builder.and(performance.startAt.between(searchFilterParam.startAt(), searchFilterParam.endAt()));
+		} else if (searchFilterParam.startAt() != null) {
+			builder.and(performance.startAt.goe(searchFilterParam.startAt()));
+		} else if (searchFilterParam.endAt() != null) {
+			builder.and(performance.startAt.loe(searchFilterParam.endAt()));
 		}
 
-		if (searchFilterParam.getStatus() != null) {
-			builder.and(performance.status.eq(searchFilterParam.getStatus()));
+		if (searchFilterParam.status() != null) {
+			builder.and(performance.status.eq(searchFilterParam.status()));
 		}
 
 		return builder;

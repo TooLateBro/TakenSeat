@@ -3,7 +3,7 @@ package com.taken_seat.performance_service.performance.domain.model;
 import java.util.UUID;
 
 import com.taken_seat.common_service.entity.BaseTimeEntity;
-import com.taken_seat.performance_service.performance.application.dto.request.UpdateSeatPriceDto;
+import com.taken_seat.performance_service.performance.application.dto.command.UpdateSeatPriceCommand;
 import com.taken_seat.performance_service.performancehall.domain.model.SeatType;
 
 import jakarta.persistence.Column;
@@ -46,9 +46,9 @@ public class PerformanceSeatPrice extends BaseTimeEntity {
 	@Column(nullable = false)
 	private Integer price;
 
-	public void update(UpdateSeatPriceDto dto) {
+	public void update(UpdateSeatPriceCommand command) {
 
-		this.seatType = dto.getSeatType();
-		this.price = dto.getPrice();
+		this.seatType = command.seatType();
+		this.price = command.price();
 	}
 }

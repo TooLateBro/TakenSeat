@@ -85,12 +85,16 @@ dependencies {
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0'
     testImplementation 'com.epages:restdocs-api-spec-mockmvc:0.19.2'
 
-    //queryDSL 의존성
+    //queryDSL
     implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
     implementation 'com.google.code.findbugs:jsr305:3.0.2'
     annotationProcessor "com.querydsl:querydsl-apt:5.0.0:jakarta"
     annotationProcessor "jakarta.annotation:jakarta.annotation-api"
     annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+
+    // MapStruct
+    implementation 'org.mapstruct:mapstruct:1.5.5.Final'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
 
     // 테스트
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

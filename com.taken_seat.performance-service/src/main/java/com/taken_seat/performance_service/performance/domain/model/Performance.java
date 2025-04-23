@@ -8,8 +8,8 @@ import java.util.UUID;
 import com.taken_seat.common_service.entity.BaseTimeEntity;
 import com.taken_seat.common_service.exception.customException.PerformanceException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
-import com.taken_seat.performance_service.performance.application.dto.request.CreateRequestDto;
-import com.taken_seat.performance_service.performance.application.dto.request.UpdateRequestDto;
+import com.taken_seat.performance_service.performance.application.dto.command.CreatePerformanceCommand;
+import com.taken_seat.performance_service.performance.application.dto.command.UpdatePerformanceCommand;
 import com.taken_seat.performance_service.performance.domain.helper.PerformanceCreateHelper;
 import com.taken_seat.performance_service.performance.domain.helper.PerformanceUpdateHelper;
 import com.taken_seat.performance_service.performancehall.domain.model.SeatType;
@@ -71,30 +71,30 @@ public class Performance extends BaseTimeEntity {
 	@Builder.Default
 	private List<PerformanceSchedule> schedules = new ArrayList<>();
 
-	public static Performance create(CreateRequestDto request, UUID createdBy) {
+	public static Performance create(CreatePerformanceCommand command, UUID createdBy) {
 
-		Performance performance = PerformanceCreateHelper.createPerformance(request, createdBy);
+		Performance performance = PerformanceCreateHelper.createPerformance(command, createdBy);
 
-		PerformanceCreateHelper.createPerformanceSchedules(request, performance,
+		PerformanceCreateHelper.createPerformanceSchedules(command, performance,
 			createdBy);
 
 		return performance;
 	}
 
-	public void update(UpdateRequestDto request, UUID updatedBy) {
+	public void update(UpdatePerformanceCommand command, UUID updatedBy) {
 		this.preUpdate(updatedBy);
 
-		this.title = request.getTitle();
-		this.description = request.getDescription();
-		this.startAt = request.getStartAt();
-		this.endAt = request.getEndAt();
-		this.status = request.getStatus();
-		this.posterUrl = request.getPosterUrl();
-		this.ageLimit = request.getAgeLimit();
-		this.maxTicketCount = request.getMaxTicketCount();
-		this.discountInfo = request.getDiscountInfo();
+		this.title = command.title();
+		this.description = command.description();
+		this.startAt = command.startAt();
+		this.endAt = command.endAt();
+		this.status = command.status();
+		this.posterUrl = command.posterUrl();
+		this.ageLimit = command.ageLimit();
+		this.maxTicketCount = command.maxTicketCount();
+		this.discountInfo = command.discountInfo();
 
-		PerformanceUpdateHelper.updateSchedules(this, request.getSchedules(), updatedBy);
+		PerformanceUpdateHelper.updateSchedules(this, command.schedules(), updatedBy);
 	}
 
 	public PerformanceSchedule getScheduleById(UUID performanceScheduleId) {

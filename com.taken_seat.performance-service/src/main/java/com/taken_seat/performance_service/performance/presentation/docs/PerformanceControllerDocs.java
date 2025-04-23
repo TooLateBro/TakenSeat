@@ -9,15 +9,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import com.taken_seat.common_service.dto.ApiResponseData;
 import com.taken_seat.common_service.dto.AuthenticatedUser;
+import com.taken_seat.common_service.dto.response.PerformanceEndTimeDto;
 import com.taken_seat.common_service.dto.response.PerformanceStartTimeDto;
-import com.taken_seat.performance_service.performance.application.dto.request.CreateRequestDto;
-import com.taken_seat.performance_service.performance.application.dto.request.SearchFilterParam;
-import com.taken_seat.performance_service.performance.application.dto.request.UpdateRequestDto;
-import com.taken_seat.performance_service.performance.application.dto.response.CreateResponseDto;
-import com.taken_seat.performance_service.performance.application.dto.response.DetailResponseDto;
-import com.taken_seat.performance_service.performance.application.dto.response.PageResponseDto;
-import com.taken_seat.performance_service.performance.application.dto.response.PerformanceEndTimeDto;
-import com.taken_seat.performance_service.performance.application.dto.response.UpdateResponseDto;
+import com.taken_seat.performance_service.performance.presentation.dto.request.CreateRequestDto;
+import com.taken_seat.performance_service.performance.presentation.dto.request.SearchFilterParam;
+import com.taken_seat.performance_service.performance.presentation.dto.request.UpdateRequestDto;
+import com.taken_seat.performance_service.performance.presentation.dto.response.CreateResponseDto;
+import com.taken_seat.performance_service.performance.presentation.dto.response.DetailResponseDto;
+import com.taken_seat.performance_service.performance.presentation.dto.response.PageResponseDto;
+import com.taken_seat.performance_service.performance.presentation.dto.response.UpdateResponseDto;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
