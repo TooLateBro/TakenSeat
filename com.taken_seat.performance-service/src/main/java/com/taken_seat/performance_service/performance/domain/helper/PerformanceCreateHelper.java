@@ -21,7 +21,7 @@ public class PerformanceCreateHelper {
 			.description(request.getDescription())
 			.startAt(request.getStartAt())
 			.endAt(request.getEndAt())
-			.status(PerformanceStatus.status(request.getStartAt(), request.getEndAt()))
+			.status(null)
 			.posterUrl(request.getPosterUrl())
 			.ageLimit(request.getAgeLimit())
 			.maxTicketCount(request.getMaxTicketCount())
@@ -50,7 +50,16 @@ public class PerformanceCreateHelper {
 				return schedule;
 			})
 			.toList();
+
 		performance.getSchedules().addAll(schedules);
+
+		PerformanceStatus status = PerformanceStatus.status(
+			performance.getStartAt(),
+			performance.getEndAt(),
+			performance.getSchedules()
+		);
+
+		performance.updateStatus(status);
 
 		return schedules;
 	}
