@@ -60,6 +60,8 @@ public class AuthServiceTest {
 
     private Validator validator;
 
+    private User user;
+
     @BeforeEach
     public void setUp() {
         // ValidatorFactory를 생성하여 Validator 객체 초기화
@@ -72,8 +74,6 @@ public class AuthServiceTest {
                 ,"testPassword1!",Role.ADMIN
         );
     }
-
-    private User user;
 
     @Test
     @DisplayName("회원가입 성공 테스트")
