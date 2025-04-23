@@ -423,6 +423,9 @@ public class BookingServiceImpl implements BookingService {
 				message.getUserId(),
 				message.getBookingId()
 			);
+
+			redisService.evictAllCaches("readBookings", message.getUserId());
+			redisService.evictAllCaches("adminReadBookings", message.getUserId());
 		} else {
 			// 실패시 사용한 쿠폰, 마일리지 원복처리
 
@@ -439,9 +442,6 @@ public class BookingServiceImpl implements BookingService {
 
 			throw new BookingException(ResponseCode.BOOKING_PAYMENT_FAILED_EXCEPTION);
 		}
-
-		redisService.evictAllCaches("readBookings", message.getUserId());
-		redisService.evictAllCaches("adminReadBookings", message.getUserId());
 	}
 
 	@Override
@@ -527,6 +527,9 @@ public class BookingServiceImpl implements BookingService {
 				message.getUserId(),
 				message.getBookingId()
 			);
+
+			redisService.evictAllCaches("readBookings", message.getUserId());
+			redisService.evictAllCaches("adminReadBookings", message.getUserId());
 		} else {
 			log.warn(
 				"[Booking] 예매 쿠폰, 마일리지 적용 메시지 수신 - 실패: {} | userId={}, bookingId={}",
@@ -536,9 +539,6 @@ public class BookingServiceImpl implements BookingService {
 			);
 			throw new BookingException(ResponseCode.BOOKING_BENEFIT_USAGE_FAILED_EXCEPTION);
 		}
-
-		redisService.evictAllCaches("readBookings", message.getUserId());
-		redisService.evictAllCaches("adminReadBookings", message.getUserId());
 	}
 
 	@Override
@@ -601,6 +601,9 @@ public class BookingServiceImpl implements BookingService {
 				message.getUserId(),
 				message.getBookingId()
 			);
+
+			redisService.evictAllCaches("readBookings", message.getUserId());
+			redisService.evictAllCaches("adminReadBookings", message.getUserId());
 		} else {
 			log.warn(
 				"[Booking] 예매 환불 메시지 수신 - 실패: {} | userId={}, bookingId={}",
@@ -610,9 +613,6 @@ public class BookingServiceImpl implements BookingService {
 			);
 			throw new BookingException(ResponseCode.BOOKING_REFUND_FAILED_EXCEPTION);
 		}
-
-		redisService.evictAllCaches("readBookings", message.getUserId());
-		redisService.evictAllCaches("adminReadBookings", message.getUserId());
 	}
 
 	@Override

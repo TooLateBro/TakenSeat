@@ -23,7 +23,7 @@ public class BookingPageResponse {
 	private int pageSize;
 	private int totalPages;
 	private long totalElements;
-	private boolean isLast;
+	private Boolean isLast;
 
 	public static BookingPageResponse toDto(Page<Booking> page, List<TicketPerformanceClientResponse> responses) {
 		List<BookingReadResponse> content = IntStream.range(0, page.getContent().size())
