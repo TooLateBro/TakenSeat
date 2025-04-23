@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.concurrent.TimeUnit;
 
 @Service
-class AuthServiceImpl implements AuthService{
+public class AuthServiceImpl implements AuthService{
 
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
