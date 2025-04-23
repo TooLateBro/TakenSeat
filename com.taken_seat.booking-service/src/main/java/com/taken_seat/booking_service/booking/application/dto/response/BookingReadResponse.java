@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import com.taken_seat.booking_service.booking.domain.Booking;
 import com.taken_seat.booking_service.booking.domain.BookingStatus;
+import com.taken_seat.common_service.dto.response.TicketPerformanceClientResponse;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -26,6 +27,12 @@ public class BookingReadResponse {
 	private BookingStatus bookingStatus;
 	private LocalDateTime bookedAt;
 	private LocalDateTime canceledAt;
+	private String title;
+	private String name;
+	private String address;
+	private String seatRowNumber;
+	private String seatNumber;
+	private String seatType;
 
 	public static BookingReadResponse toDto(Booking booking) {
 		return BookingReadResponse.builder()
@@ -39,6 +46,27 @@ public class BookingReadResponse {
 			.bookingStatus(booking.getBookingStatus())
 			.bookedAt(booking.getBookedAt())
 			.canceledAt(booking.getCanceledAt())
+			.build();
+	}
+
+	public static BookingReadResponse toDto(Booking booking, TicketPerformanceClientResponse response) {
+		return BookingReadResponse.builder()
+			.id(booking.getId())
+			.performanceId(booking.getPerformanceId())
+			.performanceScheduleId(booking.getPerformanceScheduleId())
+			.seatId(booking.getSeatId())
+			.paymentId(booking.getPaymentId())
+			.price(booking.getPrice())
+			.discountedPrice(booking.getDiscountedPrice())
+			.bookingStatus(booking.getBookingStatus())
+			.bookedAt(booking.getBookedAt())
+			.canceledAt(booking.getCanceledAt())
+			.title(response.getTitle())
+			.name(response.getName())
+			.address(response.getAddress())
+			.seatRowNumber(response.getSeatRowNumber())
+			.seatNumber(response.getSeatNumber())
+			.seatType(response.getSeatType())
 			.build();
 	}
 }

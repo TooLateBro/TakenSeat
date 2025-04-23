@@ -88,6 +88,7 @@ public enum ResponseCode {
 		"인터럽트가 발생했습니다."),
 	BOOKING_NOT_FOUND_EXCEPTION(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "해당 예매는 존재하지 않습니다."),
 	BOOKING_PAYMENT_FAILED_EXCEPTION(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), "결제를 실패했습니다."),
+	BOOKING_QUERY_MISSING_EXCEPTION(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), "쿼리 파라미터가 누락되었습니다."),
 	BOOKING_REFUND_FAILED_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR.value(),
 		"환불에 실패했습니다."),
 	BOOKING_SEAT_CANCEL_FAILED_EXCEPTION(HttpStatus.CONFLICT, HttpStatus.CONFLICT.value(), "좌석 취소를 실패했습니다."),
