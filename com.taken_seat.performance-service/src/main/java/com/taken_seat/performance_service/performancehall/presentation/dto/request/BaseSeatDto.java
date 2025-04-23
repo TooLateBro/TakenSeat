@@ -1,4 +1,4 @@
-package com.taken_seat.performance_service.performancehall.application.dto.request;
+package com.taken_seat.performance_service.performancehall.presentation.dto.request;
 
 public interface BaseSeatDto {
 
