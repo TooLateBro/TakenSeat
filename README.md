@@ -1,6 +1,6 @@
 # 🎟️ 뮤지컬 & 콘서트 대규모 티켓팅 서비스 프로젝트
 <div>
-  <img src="https://github.com/user-attachments/assets/95785809-3949-4b04-a353-e1d958c3ff76" style="width: 100%; height: 700px;">
+  <img src="https://github.com/user-attachments/assets/95785809-3949-4b04-a353-e1d958c3ff76" style="width: 100%; height: 450px;">
 </div>
 
 ## 🗣️ 프로젝트 소개
