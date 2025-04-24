@@ -172,4 +172,28 @@ public class CouponServiceTest {
 
         assertEquals(ResponseCode.COUPON_NOT_FOUND, exception.getErrorCode());
     }
+
+    @Test
+    @DisplayName("쿠폰 삭제 성공 테스트")
+    public void deleteCouponSuccess() {
+        couponId = UUID.randomUUID();
+
+        when(couponRepository.findByIdAndDeletedAtIsNull(couponId)).thenReturn(Optional.of(coupon));
+
+        couponService.deleteCoupon(couponId, authenticatedUser);
+
+        assertNotNull(coupon.getDeletedAt());
+    }
+    @Test
+    @DisplayName("쿠폰 삭제 실패 테스트 - 쿠폰 없음")
+    public void deleteCouponFail_CouponNotFound() {
+        couponId = UUID.randomUUID();
+
+        when(couponRepository.findByIdAndDeletedAtIsNull(couponId)).thenReturn(Optional.empty());
+
+        CouponException exception = assertThrows(CouponException.class, () ->
+                couponService.deleteCoupon(couponId, authenticatedUser));
+
+        assertEquals(ResponseCode.COUPON_NOT_FOUND, exception.getErrorCode());
+    }
 }
