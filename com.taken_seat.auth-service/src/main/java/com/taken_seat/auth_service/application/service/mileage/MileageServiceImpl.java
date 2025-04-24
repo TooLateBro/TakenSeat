@@ -10,6 +10,7 @@ import com.taken_seat.auth_service.domain.repository.mileage.MileageRepository;
 import com.taken_seat.auth_service.domain.repository.user.UserRepository;
 import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.common_service.exception.customException.AuthException;
+import com.taken_seat.common_service.exception.customException.MileageException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
@@ -85,6 +86,10 @@ public class MileageServiceImpl implements MileageService {
             Integer startCount, Integer endCount, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "updatedAt"));
         Page<Mileage> mileageInfo = mileageQueryRepository.findAllByDeletedAtIsNull(startCount, endCount, pageable);
+
+        if (mileageInfo.isEmpty()) {
+            throw new MileageException(ResponseCode.MILEAGE_NOT_FOUND);
+        }
 
         Page<UserMileageResponseDto> userMileages = mileageInfo.map(UserMileageResponseDto::of);
         return PageResponseDto.of(userMileages);

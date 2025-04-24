@@ -11,6 +11,7 @@ import com.taken_seat.auth_service.domain.repository.user.UserRepository;
 import com.taken_seat.auth_service.domain.vo.Role;
 import com.taken_seat.auth_service.presentation.dto.mileage.UserMileageRequestDto;
 import com.taken_seat.common_service.exception.customException.AuthException;
+import com.taken_seat.common_service.exception.customException.MileageException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -151,5 +152,40 @@ public class MileageServiceTest {
         AuthException exception = assertThrows(AuthException.class, () -> mileageService.getMileageHistoryUser(userId, page, size));
 
         assertEquals(ResponseCode.USER_NOT_FOUND, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("마일리지 전체 조회 성공 테스트")
+    public void searchMileageUserSuccess() {
+        int page = 0;
+        int size = 10;
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "updatedAt"));
+
+        List<Mileage> mileageList = List.of(mileage);
+        Page<Mileage> mileagePage = new PageImpl<>(mileageList, pageable, mileageList.size());
+
+        when(mileageQueryRepository.findAllByDeletedAtIsNull(null, null, pageable)).thenReturn(mileagePage);
+
+        PageResponseDto<UserMileageResponseDto> result = mileageService.searchMileageUser(null, null, page, size);
+
+        assertNotNull(result);
+    }
+    @Test
+    @DisplayName("마일리지 전체 조회 실패 테스트 - 마일리지 없음")
+    public void searchMileageUserFail_MileageNotFound() {
+        int page = 0;
+        int size = 10;
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "updatedAt"));
+
+        Page<Mileage> mileagePage =  new PageImpl<>(List.of(), pageable, 0);
+
+        when(mileageQueryRepository.findAllByDeletedAtIsNull(null, null, pageable)).thenReturn(mileagePage);
+
+        MileageException exception = assertThrows(MileageException.class, () ->
+                mileageService.searchMileageUser(null, null, page, size));
+
+        assertEquals(ResponseCode.MILEAGE_NOT_FOUND, exception.getErrorCode());
     }
 }
