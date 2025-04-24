@@ -10,6 +10,7 @@ import com.taken_seat.coupon_service.domain.entity.Coupon;
 import com.taken_seat.coupon_service.domain.repository.CouponQueryRepository;
 import com.taken_seat.coupon_service.domain.repository.CouponRepository;
 import com.taken_seat.coupon_service.presentation.dto.CreateCouponRequestDto;
+import com.taken_seat.coupon_service.presentation.dto.UpdateCouponRequestDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -45,11 +46,12 @@ public class CouponServiceTest {
     private Coupon coupon;
     private UUID couponId;
     private AuthenticatedUser authenticatedUser;
+    private LocalDateTime expiredAt;
 
     private UUID userId = UUID.randomUUID();
     @BeforeEach
     public void setUp() {
-        LocalDateTime expiredAt = LocalDateTime.parse("2025-12-31T23:59:59");
+        expiredAt = LocalDateTime.parse("2025-12-31T23:59:59");
         coupon = Coupon.create(
                 "testCoupon", "testCode", 20L,
                 30, expiredAt, userId
@@ -143,4 +145,31 @@ public class CouponServiceTest {
         assertEquals(ResponseCode.COUPON_NOT_FOUND, exception.getErrorCode());
     }
 
+    @Test
+    @DisplayName("쿠폰 수정 성공 테스트")
+    public void updateCouponSuccess() {
+        couponId = UUID.randomUUID();
+
+        when(couponRepository.findByIdAndDeletedAtIsNull(couponId)).thenReturn(Optional.of(coupon));
+        UpdateCouponRequestDto requestDto = new UpdateCouponRequestDto(
+                "updateCoupon", "updateCode", 40L,
+                350, expiredAt);
+
+        CouponResponseDto responseDto = couponService.updateCoupon(couponId, authenticatedUser, requestDto.toDto());
+        assertNotNull(responseDto);
+    }
+    @Test
+    @DisplayName("쿠폰 수정 실패 테스트 - 쿠폰 없음")
+    public void updateCouponFail_CouponNotFound() {
+        couponId = UUID.randomUUID();
+
+        when(couponRepository.findByIdAndDeletedAtIsNull(couponId)).thenReturn(Optional.empty());
+        UpdateCouponRequestDto requestDto = new UpdateCouponRequestDto(
+                "updateCoupon", "updateCode", 40L,
+                350, expiredAt);
+        CouponException exception = assertThrows(CouponException.class, () ->
+                couponService.updateCoupon(couponId, authenticatedUser, requestDto.toDto()));
+
+        assertEquals(ResponseCode.COUPON_NOT_FOUND, exception.getErrorCode());
+    }
 }
