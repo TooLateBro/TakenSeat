@@ -10,6 +10,7 @@ import com.taken_seat.auth_service.domain.repository.mileage.MileageRepository;
 import com.taken_seat.auth_service.domain.repository.user.UserRepository;
 import com.taken_seat.auth_service.domain.vo.Role;
 import com.taken_seat.auth_service.presentation.dto.mileage.UserMileageRequestDto;
+import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.common_service.exception.customException.AuthException;
 import com.taken_seat.common_service.exception.customException.MileageException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
@@ -51,6 +52,7 @@ public class MileageServiceTest {
 
     private User user;
     private Mileage mileage;
+    private AuthenticatedUser authenticatedUser;
 
     private UUID userId;
     private UUID mileageId;
@@ -64,6 +66,8 @@ public class MileageServiceTest {
         mileage = Mileage.create(
                 user, 30000
         );
+
+        authenticatedUser = new AuthenticatedUser(userId, "test@gmail.com", "MASTER");
     }
 
     @Test
@@ -185,6 +189,31 @@ public class MileageServiceTest {
 
         MileageException exception = assertThrows(MileageException.class, () ->
                 mileageService.searchMileageUser(null, null, page, size));
+
+        assertEquals(ResponseCode.MILEAGE_NOT_FOUND, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("마일리지 수정 성공 테스트")
+    public void updateMileageUserSuccess() {
+        mileageId = UUID.randomUUID();
+
+        when(mileageRepository.findByIdAndDeletedAtIsNull(mileageId)).thenReturn(Optional.of(mileage));
+
+        UserMileageRequestDto requestDto = new UserMileageRequestDto(40000);
+        UserMileageResponseDto responseDto = mileageService.updateMileageUser(mileageId, authenticatedUser, requestDto.toDto());
+
+        assertNotNull(responseDto);
+    }
+    @Test
+    @DisplayName("마일리지 수정 실패 테스트 - 마일리지 없음")
+    public void updateMileageUserFail_MileageNotFound() {
+        mileageId = UUID.randomUUID();
+
+        when(mileageRepository.findByIdAndDeletedAtIsNull(mileageId)).thenReturn(Optional.empty());
+        UserMileageRequestDto requestDto = new UserMileageRequestDto(40000);
+        MileageException exception = assertThrows(MileageException.class, () ->
+                mileageService.updateMileageUser(mileageId, authenticatedUser, requestDto.toDto()));
 
         assertEquals(ResponseCode.MILEAGE_NOT_FOUND, exception.getErrorCode());
     }

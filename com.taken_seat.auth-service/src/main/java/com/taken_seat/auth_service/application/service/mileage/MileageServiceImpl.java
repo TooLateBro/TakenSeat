@@ -101,7 +101,7 @@ public class MileageServiceImpl implements MileageService {
     @CacheEvict(cacheNames = "searchMileage", allEntries = true)
     public UserMileageResponseDto updateMileageUser(UUID mileageId, AuthenticatedUser authenticatedUser, UserMileageDto dto) {
         Mileage mileage = mileageRepository.findByIdAndDeletedAtIsNull(mileageId)
-                .orElseThrow(()-> new AuthException(ResponseCode.MILEAGE_NOT_FOUND));
+                .orElseThrow(()-> new MileageException(ResponseCode.MILEAGE_NOT_FOUND));
 
         mileage.update(dto.mileage(), authenticatedUser.getUserId());
 
