@@ -1,7 +1,10 @@
+package com.taken_seat.coupon_service.unit;
+
 import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.common_service.exception.customException.CouponException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.coupon_service.application.dto.CouponResponseDto;
+import com.taken_seat.coupon_service.application.dto.PageResponseDto;
 import com.taken_seat.coupon_service.application.service.CouponServiceImpl;
 import com.taken_seat.coupon_service.domain.entity.Coupon;
 import com.taken_seat.coupon_service.domain.repository.CouponQueryRepository;
@@ -14,12 +17,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 
@@ -102,4 +109,38 @@ public class CouponServiceTest {
 
         assertEquals(ResponseCode.COUPON_NOT_FOUND, exception.getErrorCode());
     }
+
+    @Test
+    @DisplayName("쿠폰 전체 조회 성공 테스트")
+    public void searchCouponSuccess() {
+        int page = 0;
+        int size = 10;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        List<Coupon> couponList = List.of(coupon);
+        Page<Coupon> couponPage = new PageImpl<>(couponList, pageable, couponList.size());
+
+        when(couponQueryRepository.findAllByDeletedAtIsNull(null, pageable)).thenReturn(couponPage);
+
+        PageResponseDto<CouponResponseDto> result = couponService.searchCoupon(null, page, size);
+
+        assertNotNull(result);
+    }
+    @Test
+    @DisplayName("쿠폰 전체 조회 실패 테스트 - 쿠폰 없음")
+    public void searchCouponFail_CouponNotFound() {
+        int page = 0;
+        int size = 10;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        Page<Coupon> couponPage = new PageImpl<>(List.of(), pageable, 0);
+
+        when(couponQueryRepository.findAllByDeletedAtIsNull(null, pageable)).thenReturn(couponPage);
+
+        CouponException exception = assertThrows(CouponException.class, () ->
+                couponService.searchCoupon(null, page, size));
+
+        assertEquals(ResponseCode.COUPON_NOT_FOUND, exception.getErrorCode());
+    }
+
 }

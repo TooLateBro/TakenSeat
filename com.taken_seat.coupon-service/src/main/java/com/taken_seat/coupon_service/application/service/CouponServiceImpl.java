@@ -66,6 +66,10 @@ public class CouponServiceImpl implements CouponService {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Coupon> coupons = couponQueryRepository.findAllByDeletedAtIsNull(name, pageable);
 
+        if (coupons.isEmpty()) {
+            throw new CouponException(ResponseCode.COUPON_NOT_FOUND);
+        }
+
         Page<CouponResponseDto> couponsInfo = coupons.map(CouponResponseDto::of);
 
         return PageResponseDto.of(couponsInfo);
