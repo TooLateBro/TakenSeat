@@ -217,4 +217,28 @@ public class MileageServiceTest {
 
         assertEquals(ResponseCode.MILEAGE_NOT_FOUND, exception.getErrorCode());
     }
+
+    @Test
+    @DisplayName("마일리지 삭제 성공 테스트")
+    public void deleteMileageUserSuccess() {
+        mileageId = UUID.randomUUID();
+
+        when(mileageRepository.findByIdAndDeletedAtIsNull(mileageId)).thenReturn(Optional.of(mileage));
+
+        mileageService.deleteMileageUser(mileageId, authenticatedUser);
+
+        assertNotNull(mileage.getDeletedAt());
+    }
+    @Test
+    @DisplayName("마일리지 삭제 실패 테스트 - 마일리지 없음")
+    public void deleteMileageUserFail_MileageNotFound() {
+        mileageId = UUID.randomUUID();
+
+        when(mileageRepository.findByIdAndDeletedAtIsNull(mileageId)).thenReturn(Optional.empty());
+
+        MileageException exception = assertThrows(MileageException.class, () ->
+                mileageService.deleteMileageUser(mileageId, authenticatedUser));
+
+        assertEquals(ResponseCode.MILEAGE_NOT_FOUND, exception.getErrorCode());
+    }
 }

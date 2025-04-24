@@ -116,7 +116,7 @@ public class MileageServiceImpl implements MileageService {
     })
     public void deleteMileageUser(UUID mileageId, AuthenticatedUser authenticatedUser) {
         Mileage mileage = mileageRepository.findByIdAndDeletedAtIsNull(mileageId)
-                .orElseThrow(()-> new AuthException(ResponseCode.MILEAGE_NOT_FOUND));
+                .orElseThrow(()-> new MileageException(ResponseCode.MILEAGE_NOT_FOUND));
 
         mileage.delete(authenticatedUser.getUserId());
     }
