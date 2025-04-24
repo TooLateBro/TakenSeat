@@ -81,9 +81,4 @@ public class PaymentController {
 			.body(
 				ApiResponseData.success("Delete Success"));
 	}
-
-	@GetMapping("/test")
-	public String test() {
-		return "test test set sets et";
-	}
 }

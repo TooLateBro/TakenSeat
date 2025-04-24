@@ -1,7 +1,7 @@
 name: 이선좌 - Multi-Module CI
 on:
   push:
-    branches: [ master, dev, feature/#370 ] # 머지 후 배포
+    branches: [ master, dev ] # 머지 후 배포
   pull_request:
     branches: [ master, dev ] # PR 시 빌드만 수행
 
