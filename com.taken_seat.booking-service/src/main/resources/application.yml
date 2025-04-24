@@ -1,0 +1,78 @@
+server:
+  port: 19095
+
+spring:
+  application:
+    name: booking-service
+
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      username: ${REDIS_USERNAME}
+      password: ${REDIS_PASSWORD}
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME}
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        format_sql: true
+
+management:
+  metrics:
+    tags:
+      application: booking-service
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_ENDPOINT}
+  tracing:
+    sampling:
+      probability: 1.0
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_DEFAULT_ZONE}
+    register-with-eureka: true
+    fetch-registry: true
+
+kafka:
+  topic:
+    benefit-refund-request: benefit.refund.request
+    benefit-refund-response: benefit.refund.response
+    benefit-usage-request: benefit.usage.request
+    benefit-usage-response: benefit.usage.response
+    payment-refund-request: payment.refund.request
+    payment-refund-response: payment.refund.response
+    payment-request: payment.request
+    payment-response: payment.response
+    ticket-reissue-request: ticket.reissue.request
+    ticket-request: ticket.request
+    queue-request: waitingQueue.exit.request
+    queue-response: waitingQueue.enter.request
+  consumer:
+    group-id:
+      booking-service: booking-service
+      ticket-service: ticket-service
+
+variable:
+  lock-wait-time: 3 # 초
+  lock-lease-time: 5 # 초
+  booking-expiration-time: 600 # 초
+  cache-duration: 600 # 초
+
+common:
+  kafka:
+    bootstrap-servers: "${KAFKA_BOOTSTRAP_SERVERS}"
+  trust-package: "com.taken_seat.common_service.message"
+
+logging:
+  loki:
+    url: ${LOKI_URL}
