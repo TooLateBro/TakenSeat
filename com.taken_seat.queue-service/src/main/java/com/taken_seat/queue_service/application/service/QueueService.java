@@ -3,6 +3,7 @@ package com.taken_seat.queue_service.application.service;
 import com.taken_seat.common_service.exception.customException.QueueException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.common_service.message.BookingRequestMessage;
+import com.taken_seat.common_service.message.QueueEnterMessage;
 import com.taken_seat.queue_service.application.dto.QueueReqDto;
 import com.taken_seat.queue_service.application.dto.TokenReqDto;
 import com.taken_seat.queue_service.application.dto.TokenResDto;
@@ -10,8 +11,8 @@ import com.taken_seat.queue_service.infrastructure.jwt.JwtImpl;
 import com.taken_seat.queue_service.infrastructure.messaging.QueueKafkaProducerImpl;
 import com.taken_seat.queue_service.infrastructure.repository.QueueRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Set;
@@ -80,19 +81,23 @@ public class QueueService {
         }
     }
 
-    public void processQueueBatch(int batchSize) {
+public void processQueueBatch(int batchSize) {
         try {
             Set<String> performanceList = queueRepository.getActivePerformanceIds();
 
             for (String performance : performanceList) {
-                List<String> users = queueRepository.getTopUsers(performance, batchSize);
-                for (String token : users) {
-                    //카프카 이벤트 전송
-                    sendEvent(token);
-                    log.info("카프카 이벤트 전송 성공. 공연 UUID: " + performance);
-                }
-                queueRepository.removeTopUsers(performance, batchSize);
+                redisSendEvent(performance, batchSize);
             }
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    public void sendToBooking(QueueEnterMessage message) {
+        try {
+            String performance = message.getPerformanceId().toString();
+            redisSendEvent(performance, 1);
         }
         catch (Exception e) {
             throw new RuntimeException(e.getMessage());
@@ -119,7 +124,17 @@ public class QueueService {
         }
     }
 
-    private void sendEvent(String token) {
+    private void redisSendEvent(String performance, int batchSize) {
+        List<String> users = queueRepository.getTopUsers(performance, batchSize);
+        for (String token : users) {
+            //카프카 이벤트 전송
+            kafkaSendEvent(token);
+            log.info("카프카 이벤트 전송 성공. 공연 UUID: " + performance);
+        }
+        queueRepository.removeTopUsers(performance, batchSize);
+    }
+
+    private void kafkaSendEvent(String token) {
         UUID userId = UUID.fromString(jwt.getUserId(token));
         UUID performanceId = UUID.fromString(jwt.getPerformanceId(token));
         UUID performanceScheduleId = UUID.fromString(jwt.getPerformanceScheduleId(token));

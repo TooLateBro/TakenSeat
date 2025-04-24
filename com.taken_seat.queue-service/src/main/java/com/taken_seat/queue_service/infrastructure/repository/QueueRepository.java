@@ -4,10 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @RequiredArgsConstructor
 @Repository
@@ -33,12 +30,18 @@ public class QueueRepository {
     }
 
     public List<String> getTopUsers(String performanceId, int count) {
-        Set<String> range = redisTemplate.opsForZSet().range(QUEUE_KEY + performanceId, 0, count - 1);
-        return range == null ? Collections.emptyList() : new ArrayList<>(range);
+        Set<String> range = redisTemplate.opsForZSet().range(QUEUE_KEY + performanceId, 0, count > 0 ? count - 1 : 0);
+        if (range == null || range.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return new ArrayList<>(range);
     }
 
     public void removeTopUsers(String performanceId, int count) {
-        // 대기열에서 0 ~ count-1 순위까지 bulk 삭제
+        if (count <= 0)
+            return; // 0 이하면 삭제할 필요 없음
+
+        // 0 ~ (count - 1)까지 순위 삭제
         redisTemplate.opsForZSet().removeRange(QUEUE_KEY + performanceId, 0, count - 1);
     }
 

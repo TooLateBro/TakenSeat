@@ -23,8 +23,13 @@ service:
 
 kafka:
   topic:
-    queue-request: waitingQueue.request
-    queue-result: waitingQueue.request
+    queue-request: waitingQueue.exit.request
+    queue-response: waitingQueue.exit.response
+    booking-request: waitingQueue.enter.request
+    booking-response: waitingQueue.enter.response
+  consumer:
+    group-id: waitingQueue
+
 
 
 eureka:
