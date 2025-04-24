@@ -71,3 +71,7 @@ springdoc:
     path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
+
+variable:
+  lock-wait-time: 3 # 초
+  lock-lease-time: 5 # 초
