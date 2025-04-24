@@ -6,5 +6,5 @@ import org.springframework.data.domain.Pageable;
 
 public interface UserQueryRepository {
 
-    Page<User> findAllByDeletedAtIsNull(String q, String role, Pageable pageable);
+    Page<User> findAllByDeletedAtIsNull(String username, String role, Pageable pageable);
 }

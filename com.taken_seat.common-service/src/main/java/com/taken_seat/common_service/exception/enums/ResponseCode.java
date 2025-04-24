@@ -71,6 +71,7 @@ public enum ResponseCode {
 	// Coupon
 	COUPON_QUANTITY_EXCEPTION(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), "쿠폰의 수량이 모두 소진 되었습니다."),
 	COUPON_NOT_FOUND(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "쿠폰이 존재하지 않습니다."),
+	COUPON_EXISTS(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), "이미 존재하는 쿠폰 입니다."),
 	COUPON_HAS_USER(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), "이미 보유한 쿠폰 입니다."),
 
 	// Booking
@@ -88,6 +89,7 @@ public enum ResponseCode {
 		"인터럽트가 발생했습니다."),
 	BOOKING_NOT_FOUND_EXCEPTION(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "해당 예매는 존재하지 않습니다."),
 	BOOKING_PAYMENT_FAILED_EXCEPTION(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), "결제를 실패했습니다."),
+	BOOKING_QUERY_MISSING_EXCEPTION(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), "쿼리 파라미터가 누락되었습니다."),
 	BOOKING_REFUND_FAILED_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR.value(),
 		"환불에 실패했습니다."),
 	BOOKING_SEAT_CANCEL_FAILED_EXCEPTION(HttpStatus.CONFLICT, HttpStatus.CONFLICT.value(), "좌석 취소를 실패했습니다."),
@@ -107,7 +109,13 @@ public enum ResponseCode {
 	SEAT_PRICE_NOT_FOUND_EXCEPTION(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "좌석 가격 정보를 찾을 수 없습니다."),
 	SEAT_LOCK_FAILED(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), "좌석 선점을 위한 락 획득에 실패했습니다."),
 	SEAT_INTERRUPTED_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR.value(),
-		"락 획득 중 인터럽트가 발생했습니다.");
+		"락 획득 중 인터럽트가 발생했습니다."),
+
+	//Queue
+	QUEUE_UNAUTHORIZED_TOKEN_EXCEPTION(HttpStatus.UNAUTHORIZED, HttpStatus.UNAUTHORIZED.value(), "유효하지 않은 토큰입니다."),
+	QUEUE_NOT_FOUND_TOKEN_EXCEPTION(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "대기열에 존재하지 않는 사용자입니다.");
+
+
 
 	private final HttpStatus status;
 	private final Integer code;

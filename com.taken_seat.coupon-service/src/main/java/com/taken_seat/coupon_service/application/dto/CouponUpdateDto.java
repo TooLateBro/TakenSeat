@@ -1,37 +1,18 @@
 package com.taken_seat.coupon_service.application.dto;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
 
-@AllArgsConstructor
-@Getter
-@Builder(access = AccessLevel.PRIVATE)
-public class CouponUpdateDto {
-
-    private Optional<String> name;
-
-    private Optional<String> code;
-
-    private Optional<Long> quantity;
-
-    private Optional<Integer> discount;
-
-    private Optional<LocalDateTime> expiredAt;
-
-    public static CouponUpdateDto update(Optional<String> name, Optional<String> code,
-                                         Optional<Long> quantity, Optional<Integer> discount,
-                                         Optional<LocalDateTime> expiredAt) {
-        return CouponUpdateDto.builder()
-                .name(name)
-                .code(code)
-                .quantity(quantity)
-                .discount(discount)
-                .expiredAt(expiredAt)
-                .build();
+public record CouponUpdateDto(
+        String name,
+        String code,
+        Long quantity,
+        Integer discount,
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+        LocalDateTime expiredAt
+) {
+    public static CouponUpdateDto update(String name, String code, Long quantity, Integer discount, LocalDateTime expiredAt) {
+        return new CouponUpdateDto(name, code, quantity, discount, expiredAt);
     }
 }

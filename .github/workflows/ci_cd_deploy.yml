@@ -1,13 +1,9 @@
 name: 이선좌 - Multi-Module CI
 on:
   push:
-    branches:
-      - master
-      - dev
+    branches: [ master, dev ] # 머지 후 배포
   pull_request:
-    branches:
-      - master
-      - dev
+    branches: [ master, dev ] # PR 시 빌드만 수행
 
 jobs:
   build:
@@ -75,3 +71,50 @@ jobs:
           
           # Docker 이미지를 GitHub Container Registry에 푸시
           docker push $IMAGE_NAME
+
+  deploy:
+    name: SSH 서버에 배포
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'push' # PR에선 배포 X, 머지(PUSH)일 때만 실행
+
+    steps:
+      - name: SSH로 서버 접속 & 반복 배포
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            echo "1. app 디렉토리 진입"
+            cd /home/ubuntu/takenseat/app
+            
+            echo "2. 모든 서비스 종료"
+            sudo docker-compose -f docker-compose.app.yml down
+            sudo docker-compose -f docker-compose.infra.yml down
+            
+            echo "3. 기존 이미지 삭제"
+            MODULES=(
+              gateway-service
+              review-service
+              payment-service
+              booking-service
+              performance-service
+              auth-service
+              coupon-service
+              queue-service
+              eureka-service
+            )
+            
+            for MODULE in "${MODULES[@]}"; do
+              IMAGE=ghcr.io/toolatebro/$MODULE:latest
+              echo "이미지 제거: $IMAGE"
+              sudo docker rmi -f $IMAGE || true
+            done
+            
+            echo "4. 서비스 재시작"
+            sudo docker-compose -f docker-compose.infra.yml up -d
+            sudo docker-compose -f docker-compose.app.yml up -d
+            
+            echo "5. 배포 완료"
+

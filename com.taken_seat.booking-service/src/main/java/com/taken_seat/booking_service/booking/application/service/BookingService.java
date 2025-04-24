@@ -30,7 +30,7 @@ public interface BookingService {
 
 	AdminBookingReadResponse adminReadBooking(AuthenticatedUser authenticatedUser, UUID id);
 
-	AdminBookingPageResponse adminReadBookings(AuthenticatedUser authenticatedUser, Pageable pageable);
+	AdminBookingPageResponse adminReadBookings(AuthenticatedUser authenticatedUser, UUID userId, Pageable pageable);
 
 	void createPayment(AuthenticatedUser authenticatedUser, UUID id, BookingPayRequest request);
 
