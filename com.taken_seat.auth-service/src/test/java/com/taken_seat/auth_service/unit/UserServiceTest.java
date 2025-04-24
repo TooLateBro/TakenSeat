@@ -3,13 +3,13 @@ package com.taken_seat.auth_service.unit;
 import com.taken_seat.auth_service.application.dto.PageResponseDto;
 import com.taken_seat.auth_service.application.dto.user.UserInfoResponseDto;
 import com.taken_seat.auth_service.application.service.user.UserServiceImpl;
-import com.taken_seat.auth_service.domain.entity.mileage.Mileage;
 import com.taken_seat.auth_service.domain.entity.user.User;
 import com.taken_seat.auth_service.domain.entity.user.UserCoupon;
 import com.taken_seat.auth_service.domain.repository.user.UserRepository;
 import com.taken_seat.auth_service.domain.repository.userCoupon.UserCouponRepository;
 import com.taken_seat.auth_service.domain.vo.Role;
 import com.taken_seat.auth_service.infrastructure.persistence.user.UserQueryRepositoryImpl;
+import com.taken_seat.auth_service.presentation.dto.user.UserUpdateRequestDto;
 import com.taken_seat.common_service.exception.customException.AuthException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,9 +48,9 @@ public class UserServiceTest {
 
     private User user;
     private UserCoupon userCoupon;
-    private Mileage mileage;
 
     private UUID userId;
+
 
     @BeforeEach
     public void setUp() {
@@ -162,4 +162,47 @@ public class UserServiceTest {
 
         assertNotNull(exception);
     }
+
+    @Test
+    @DisplayName("유저 수정 성공 테스트")
+    public void updateUserSuccess() {
+        userId = UUID.randomUUID();
+        String username = "updateuser1";
+        String password = "updatePassword1!";
+        String phone = "010-2222-2222";
+        String email = "update@test.com";
+        Role role = Role.CUSTOMER;
+
+        when(userRepository.findByIdAndDeletedAtIsNull(userId)).thenReturn(Optional.of(user));
+
+        UserUpdateRequestDto userUpdateRequestDto = new UserUpdateRequestDto(
+                username, password, phone, email, role
+        );
+
+        UserInfoResponseDto userInfoResponseDto = userService.updateUser(userId, userUpdateRequestDto.toDto());
+
+        assertNotNull(userInfoResponseDto);
+    }
+    @Test
+    @DisplayName("유저 수정 실패 테스트 - 유저 없음")
+    public void updateUserFail_NoUserFound() {
+        userId = UUID.randomUUID();
+        String username = "updateuser1";
+        String password = "updatePassword1!";
+        String phone = "010-2222-2222";
+        String email = "update@test.com";
+        Role role = Role.CUSTOMER;
+
+        when(userRepository.findByIdAndDeletedAtIsNull(userId)).thenReturn(Optional.empty());
+
+        UserUpdateRequestDto userUpdateRequestDto = new UserUpdateRequestDto(
+                username, password, phone, email, role
+        );
+
+        AuthException exception = assertThrows(AuthException.class, () ->
+                userService.updateUser(userId, userUpdateRequestDto.toDto()));
+
+        assertEquals(ResponseCode.USER_NOT_FOUND, exception.getErrorCode());
+    }
+
 }
