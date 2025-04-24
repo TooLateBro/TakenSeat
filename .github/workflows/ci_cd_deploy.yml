@@ -87,7 +87,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             echo "1. app 디렉토리 진입"
-            cd toolatebro/app
+            cd /home/ubuntu/takenseat/app
             
             echo "2. 모든 서비스 종료"
             sudo docker-compose -f docker-compose.app.yml down
