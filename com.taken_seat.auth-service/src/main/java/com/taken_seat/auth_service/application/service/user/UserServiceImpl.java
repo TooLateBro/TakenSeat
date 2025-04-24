@@ -9,6 +9,7 @@ import com.taken_seat.auth_service.domain.repository.user.UserQueryRepository;
 import com.taken_seat.auth_service.domain.repository.user.UserRepository;
 import com.taken_seat.auth_service.domain.repository.userCoupon.UserCouponRepository;
 import com.taken_seat.common_service.exception.customException.AuthException;
+import com.taken_seat.common_service.exception.customException.CouponException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
@@ -51,17 +52,21 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(()-> new AuthException(ResponseCode.USER_NOT_FOUND));
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        Page<UserCoupon> userCoupons = userCouponRepository.findCouponIdByUserIdAndIsActiveTrue(user.getId(), pageable);
+        Page<UserCoupon> userCoupons = userCouponRepository.findCouponIdByUserIdAndIsActiveTrue(userId, pageable);
 
         return UserInfoResponseDto.detailsOf(user, userCoupons);
     }
 
     @Transactional(readOnly = true)
     @Override
-    @Cacheable(cacheNames = "searchUser", key = "#q + '-' + #role + '-' + #page + '-' + #size")
-    public PageResponseDto<UserInfoResponseDto> searchUser(String q, String role, int page, int size) {
+    @Cacheable(cacheNames = "searchUser", key = "#username + '-' + #role + '-' + #page + '-' + #size")
+    public PageResponseDto<UserInfoResponseDto> searchUser(String username, String role, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        Page<User> userInfos = userQueryRepository.findAllByDeletedAtIsNull(q, role, pageable);
+        Page<User> userInfos = userQueryRepository.findAllByDeletedAtIsNull(username, role, pageable);
+
+        if (userInfos.isEmpty()) {
+            throw new AuthException(ResponseCode.USER_NOT_FOUND);
+        }
 
         Page<UserInfoResponseDto> userInfoPage = userInfos.map(user -> {
             List<UserCoupon> coupons = user.getUserCoupons();
@@ -111,7 +116,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public String getCoupon(UUID couponId) {
         UserCoupon userCoupon = userCouponRepository.findByCouponId(couponId)
-                .orElseThrow(()-> new IllegalArgumentException("쿠폰이 소진되어 수령에 실패했습니다."));
+                .orElseThrow(()-> new CouponException(ResponseCode.COUPON_QUANTITY_EXCEPTION));
         return "축하합니다!" + userCoupon + " 수령에 성공했습니다!";
     }
 }

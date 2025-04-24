@@ -24,7 +24,7 @@ public class UserQueryRepositoryImpl implements UserQueryRepository {
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
-    public Page<User> findAllByDeletedAtIsNull(String q, String role, Pageable pageable) {
+    public Page<User> findAllByDeletedAtIsNull(String username, String role, Pageable pageable) {
         QUser user = QUser.user;
         QMileage mileage = QMileage.mileage1;
 
@@ -35,7 +35,7 @@ public class UserQueryRepositoryImpl implements UserQueryRepository {
                 .leftJoin(user.mileages, mileage).fetchJoin()
                 .where(
                         isNotDeleted(user),
-                        searchCondition(q, user), // 유저 이름 또는 이메일로 검색
+                        searchCondition(username, user), // 유저 이름 검색
                         roleEq(role, user), // 유저 권한 검색
                         isLatestMileage(user, mileage) // 서브 쿼리
                 )
@@ -49,7 +49,7 @@ public class UserQueryRepositoryImpl implements UserQueryRepository {
                 .from(user)
                 .where(
                         isNotDeleted(user),
-                        searchCondition(q, user),
+                        searchCondition(username, user),
                         roleEq(role, user)
                 )
                 .fetchOne();
@@ -63,9 +63,9 @@ public class UserQueryRepositoryImpl implements UserQueryRepository {
     }
 
     // 검색어 조건
-    private BooleanExpression searchCondition(String q, QUser user) {
-        return StringUtils.hasText(q) ?
-                user.username.containsIgnoreCase(q) : null;
+    private BooleanExpression searchCondition(String username, QUser user) {
+        return StringUtils.hasText(username) ?
+                user.username.containsIgnoreCase(username) : null;
     }
 
     // 역할 조건
