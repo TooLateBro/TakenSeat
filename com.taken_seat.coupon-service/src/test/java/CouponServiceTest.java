@@ -80,4 +80,26 @@ public class CouponServiceTest {
         assertEquals(ResponseCode.COUPON_EXISTS, exception.getErrorCode());
     }
 
+    @Test
+    @DisplayName("쿠폰 단건 조회 성공 테스트")
+    public void getCouponSuccess() {
+        couponId = UUID.randomUUID();
+
+        when(couponRepository.findByIdAndDeletedAtIsNull(couponId)).thenReturn(Optional.of(coupon));
+
+        CouponResponseDto responseDto = couponService.getCoupon(couponId);
+        assertNotNull(responseDto);
+    }
+    @Test
+    @DisplayName("쿠폰 단건 조회 실패 테스트 - 쿠폰 없음")
+    public void getCouponFail_CouponNotFound() {
+        couponId = UUID.randomUUID();
+
+        when(couponRepository.findByIdAndDeletedAtIsNull(couponId)).thenReturn(Optional.empty());
+
+        CouponException exception = assertThrows(CouponException.class, () ->
+                couponService.getCoupon(couponId));
+
+        assertEquals(ResponseCode.COUPON_NOT_FOUND, exception.getErrorCode());
+    }
 }
