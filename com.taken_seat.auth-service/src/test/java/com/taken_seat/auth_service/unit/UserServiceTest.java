@@ -48,7 +48,6 @@ public class UserServiceTest {
     private UserServiceImpl userService;
 
     private User user;
-    private UserCoupon userCoupon;
 
     private UUID userId;
     private UUID couponId;

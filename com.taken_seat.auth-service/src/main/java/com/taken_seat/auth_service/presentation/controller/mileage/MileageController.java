@@ -3,6 +3,7 @@ package com.taken_seat.auth_service.presentation.controller.mileage;
 import com.taken_seat.auth_service.application.dto.PageResponseDto;
 import com.taken_seat.auth_service.application.dto.mileage.UserMileageResponseDto;
 import com.taken_seat.auth_service.application.service.mileage.MileageService;
+import com.taken_seat.auth_service.domain.vo.Role;
 import com.taken_seat.auth_service.presentation.docs.MileageControllerDocs;
 import com.taken_seat.auth_service.presentation.dto.mileage.UserMileageRequestDto;
 import com.taken_seat.common_service.dto.ApiResponseData;
@@ -28,9 +29,9 @@ public class MileageController implements MileageControllerDocs {
     public ResponseEntity<ApiResponseData<UserMileageResponseDto>> createMileageToUser(AuthenticatedUser authenticatedUser,
                                                                                        @PathVariable UUID userId,
                                                                                        @RequestBody UserMileageRequestDto requestDto) {
-        if (authenticatedUser.getRole() == null ||
-                !(authenticatedUser.getRole().equals("ADMIN") ||
-                        authenticatedUser.getRole().equals("MANAGER"))) {
+        Role role = Role.valueOf(authenticatedUser.getRole());
+
+        if (!role.isAdmin() || role.isManager()){
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(ApiResponseData.failure(ResponseCode.ACCESS_DENIED_EXCEPTION.getCode()
                             ,"접근 권한이 없습니다."));
@@ -44,9 +45,8 @@ public class MileageController implements MileageControllerDocs {
     @GetMapping("/{mileageId}")
     public ResponseEntity<ApiResponseData<UserMileageResponseDto>> getMileageUser(AuthenticatedUser authenticatedUser,
                                                                                   @PathVariable UUID mileageId) {
-        if (authenticatedUser.getRole() == null ||
-                !(authenticatedUser.getRole().equals("ADMIN") ||
-                        authenticatedUser.getRole().equals("MANAGER"))) {
+        Role role = Role.valueOf(authenticatedUser.getRole());
+        if (!role.isAdmin() || role.isManager()){
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(ApiResponseData.failure(ResponseCode.ACCESS_DENIED_EXCEPTION.getCode()
                             ,"접근 권한이 없습니다."));
@@ -61,12 +61,6 @@ public class MileageController implements MileageControllerDocs {
                                                                                                           @RequestParam(defaultValue = "10") int size,
                                                                                                           @PathVariable UUID userId) {
 
-        if (authenticatedUser.getRole() == null) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(ApiResponseData.failure(ResponseCode.ACCESS_DENIED_EXCEPTION.getCode()
-                            ,"접근 권한이 없습니다."));
-        }
-
         PageResponseDto<UserMileageResponseDto> mileageInfo = mileageService.getMileageHistoryUser(userId, page, size);
         return ResponseEntity.ok(ApiResponseData.success(mileageInfo));
     }
@@ -78,9 +72,8 @@ public class MileageController implements MileageControllerDocs {
                                                                                                       @RequestParam(defaultValue = "0") int page,
                                                                                                       @RequestParam(defaultValue = "10") int size) {
 
-        if (authenticatedUser.getRole() == null ||
-                !(authenticatedUser.getRole().equals("ADMIN") ||
-                        authenticatedUser.getRole().equals("MANAGER"))) {
+        Role role = Role.valueOf(authenticatedUser.getRole());
+        if (!role.isAdmin() || role.isManager()){
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(ApiResponseData.failure(ResponseCode.ACCESS_DENIED_EXCEPTION.getCode()
                             ,"접근 권한이 없습니다."));
@@ -96,9 +89,8 @@ public class MileageController implements MileageControllerDocs {
                                                                                      AuthenticatedUser authenticatedUser,
                                                                                      @RequestBody UserMileageRequestDto requestDto) {
 
-        if (authenticatedUser.getRole() == null ||
-                !(authenticatedUser.getRole().equals("ADMIN") ||
-                        authenticatedUser.getRole().equals("MANAGER"))) {
+        Role role = Role.valueOf(authenticatedUser.getRole());
+        if (!role.isAdmin() || role.isManager()){
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(ApiResponseData.failure(ResponseCode.ACCESS_DENIED_EXCEPTION.getCode()
                             ,"접근 권한이 없습니다."));
@@ -110,9 +102,8 @@ public class MileageController implements MileageControllerDocs {
     @DeleteMapping("/{mileageId}")
     public ResponseEntity<ApiResponseData<Void>> deleteMileageUser(@PathVariable UUID mileageId,
                                                                    AuthenticatedUser authenticatedUser) {
-        if (authenticatedUser.getRole() == null ||
-                !(authenticatedUser.getRole().equals("ADMIN") ||
-                        authenticatedUser.getRole().equals("MANAGER"))) {
+        Role role = Role.valueOf(authenticatedUser.getRole());
+        if (!role.isAdmin() || role.isManager()){
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(ApiResponseData.failure(ResponseCode.ACCESS_DENIED_EXCEPTION.getCode()
                             ,"접근 권한이 없습니다."));

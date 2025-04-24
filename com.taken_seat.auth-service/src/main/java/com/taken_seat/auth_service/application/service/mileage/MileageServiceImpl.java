@@ -10,6 +10,7 @@ import com.taken_seat.auth_service.domain.repository.mileage.MileageRepository;
 import com.taken_seat.auth_service.domain.repository.user.UserRepository;
 import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.common_service.exception.customException.AuthException;
+import com.taken_seat.common_service.exception.customException.MileageException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
@@ -86,6 +87,10 @@ public class MileageServiceImpl implements MileageService {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "updatedAt"));
         Page<Mileage> mileageInfo = mileageQueryRepository.findAllByDeletedAtIsNull(startCount, endCount, pageable);
 
+        if (mileageInfo.isEmpty()) {
+            throw new MileageException(ResponseCode.MILEAGE_NOT_FOUND);
+        }
+
         Page<UserMileageResponseDto> userMileages = mileageInfo.map(UserMileageResponseDto::of);
         return PageResponseDto.of(userMileages);
     }
@@ -96,7 +101,7 @@ public class MileageServiceImpl implements MileageService {
     @CacheEvict(cacheNames = "searchMileage", allEntries = true)
     public UserMileageResponseDto updateMileageUser(UUID mileageId, AuthenticatedUser authenticatedUser, UserMileageDto dto) {
         Mileage mileage = mileageRepository.findByIdAndDeletedAtIsNull(mileageId)
-                .orElseThrow(()-> new AuthException(ResponseCode.MILEAGE_NOT_FOUND));
+                .orElseThrow(()-> new MileageException(ResponseCode.MILEAGE_NOT_FOUND));
 
         mileage.update(dto.mileage(), authenticatedUser.getUserId());
 
@@ -111,7 +116,7 @@ public class MileageServiceImpl implements MileageService {
     })
     public void deleteMileageUser(UUID mileageId, AuthenticatedUser authenticatedUser) {
         Mileage mileage = mileageRepository.findByIdAndDeletedAtIsNull(mileageId)
-                .orElseThrow(()-> new AuthException(ResponseCode.MILEAGE_NOT_FOUND));
+                .orElseThrow(()-> new MileageException(ResponseCode.MILEAGE_NOT_FOUND));
 
         mileage.delete(authenticatedUser.getUserId());
     }
