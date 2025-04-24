@@ -204,5 +204,27 @@ public class UserServiceTest {
 
         assertEquals(ResponseCode.USER_NOT_FOUND, exception.getErrorCode());
     }
+    @Test
+    @DisplayName("유저 삭제 성공 테스트")
+    public void deleteUserSuccess() {
+        userId = UUID.randomUUID();
+
+        when(userRepository.findByIdAndDeletedAtIsNull(userId)).thenReturn(Optional.of(user));
+        userService.deleteUser(userId);
+
+        assertNotNull(user.getDeletedAt());
+    }
+    @Test
+    @DisplayName("유저 삭제 실패 테스트 - 유저 없음")
+    public void deleteUserFail_NoUserFound() {
+        userId = UUID.randomUUID();
+
+        when(userRepository.findByIdAndDeletedAtIsNull(userId)).thenReturn(Optional.empty());
+
+        AuthException exception = assertThrows(AuthException.class, ()->
+                userService.deleteUser(userId));
+
+        assertEquals(ResponseCode.USER_NOT_FOUND, exception.getErrorCode());
+    }
 
 }
