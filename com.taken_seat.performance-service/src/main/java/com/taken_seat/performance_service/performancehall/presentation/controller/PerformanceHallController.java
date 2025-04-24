@@ -22,16 +22,18 @@ import com.taken_seat.common_service.dto.ApiResponseData;
 import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.common_service.dto.request.BookingSeatClientRequestDto;
 import com.taken_seat.common_service.dto.response.BookingSeatClientResponseDto;
-import com.taken_seat.performance_service.performancehall.application.dto.request.CreateRequestDto;
-import com.taken_seat.performance_service.performancehall.application.dto.request.SearchFilterParam;
-import com.taken_seat.performance_service.performancehall.application.dto.request.UpdateRequestDto;
-import com.taken_seat.performance_service.performancehall.application.dto.response.CreateResponseDto;
-import com.taken_seat.performance_service.performancehall.application.dto.response.DetailResponseDto;
-import com.taken_seat.performance_service.performancehall.application.dto.response.PageResponseDto;
-import com.taken_seat.performance_service.performancehall.application.dto.response.SeatLayoutResponseDto;
-import com.taken_seat.performance_service.performancehall.application.dto.response.UpdateResponseDto;
+import com.taken_seat.performance_service.performancehall.application.service.PerformanceHallClientService;
+import com.taken_seat.performance_service.performancehall.application.service.PerformanceHallRedissonService;
 import com.taken_seat.performance_service.performancehall.application.service.PerformanceHallService;
 import com.taken_seat.performance_service.performancehall.presentation.docs.PerformanceHallControllerDocs;
+import com.taken_seat.performance_service.performancehall.presentation.dto.request.CreateRequestDto;
+import com.taken_seat.performance_service.performancehall.presentation.dto.request.SearchFilterParam;
+import com.taken_seat.performance_service.performancehall.presentation.dto.request.UpdateRequestDto;
+import com.taken_seat.performance_service.performancehall.presentation.dto.response.CreateResponseDto;
+import com.taken_seat.performance_service.performancehall.presentation.dto.response.DetailResponseDto;
+import com.taken_seat.performance_service.performancehall.presentation.dto.response.PageResponseDto;
+import com.taken_seat.performance_service.performancehall.presentation.dto.response.SeatLayoutResponseDto;
+import com.taken_seat.performance_service.performancehall.presentation.dto.response.UpdateResponseDto;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -42,13 +44,15 @@ import lombok.RequiredArgsConstructor;
 public class PerformanceHallController implements PerformanceHallControllerDocs {
 
 	private final PerformanceHallService performanceHallService;
+	private final PerformanceHallClientService performanceHallClientService;
+	private final PerformanceHallRedissonService performanceHallRedissonService;
 
 	@PostMapping
 	public ResponseEntity<ApiResponseData<CreateResponseDto>> create(@Valid @RequestBody CreateRequestDto request,
 		AuthenticatedUser authenticatedUser) {
 
 		CreateResponseDto response = performanceHallService.create(request, authenticatedUser);
-		URI location = URI.create("/api/v1/performancehalls/" + response.getPerformanceHallId());
+		URI location = URI.create("/api/v1/performancehalls/" + response.performanceHallId());
 		return ResponseEntity.created(location).body(ApiResponseData.success(response));
 	}
 
@@ -90,7 +94,7 @@ public class PerformanceHallController implements PerformanceHallControllerDocs 
 	public ResponseEntity<ApiResponseData<BookingSeatClientResponseDto>> updateSeatStatus(
 		@Valid @RequestBody BookingSeatClientRequestDto request) {
 
-		BookingSeatClientResponseDto response = performanceHallService.updateSeatStatus(request);
+		BookingSeatClientResponseDto response = performanceHallClientService.updateSeatStatus(request);
 		return ResponseEntity.ok(ApiResponseData.success(response));
 	}
 
@@ -98,7 +102,7 @@ public class PerformanceHallController implements PerformanceHallControllerDocs 
 	public ResponseEntity<ApiResponseData<BookingSeatClientResponseDto>> cancelSeatStatus(
 		@Valid @RequestBody BookingSeatClientRequestDto request) {
 
-		BookingSeatClientResponseDto response = performanceHallService.cancelSeatStatus(request);
+		BookingSeatClientResponseDto response = performanceHallClientService.cancelSeatStatus(request);
 		return ResponseEntity.ok(ApiResponseData.success(response));
 	}
 
@@ -106,7 +110,7 @@ public class PerformanceHallController implements PerformanceHallControllerDocs 
 	public ResponseEntity<ApiResponseData<SeatLayoutResponseDto>> getSeatLayout(
 		@PathVariable("performanceScheduleId") UUID performanceScheduleId) {
 
-		SeatLayoutResponseDto response = performanceHallService.getSeatLayout(performanceScheduleId);
+		SeatLayoutResponseDto response = performanceHallClientService.getSeatLayout(performanceScheduleId);
 		return ResponseEntity.ok(ApiResponseData.success(response));
 	}
 }

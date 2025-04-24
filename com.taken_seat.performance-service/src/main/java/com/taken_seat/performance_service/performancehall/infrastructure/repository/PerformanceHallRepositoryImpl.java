@@ -7,11 +7,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
-import com.taken_seat.performance_service.performancehall.application.dto.request.SearchFilterParam;
-import com.taken_seat.performance_service.performancehall.application.dto.response.SearchResponseDto;
 import com.taken_seat.performance_service.performancehall.domain.model.PerformanceHall;
 import com.taken_seat.performance_service.performancehall.domain.repository.PerformanceHallQueryRepository;
 import com.taken_seat.performance_service.performancehall.domain.repository.PerformanceHallRepository;
+import com.taken_seat.performance_service.performancehall.presentation.dto.request.SearchFilterParam;
+import com.taken_seat.performance_service.performancehall.presentation.dto.response.SearchResponseDto;
 
 import lombok.RequiredArgsConstructor;
 

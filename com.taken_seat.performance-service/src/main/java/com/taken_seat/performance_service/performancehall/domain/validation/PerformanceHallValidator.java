@@ -8,8 +8,8 @@ import java.util.UUID;
 import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.common_service.exception.customException.PerformanceException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
-import com.taken_seat.performance_service.performancehall.application.dto.request.BaseSeatDto;
 import com.taken_seat.performance_service.performancehall.domain.repository.PerformanceHallRepository;
+import com.taken_seat.performance_service.performancehall.presentation.dto.request.BaseSeatDto;
 
 public class PerformanceHallValidator {
 

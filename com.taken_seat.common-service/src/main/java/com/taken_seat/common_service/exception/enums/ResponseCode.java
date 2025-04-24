@@ -107,10 +107,14 @@ public enum ResponseCode {
 	SEAT_NOT_FOUND_EXCEPTION(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "해당 좌석은 존재하지 않습니다."),
 	SEAT_STATUS_CHANGE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, HttpStatus.NOT_FOUND.value(), "비활성 좌석은 상태를 변경할 수 없습니다."),
 	SEAT_PRICE_NOT_FOUND_EXCEPTION(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "좌석 가격 정보를 찾을 수 없습니다."),
+	SEAT_LOCK_FAILED(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), "좌석 선점을 위한 락 획득에 실패했습니다."),
+	SEAT_INTERRUPTED_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR.value(),
+		"락 획득 중 인터럽트가 발생했습니다."),
 
 	//Queue
 	QUEUE_UNAUTHORIZED_TOKEN_EXCEPTION(HttpStatus.UNAUTHORIZED, HttpStatus.UNAUTHORIZED.value(), "유효하지 않은 토큰입니다."),
 	QUEUE_NOT_FOUND_TOKEN_EXCEPTION(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "대기열에 존재하지 않는 사용자입니다.");
+
 
 
 	private final HttpStatus status;
