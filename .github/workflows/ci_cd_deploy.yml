@@ -117,4 +117,3 @@ jobs:
             sudo docker-compose -f docker-compose.app.yml up -d
             
             echo "5. 배포 완료"
-
