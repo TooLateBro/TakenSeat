@@ -17,5 +17,5 @@ public interface TicketRepository {
 
 	Optional<Ticket> findByBookingId(UUID bookingId);
 
-	Page<Ticket> findAllByUserId(Pageable pageable, UUID userId);
+	Page<Ticket> findAllByUserIdAndBookingId(Pageable pageable, UUID userId, UUID bookingId);
 }

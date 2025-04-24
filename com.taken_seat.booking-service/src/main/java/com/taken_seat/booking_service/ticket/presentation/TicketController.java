@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.taken_seat.booking_service.ticket.application.dto.response.TicketPageResponse;
@@ -37,9 +38,9 @@ public class TicketController {
 
 	@GetMapping
 	public ResponseEntity<ApiResponseData<TicketPageResponse>> readTickets(AuthenticatedUser authenticatedUser,
-		Pageable pageable) {
+		@RequestParam("bookingId") UUID bookingId, Pageable pageable) {
 
-		TicketPageResponse response = ticketService.readTickets(authenticatedUser, pageable);
+		TicketPageResponse response = ticketService.readTickets(authenticatedUser, bookingId, pageable);
 
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
 	}
