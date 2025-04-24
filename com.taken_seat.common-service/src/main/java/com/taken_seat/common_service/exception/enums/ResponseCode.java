@@ -71,20 +71,27 @@ public enum ResponseCode {
 	// Coupon
 	COUPON_QUANTITY_EXCEPTION(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), "쿠폰의 수량이 모두 소진 되었습니다."),
 	COUPON_NOT_FOUND(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "쿠폰이 존재하지 않습니다."),
+	COUPON_EXISTS(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), "이미 존재하는 쿠폰 입니다."),
 	COUPON_HAS_USER(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), "이미 보유한 쿠폰 입니다."),
 
 	// Booking
 	BOOKING_ALREADY_CANCELED_EXCEPTION(HttpStatus.CONFLICT, HttpStatus.CONFLICT.value(), "이미 취소된 예약입니다."),
+	BOOKING_BENEFIT_USAGE_FAILED_EXCEPTION(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(),
+		"쿠폰 또는 마일리지 사용을 실패했습니다."),
 	BOOKING_BENEFIT_USAGE_NOT_FOUND_EXCEPTION(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(),
 		"쿠폰, 마일리지 사용 내역이 없습니다."),
 	BOOKING_BENEFIT_USAGE_REFUND_FAILED_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,
 		HttpStatus.INTERNAL_SERVER_ERROR.value(), "쿠폰, 마일리지 원복처리가 실패했습니다."),
+	BOOKING_CANCEL_NOT_ALLOWED_EXCEPTION(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), "해당 예매는 취소할 수 없습니다."),
+	BOOKING_DELETE_NOT_ALLOWED_EXCEPTION(HttpStatus.CONFLICT, HttpStatus.CONFLICT.value(), "예약 대기중일땐 삭제할 수 없습니다."),
 	BOOKING_DUPLICATED_EXCEPTION(HttpStatus.CONFLICT, HttpStatus.CONFLICT.value(), "이미 동일한 예매가 존재합니다."),
 	BOOKING_INTERRUPTED_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR.value(),
 		"인터럽트가 발생했습니다."),
-	BOOKING_NOT_CANCELED_EXCEPTION(HttpStatus.CONFLICT, HttpStatus.CONFLICT.value(), "예약 취소 후 삭제할 수 있습니다."),
 	BOOKING_NOT_FOUND_EXCEPTION(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "해당 예매는 존재하지 않습니다."),
 	BOOKING_PAYMENT_FAILED_EXCEPTION(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), "결제를 실패했습니다."),
+	BOOKING_QUERY_MISSING_EXCEPTION(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), "쿼리 파라미터가 누락되었습니다."),
+	BOOKING_REFUND_FAILED_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR.value(),
+		"환불에 실패했습니다."),
 	BOOKING_SEAT_CANCEL_FAILED_EXCEPTION(HttpStatus.CONFLICT, HttpStatus.CONFLICT.value(), "좌석 취소를 실패했습니다."),
 	BOOKING_SEAT_LOCKED_EXCEPTION(HttpStatus.OK, HttpStatus.OK.value(), "이미 예약중인 좌석입니다."),
 	BOOKING_SEAT_RESERVED_EXCEPTION(HttpStatus.OK, HttpStatus.OK.value(), "이미 선점된 좌석입니다."),
@@ -99,7 +106,12 @@ public enum ResponseCode {
 	PERFORMANCE_HALL_DUPLICATE_SEAT(HttpStatus.CONFLICT, HttpStatus.CONFLICT.value(), "중복된 좌석이 존재합니다."),
 	SEAT_NOT_FOUND_EXCEPTION(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "해당 좌석은 존재하지 않습니다."),
 	SEAT_STATUS_CHANGE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, HttpStatus.NOT_FOUND.value(), "비활성 좌석은 상태를 변경할 수 없습니다."),
-	SEAT_PRICE_NOT_FOUND_EXCEPTION(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "좌석 가격 정보를 찾을 수 없습니다.");
+	SEAT_PRICE_NOT_FOUND_EXCEPTION(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "좌석 가격 정보를 찾을 수 없습니다."),
+
+	//Queue
+	QUEUE_UNAUTHORIZED_TOKEN_EXCEPTION(HttpStatus.UNAUTHORIZED, HttpStatus.UNAUTHORIZED.value(), "유효하지 않은 토큰입니다."),
+	QUEUE_NOT_FOUND_TOKEN_EXCEPTION(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "대기열에 존재하지 않는 사용자입니다.");
+
 
 	private final HttpStatus status;
 	private final Integer code;

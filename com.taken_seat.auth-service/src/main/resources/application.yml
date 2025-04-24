@@ -1,0 +1,89 @@
+spring:
+  config:
+    activate:
+      on-profile: default
+
+  application:
+    name: auth-service
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      username: ${REDIS_USERNAME}
+      password: ${REDIS_PASSWORD}
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME}
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+    defer-datasource-initialization: true
+
+kafka:
+  topic:
+    coupon-request-user: coupon.request.user
+    coupon-response-user: coupon.response.user
+    benefit-usage-request: benefit.usage.request
+    benefit-refund-request: benefit.refund.request
+  key:
+    coupon-user-key: coupon.user.key
+  consumer:
+    group-id: auth-service
+
+server:
+  port: 19092
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_DEFAULT_ZONE}
+common:
+  kafka:
+    bootstrap-servers: "${KAFKA_BOOTSTRAP_SERVERS}"
+  trust-package: "com.taken_seat.common_service.message"
+
+service:
+  jwt:
+    access-expiration: 600000       # 10분
+    refresh-expiration: 3600000     # 1시간
+    secret:
+      key: ${JWT_SECRET}
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+management:
+  metrics:
+    tags:
+      application: auth-service
+  endpoint:
+    health:
+      show-details: always
+    prometheus:
+      access: unrestricted
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_ENDPOINT}
+  tracing:
+    sampling:
+      probability: 1.0
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+
+
+logging:
+  loki:
+    url: ${LOKI_URL}

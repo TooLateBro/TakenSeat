@@ -9,9 +9,11 @@ import com.taken_seat.review_service.domain.repository.RedisRatingRepository;
 import com.taken_seat.review_service.domain.repository.ReviewRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AvgRatingBulkScheduler {
 
 	private final RedisRatingRepository redisRatingRepository;
@@ -25,7 +27,14 @@ public class AvgRatingBulkScheduler {
 		@CacheEvict(cacheNames = "reviewSearchCache", allEntries = true)
 	})
 	public void fetchPerformanceRatingStatsBulk() {
-		redisRatingRepository.setAvgRatingBulk();
+		log.info("[Review][Scheduler] 공연 별 평균 평점 계산 및 캐시 반영 시작");
+
+		try {
+			redisRatingRepository.setAvgRatingBulk();
+			log.info("[Review][Scheduler] 평균 평점 계산 및 캐시 반영 완료");
+		} catch (Exception e) {
+			log.error("[Review][Scheduler] 평균 평점 계산 중 예외 발생: {}", e.getMessage(), e);
+		}
 	}
 
 }

@@ -4,19 +4,23 @@ import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-@Getter
+@AllArgsConstructor
 @Builder
+@Getter
+@NoArgsConstructor
 public class TicketPerformanceClientResponse {
 
-	private final String title;
-	private final String name;
-	private final String address;
-	private final String seatRowNumber;
-	private final String seatNumber;
-	private final String seatType;
+	private String title;
+	private String name;
+	private String address;
+	private String seatRowNumber;
+	private String seatNumber;
+	private String seatType;
 
 	/**
 	 * 공연 DB와 도메인에 LocalDateTime 을 사용하고 있어서 동일하게 적용

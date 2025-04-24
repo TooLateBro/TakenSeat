@@ -6,8 +6,9 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import com.taken_seat.performance_service.performance.application.dto.request.SearchFilterParam;
 import com.taken_seat.performance_service.performance.domain.model.Performance;
+import com.taken_seat.performance_service.performance.presentation.dto.request.SearchFilterParam;
+import com.taken_seat.performance_service.performance.presentation.dto.response.SearchResponseDto;
 
 public interface PerformanceRepository {
 
@@ -15,7 +16,7 @@ public interface PerformanceRepository {
 
 	Optional<Performance> findById(UUID id);
 
-	Page<Performance> findAll(SearchFilterParam filterParam, Pageable pageable);
+	Page<SearchResponseDto> findAll(SearchFilterParam filterParam, Pageable pageable);
 
 	Optional<Performance> findByPerformanceScheduleId(UUID performanceScheduleId);
 }

@@ -1,6 +1,7 @@
 package com.taken_seat.booking_service.booking.application.service;
 
 import java.time.Duration;
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -13,12 +14,21 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class RedisService {
 
-	private final RedisTemplate<String, String> redisTemplate;
+	private final RedisTemplate<String, Object> redisTemplate;
 
 	@Value("${variable.booking-expiration-time}")
 	private long BOOKING_EXPIRATION_TIME;
 
 	public void setBookingExpire(UUID bookingId) {
 		redisTemplate.opsForValue().set("expire:" + bookingId, "", Duration.ofSeconds(BOOKING_EXPIRATION_TIME));
+	}
+
+	public void evictAllCaches(String cacheValue, UUID userId) {
+		String prefix = cacheValue + "::" + userId;
+		Set<String> keys = redisTemplate.keys(prefix + "*");
+
+		if (keys != null && !keys.isEmpty()) {
+			redisTemplate.delete(keys);
+		}
 	}
 }

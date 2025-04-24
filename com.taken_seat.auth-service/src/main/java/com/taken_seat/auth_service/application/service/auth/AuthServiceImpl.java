@@ -9,7 +9,8 @@ import com.taken_seat.auth_service.domain.repository.user.UserRepository;
 import com.taken_seat.auth_service.infrastructure.util.JwtUtil;
 import com.taken_seat.common_service.exception.customException.AuthException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
-import org.springframework.data.redis.core.StringRedisTemplate;
+import io.jsonwebtoken.Claims;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,30 +18,30 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.concurrent.TimeUnit;
 
 @Service
-class AuthServiceImpl implements AuthService{
+public class AuthServiceImpl implements AuthService{
 
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final JwtUtil jwtUtil;
-    private final StringRedisTemplate stringRedisTemplate;
+    private final RedisTemplate<String, String> redisTemplate;
 
-    public AuthServiceImpl(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder, JwtUtil jwtUtil, StringRedisTemplate stringRedisTemplate) {
+    public AuthServiceImpl(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder, JwtUtil jwtUtil, RedisTemplate<String, String> redisTemplate) {
         this.userRepository = userRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.jwtUtil = jwtUtil;
-        this.stringRedisTemplate = stringRedisTemplate;
+        this.redisTemplate = redisTemplate;
     }
 
     @Transactional
     @Override
     public AuthSignUpResponseDto signUp(AuthSignUpDto dto) {
-        if(userRepository.findByEmail(dto.getEmail()).isPresent()){
+        if(userRepository.findByEmail(dto.email()).isPresent()){
             throw new AuthException(ResponseCode.USER_BAD_EMAIL);
         }
         User user = User.create(
-                dto.getUsername(), dto.getEmail(),
-                dto.getPhone(), bCryptPasswordEncoder.encode(dto.getPassword()),
-                dto.getRole()
+                dto.username(), dto.email(),
+                dto.phone(), bCryptPasswordEncoder.encode(dto.password()),
+                dto.role()
         );
         userRepository.save(user);
 
@@ -50,19 +51,31 @@ class AuthServiceImpl implements AuthService{
     @Transactional(readOnly = true)
     @Override
     public AuthLoginResponseDto login(AuthLoginDto dto) {
-        User user = userRepository.findByEmail(dto.getEmail())
+        User user = userRepository.findByEmail(dto.email())
                 .orElseThrow(() -> new AuthException(ResponseCode.USER_NOT_FOUND));
 
-        if (!bCryptPasswordEncoder.matches(dto.getPassword(), user.getPassword())) {
+        if (!bCryptPasswordEncoder.matches(dto.password(), user.getPassword())) {
             throw new AuthException(ResponseCode.USER_BAD_PASSWORD);
         }
 
         String accessToken = jwtUtil.createToken(user);
         String refreshToken = jwtUtil.createRefreshToken(user.getId());
 
-        stringRedisTemplate.opsForValue().set(user.getEmail()+" : refresh_token", refreshToken, 10, TimeUnit.SECONDS);
+        redisTemplate.opsForValue().set(user.getEmail()+" :: refresh_token", refreshToken, 1, TimeUnit.HOURS);
 
         return AuthLoginResponseDto.of(accessToken, refreshToken);
+    }
+
+    @Override
+    public void logout(String token) {
+        String accessToken = jwtUtil.extractToken(token);
+        Claims claims = jwtUtil.parseClaims(accessToken);
+        String email = claims.get("email", String.class);
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AuthException(ResponseCode.USER_NOT_FOUND));
+
+        redisTemplate.delete(user.getEmail()+" :: refresh_token"); // 기존 refreshToken 삭제
     }
 }
 

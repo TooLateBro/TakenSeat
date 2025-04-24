@@ -58,7 +58,7 @@ public class BookingController {
 	}
 
 	@PatchMapping("/{id}")
-	public ResponseEntity<ApiResponseData<Void>> updateBooking(AuthenticatedUser authenticatedUser,
+	public ResponseEntity<ApiResponseData<Void>> cancelBooking(AuthenticatedUser authenticatedUser,
 		@PathVariable("id") UUID id) {
 		bookingService.cancelBooking(authenticatedUser, id);
 

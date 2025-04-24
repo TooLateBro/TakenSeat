@@ -1,5 +1,6 @@
 package com.taken_seat.performance_service.performance.presentation.controller;
 
+import java.net.URI;
 import java.util.UUID;
 
 import org.springframework.data.domain.Pageable;
@@ -19,15 +20,17 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.taken_seat.common_service.dto.ApiResponseData;
 import com.taken_seat.common_service.dto.AuthenticatedUser;
-import com.taken_seat.performance_service.performance.application.dto.request.CreateRequestDto;
-import com.taken_seat.performance_service.performance.application.dto.request.SearchFilterParam;
-import com.taken_seat.performance_service.performance.application.dto.request.UpdateRequestDto;
-import com.taken_seat.performance_service.performance.application.dto.response.CreateResponseDto;
-import com.taken_seat.performance_service.performance.application.dto.response.DetailResponseDto;
-import com.taken_seat.performance_service.performance.application.dto.response.PageResponseDto;
-import com.taken_seat.performance_service.performance.application.dto.response.PerformanceEndTimeDto;
-import com.taken_seat.performance_service.performance.application.dto.response.UpdateResponseDto;
+import com.taken_seat.common_service.dto.response.PerformanceEndTimeDto;
+import com.taken_seat.common_service.dto.response.PerformanceStartTimeDto;
 import com.taken_seat.performance_service.performance.application.service.PerformanceService;
+import com.taken_seat.performance_service.performance.presentation.docs.PerformanceControllerDocs;
+import com.taken_seat.performance_service.performance.presentation.dto.request.CreateRequestDto;
+import com.taken_seat.performance_service.performance.presentation.dto.request.SearchFilterParam;
+import com.taken_seat.performance_service.performance.presentation.dto.request.UpdateRequestDto;
+import com.taken_seat.performance_service.performance.presentation.dto.response.CreateResponseDto;
+import com.taken_seat.performance_service.performance.presentation.dto.response.DetailResponseDto;
+import com.taken_seat.performance_service.performance.presentation.dto.response.PageResponseDto;
+import com.taken_seat.performance_service.performance.presentation.dto.response.UpdateResponseDto;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +38,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/performances")
-public class PerformanceController {
+public class PerformanceController implements PerformanceControllerDocs {
 
 	private final PerformanceService performanceService;
 
@@ -45,7 +48,8 @@ public class PerformanceController {
 		AuthenticatedUser authenticatedUser) {
 
 		CreateResponseDto response = performanceService.create(request, authenticatedUser);
-		return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponseData.success(response));
+		URI location = URI.create("/api/v1/performances/" + response.performanceId());
+		return ResponseEntity.created(location).body(ApiResponseData.success(response));
 	}
 
 	@GetMapping("/search")
@@ -61,7 +65,7 @@ public class PerformanceController {
 	public ResponseEntity<ApiResponseData<DetailResponseDto>> getDetail(@PathVariable("id") UUID id) {
 
 		DetailResponseDto response = performanceService.getDetail(id);
-		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
+		return ResponseEntity.ok(ApiResponseData.success(response));
 	}
 
 	@PatchMapping("/{id}")
@@ -70,7 +74,7 @@ public class PerformanceController {
 		AuthenticatedUser authenticatedUser) {
 
 		UpdateResponseDto response = performanceService.update(id, request, authenticatedUser);
-		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
+		return ResponseEntity.ok(ApiResponseData.success(response));
 	}
 
 	@DeleteMapping("/{id}")
@@ -78,20 +82,16 @@ public class PerformanceController {
 		AuthenticatedUser authenticatedUser) {
 
 		performanceService.delete(id, authenticatedUser);
-		return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseData.success());
+		return ResponseEntity.noContent().build();
 	}
 
-	/**
-	 * 공연 종료 시간 조회 API
-	 * 리뷰 등록하기 전 해당 공연이 종료되었는지 검사하기 위해 종료시간을 받아오는 메서드
-	 */
 	@GetMapping("/{performanceId}/schedules/{performanceScheduleId}/end-time")
-	ResponseEntity<ApiResponseData<PerformanceEndTimeDto>> getPerformanceEndTime(
+	public ResponseEntity<ApiResponseData<PerformanceEndTimeDto>> getPerformanceEndTime(
 		@PathVariable("performanceId") UUID performanceId,
 		@PathVariable("performanceScheduleId") UUID performanceScheduleId) {
 
 		PerformanceEndTimeDto response = performanceService.getPerformanceEndTime(performanceId, performanceScheduleId);
-		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
+		return ResponseEntity.ok(ApiResponseData.success(response));
 	}
 
 	@PatchMapping("/{id}/status")
@@ -100,6 +100,16 @@ public class PerformanceController {
 		AuthenticatedUser authenticatedUser) {
 
 		performanceService.updateStatus(id, authenticatedUser);
-		return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseData.success());
+		return ResponseEntity.noContent().build();
+	}
+
+	@GetMapping("/{performanceId}/schedules/{performanceScheduleId}/start-time")
+	public ResponseEntity<ApiResponseData<PerformanceStartTimeDto>> getPerformanceStartTime(
+		@PathVariable("performanceId") UUID performanceId,
+		@PathVariable("performanceScheduleId") UUID performanceScheduleId) {
+
+		PerformanceStartTimeDto response = performanceService.getPerformanceStartTime(performanceId,
+			performanceScheduleId);
+		return ResponseEntity.ok(ApiResponseData.success(response));
 	}
 }

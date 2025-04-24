@@ -41,7 +41,7 @@ public class JwtUtil {
 
     private Key key;
 
-    private final SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS512;
+    private final SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
 
     @PostConstruct
     public void init() {
@@ -51,6 +51,7 @@ public class JwtUtil {
 
     public String createToken(User userinfo){
         return Jwts.builder()
+                .setId(UUID.randomUUID().toString()) // 토큰의 고유 id를 생성
                 .setSubject(String.valueOf(userinfo.getId()))
                 .claim("email", userinfo.getEmail())
                 .claim("role", userinfo.getRole())
@@ -78,7 +79,12 @@ public class JwtUtil {
                 .parseClaimsJws(token)
                 .getBody();
     }
-
+    public String extractToken(String token) {
+        if (token == null || !token.startsWith("Bearer ")) {
+            return null;
+        }
+        return token.substring(7);
+    }
     public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder()

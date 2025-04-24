@@ -4,6 +4,7 @@ import com.taken_seat.common_service.message.KafkaUserInfoMessage;
 import com.taken_seat.coupon_service.application.kafka.CouponToUserConsumer;
 import com.taken_seat.coupon_service.application.kafka.CouponToUserConsumerService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
@@ -20,19 +21,17 @@ public class CouponToUserConsumerImpl implements CouponToUserConsumer {
     public CouponToUserConsumerImpl(CouponToUserConsumerService couponToUserConsumerService) {
         this.couponToUserConsumerService = couponToUserConsumerService;
     }
+    @Value("${kafka.key.coupon-user-key}")
+    private String RECEIVE_COUPON_USER_KEY;
 
-    private static final String RESPONSE_TOPIC = "Issuance-of-coupons";
-    private static final String RESPONSE_TOPIC_REPLY = "Issuance-of-coupons-reply";
-    private static final String RECEIVE_MESSAGE_KEY = "Partitions-of-coupons";
-
-    @KafkaListener(groupId = "couponFIFO", topics = RESPONSE_TOPIC)
+    @KafkaListener(groupId = "${kafka.consumer.group-id}", topics = "${kafka.topic.coupon-request-user}")
     @Override
-    @SendTo(RESPONSE_TOPIC_REPLY)
+    @SendTo("coupon.response.user")
     public KafkaUserInfoMessage consume(@Payload KafkaUserInfoMessage message,
                                         @Header(KafkaHeaders.RECEIVED_KEY) String key) {
         log.info("Receive userId: {}", message.getUserId());
         try {
-            if (key.equals(RECEIVE_MESSAGE_KEY)) {
+            if (key.equals(RECEIVE_COUPON_USER_KEY)) {
                 log.info("userId: {}", message.getUserId());
                 return couponToUserConsumerService.producerMessage(message);
             }

@@ -1,75 +1,123 @@
 package com.taken_seat.gateway_service.filter;
 
+import com.taken_seat.gateway_service.exception.customException.GatewayException;
+import com.taken_seat.gateway_service.exception.enums.ResponseCode;
 import com.taken_seat.gateway_service.util.JwtUtil;
 import io.jsonwebtoken.Claims;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
-import org.springframework.http.HttpStatus;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
 @Component
-// GlobalFilter 인터페이스를 구현하여 모든 요청에 필터 적용
 public class JwtAuthenticationFilter implements GlobalFilter {
 
-    private final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
+    private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
     private final JwtUtil jwtUtil;
-
-    public JwtAuthenticationFilter(JwtUtil jwtUtil) {
+    private final RedisTemplate<String, String> redisTemplate;
+    // 인증 제외 경로 상수로 관리
+    private static final Set<String> EXCLUDED_PATHS = Set.of(
+            "/api/v1/auths/",
+            "/v3/api-docs",
+            "/swagger-ui"
+    );
+    public JwtAuthenticationFilter(JwtUtil jwtUtil, RedisTemplate<String, String> redisTemplate) {
         this.jwtUtil = jwtUtil;
+        this.redisTemplate = redisTemplate;
     }
 
-    // Mono 는 단일 응답(0~1개의 데이터)을 비동기적으로 처리하며, 여기서는 요청 처리 결과를 반환
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        // 요청 경로를 가져옴
         String path = exchange.getRequest().getURI().getPath();
         String method = exchange.getRequest().getMethod().name();
-        log.info(method + " " + path + " 으로 요청이 들어왔습니다.");
-        if (path.startsWith("/api/v1/auths/") || path.startsWith("/api/v1/users/**")
-                || path.startsWith("/v3/api-docs")|| path.startsWith("/swagger-ui")) {
-            log.info(path + " 인증 통과");
-            return chain.filter(exchange); // 다음 필터로 요청을 전달
+        String token = jwtUtil.extractToken(exchange.getRequest().getHeaders().getFirst("Authorization"));
+
+        log.info("{} {} 요청이 들어왔습니다.", method, path);
+
+        if (path.equals("/api/v1/auths/logout")) {
+            if (token == null || !jwtUtil.validateToken(token)) {
+                log.warn("로그아웃 요청의 토큰이 유효하지 않음");
+            }
+            String tokenId = jwtUtil.parseClaims(token).getId();
+
+            long expiration = jwtUtil.parseClaims(token).getExpiration().getTime();
+            long now = System.currentTimeMillis();
+            long duration = (expiration - now) / 1000;
+            if (!redisTemplate.hasKey("BLACKLIST:" + tokenId)) {
+                redisTemplate.opsForValue().set("BLACKLIST:" + tokenId, tokenId, duration, TimeUnit.SECONDS);
+            }
+
+            log.info("로그아웃 요청 토큰 블랙리스트 등록 완료");
+            return chain.filter(exchange); // 이후 컨트롤러에서 refreshToken 삭제
         }
-        // 만약 /api/v1/coupons/ 로 요청의 헤더값에 token 이 담겨오면 해당 token 을 검사해서 헤더에 데이터를 담아서 반환
-        // 요청에서 JWT 토큰을 추출
-        log.info(path + " 요청에 담긴 token 검증 시도 중 ....");
+        // 인증 제외 경로 처리
+        if (EXCLUDED_PATHS.stream().anyMatch(path::startsWith)) {
+            log.info("{} 는 인증이 필요하지 않습니다.", path);
+            return chain.filter(exchange);
+        }
+
+        log.info("{} 요청의 JWT 토큰 검증을 시작합니다.", path);
+
         try {
-            String token = jwtUtil.extractToken(exchange);
+            // Authorization 헤더에서 토큰 추출
+            if (token == null) {
+                log.warn("{} 요청에 Authorization 헤더가 존재하지 않습니다.", path);
+                throw new GatewayException(ResponseCode.ACCESS_TOKEN_NOT_FOUND);
+            }
+            if (!jwtUtil.validateToken(token)) {
+                log.warn("{} 요청의 토큰이 유효하지 않습니다.", path);
+                throw new GatewayException(ResponseCode.JWT_NOT_VALID);
+            }
+            if (isBlackListToken(token)) {
+                log.warn("{} 토큰이 블랙리스트 입니다.", path);
+                throw new GatewayException(ResponseCode.JWT_NOT_VALID);
+            }
 
-        // 토큰이 없거나 유효하지 않으면 401 Unauthorized 응답 반환
-        if (token == null || !jwtUtil.validateToken(token)) {
-            log.info(path + " 에 token이 존재하지 않거나 검증되지 않은 키 입니다.");
-            throw new IllegalArgumentException(HttpStatus.FORBIDDEN.getReasonPhrase());
+            // 토큰 검증 후 클레임 가져오기
+            Claims claims = jwtUtil.parseClaims(token);
+            ServerWebExchange mutatedExchange = addClaimsToRequestHeaders(exchange, claims);
+
+            log.info("{} 요청 인증에 성공하였습니다!", path);
+            return chain.filter(mutatedExchange);
+
+        }catch (GatewayException e) {
+            log.error("로그인을 해주세요!");
+            return Mono.error(new GatewayException(ResponseCode.ACCESS_TOKEN_NOT_FOUND));
+        }catch (Exception e) {
+            log.error("인증 처리 중 오류 발생: {}", e.getMessage());
+            return Mono.error(new GatewayException(ResponseCode.JWT_NOT_VALID));
         }
+    }
 
-        // 유효한 토큰에서 페이로드 파싱
-        Claims claims = jwtUtil.parseClaims(token);
+    private ServerWebExchange addClaimsToRequestHeaders(ServerWebExchange exchange, Claims claims) {
         String userId = claims.getSubject();
         String email = claims.get("email", String.class);
         String role = claims.get("role", String.class);
 
-        // 기존 ServerWebExchange 객체를 수정하여 요청 헤더에 사용자 정보를 추가
-        // mutate()는 원본 객체를 변경하지 않고 새로운 객체를 생성
-        ServerWebExchange mutatedExchange = exchange.mutate()
-                .request(
-                        builder -> builder // 요청 빌더를 사용해 헤더 설정
-                                .header("X-User-Id", userId)
-                                .header("X-Email", email)
-                                .header("X-Role", role))
+        return exchange.mutate()
+                .request(builder -> builder
+                        .header("X-User-Id", userId)
+                        .header("X-Email", email)
+                        .header("X-Role", role))
                 .build();
-        // 수정된 요청을 다음 필터 또는 라우트로 전달
-            log.info(path + " 요청 인증에 성공하였습니다!!");
-            return chain.filter(mutatedExchange);
-
-        } catch (IllegalArgumentException e) {
-            return Mono.error(e);
+    }
+    private boolean isBlackListToken(String token) {
+        try {
+            String tokenId = jwtUtil.parseClaims(token).getId(); // 토큰의 고유 id를 blackList 저장
+            log.info("블랙 리스트 확인 중....");
+            Boolean isBlacklisted = redisTemplate.hasKey("BLACKLIST:" + tokenId);
+            log.info("유저의 토큰 : {} 값이 블랙 리스트에 등록 되어있습니다.", token);
+            return Boolean.TRUE.equals(isBlacklisted);
         } catch (Exception e) {
-            return Mono.error(new IllegalArgumentException("인증 정보가 올바르지 않습니다."));
+            return false;
         }
     }
 }

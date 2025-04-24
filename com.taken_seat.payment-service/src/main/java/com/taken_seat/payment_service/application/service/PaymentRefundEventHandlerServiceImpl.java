@@ -32,9 +32,11 @@ public class PaymentRefundEventHandlerServiceImpl implements PaymentRefundEventH
 
 		// 1. 결제 금액 검사
 		if (isInvalidPrice(message)) {
-			log.warn("[Payment] 잘못된 환불 금액 - bookingId: {}, price: {}", message.getBookingId(),
+			log.warn("[Payment] 환불 금액 유효성 검사 - 실패 - bookingId={}, price={}", message.getBookingId(),
 				message.getPrice());
+
 			PaymentRefundMessage paymentRefundMessage = PaymentRefundMessage.builder()
+				.userId(message.getUserId())
 				.bookingId(message.getBookingId())
 				.status(PaymentRefundMessage.PaymentRefundStatus.INVALID_PRICE)
 				.type(PaymentRefundMessage.MessageType.RESULT)
@@ -42,7 +44,7 @@ public class PaymentRefundEventHandlerServiceImpl implements PaymentRefundEventH
 
 			paymentRefundResultProducer.sendPaymentRefundResult(paymentRefundMessage);
 
-			log.info("[Payment] 환불 실패 메시지 전송 완료 - bookingId: {}", message.getBookingId());
+			log.info("[Payment] 환불 실패 메시지 전송 - 성공 - bookingId={}", message.getBookingId());
 			return;
 		}
 
@@ -53,18 +55,20 @@ public class PaymentRefundEventHandlerServiceImpl implements PaymentRefundEventH
 			.orElseThrow(() -> new PaymentHistoryException(ResponseCode.PAYMENT_HISTORY_NOT_FOUND_EXCEPTION));
 
 		payment.refund(message);
-		log.debug("[Payment] 환불 처리 완료 - paymentId: {} , price: {}", payment.getId(), payment.getPrice());
+		log.debug("[Payment] 환불 처리 - 성공 - paymentId={}, price={}", payment.getId(), payment.getPrice());
+
 		paymentHistory.refund(payment);
 		log.debug("[Payment] 환불 히스토리 저장 완료 - paymentHistoryId: {}", paymentHistory.getId());
 
 		PaymentRefundMessage paymentRefundMessage = PaymentRefundMessage.builder()
+			.userId(message.getUserId())
 			.bookingId(message.getBookingId())
 			.status(PaymentRefundMessage.PaymentRefundStatus.SUCCESS)
 			.type(PaymentRefundMessage.MessageType.RESULT)
 			.build();
 
 		paymentRefundResultProducer.sendPaymentRefundResult(paymentRefundMessage);
-		log.info("[Payment] 환불 성공 메시지 전송 완료 - bookingId: {}", message.getBookingId());
+		log.info("[Payment] 환불 성공 메시지 전송 - 성공 - bookingId={}", message.getBookingId());
 	}
 
 	private boolean isInvalidPrice(PaymentRefundMessage message) {

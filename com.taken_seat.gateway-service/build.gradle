@@ -22,8 +22,14 @@ ext {
 }
 
 dependencies {
+
+    implementation 'me.paulschwarz:spring-dotenv:4.0.0'
+
     // swagegr
     implementation 'org.springdoc:springdoc-openapi-starter-webflux-ui:2.7.0'
+
+    // redis = 블랙 리스트 관리용
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
     // 모니터링
     implementation 'org.springframework.boot:spring-boot-starter-actuator'

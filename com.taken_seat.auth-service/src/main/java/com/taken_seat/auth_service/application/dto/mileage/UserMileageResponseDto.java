@@ -1,35 +1,23 @@
 package com.taken_seat.auth_service.application.dto.mileage;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.taken_seat.auth_service.domain.entity.mileage.Mileage;
-import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Getter
-@Builder(access = AccessLevel.PRIVATE)
-@NoArgsConstructor
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class UserMileageResponseDto {
-
-    private UUID userId;
-    private UUID mileageId;
-    private Integer mileage;
-
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    private LocalDateTime updatedAt;
+public record UserMileageResponseDto(
+        UUID userId,
+        UUID mileageId,
+        Integer mileage,
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+        LocalDateTime updatedAt
+) {
 
     public static UserMileageResponseDto of(Mileage mileage) {
-        return UserMileageResponseDto.builder()
-                .userId(mileage.getUser().getId())
-                .mileageId(mileage.getId())
-                .mileage(mileage.getMileage())
-                .updatedAt(mileage.getUpdatedAt())
-                .build();
+        return new UserMileageResponseDto(
+                mileage.getUser().getId(), mileage.getId(),
+                mileage.getMileage(), mileage.getUpdatedAt()
+        );
     }
 }

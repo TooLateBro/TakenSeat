@@ -44,7 +44,7 @@ public class MileageServiceImpl implements MileageService {
         User user = userRepository.findByIdAndDeletedAtIsNull(userId)
                 .orElseThrow(()-> new AuthException(ResponseCode.USER_NOT_FOUND));
 
-        Mileage mileage = Mileage.create(user, dto.getMileage());
+        Mileage mileage = Mileage.create(user, dto.mileage());
 
         if (mileage.getCreatedBy() != null){
             mileage.preUpdate(userId);
@@ -68,8 +68,10 @@ public class MileageServiceImpl implements MileageService {
     @Override
     @Cacheable(cacheNames = "searchMileage", key = "#userId + '-' + #page + '-' + #size")
     public PageResponseDto<UserMileageResponseDto> getMileageHistoryUser(UUID userId, int page, int size) {
+        User user = userRepository.findByIdAndDeletedAtIsNull(userId)
+                .orElseThrow(()-> new AuthException(ResponseCode.USER_NOT_FOUND));
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "updatedAt"));
-        Page<Mileage> mileage = mileageRepository.findByUserIdAndDeletedAtIsNull(userId, pageable);
+        Page<Mileage> mileage = mileageRepository.findMileageByUserIdAndDeletedAtIsNull(user.getId(), pageable);
 
         Page<UserMileageResponseDto> mileageInfo = mileage.map(UserMileageResponseDto::of);
 
@@ -96,7 +98,7 @@ public class MileageServiceImpl implements MileageService {
         Mileage mileage = mileageRepository.findByIdAndDeletedAtIsNull(mileageId)
                 .orElseThrow(()-> new AuthException(ResponseCode.MILEAGE_NOT_FOUND));
 
-        mileage.update(dto.getMileage(), authenticatedUser.getUserId());
+        mileage.update(dto.mileage(), authenticatedUser.getUserId());
 
         return UserMileageResponseDto.of(mileage);
     }

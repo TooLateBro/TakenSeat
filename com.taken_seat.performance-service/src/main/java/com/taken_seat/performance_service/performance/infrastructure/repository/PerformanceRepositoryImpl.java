@@ -7,10 +7,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
-import com.taken_seat.performance_service.performance.application.dto.request.SearchFilterParam;
 import com.taken_seat.performance_service.performance.domain.model.Performance;
+import com.taken_seat.performance_service.performance.domain.repository.PerformanceQueryRepository;
 import com.taken_seat.performance_service.performance.domain.repository.PerformanceRepository;
-import com.taken_seat.performance_service.performance.domain.repository.spec.PerformanceSpecification;
+import com.taken_seat.performance_service.performance.presentation.dto.request.SearchFilterParam;
+import com.taken_seat.performance_service.performance.presentation.dto.response.SearchResponseDto;
 
 import lombok.RequiredArgsConstructor;
 
@@ -19,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 public class PerformanceRepositoryImpl implements PerformanceRepository {
 
 	private final PerformanceJpaRepository performanceJpaRepository;
+	private final PerformanceQueryRepository performanceQueryRepository;
 
 	@Override
 	public Performance save(Performance performance) {
@@ -31,12 +33,9 @@ public class PerformanceRepositoryImpl implements PerformanceRepository {
 	}
 
 	@Override
-	public Page<Performance> findAll(SearchFilterParam filterParam, Pageable pageable) {
+	public Page<SearchResponseDto> findAll(SearchFilterParam filterParam, Pageable pageable) {
 
-		return performanceJpaRepository.findAll(
-			PerformanceSpecification.withFilter(filterParam),
-			pageable
-		);
+		return performanceQueryRepository.searchByFilter(filterParam, pageable);
 	}
 
 	@Override

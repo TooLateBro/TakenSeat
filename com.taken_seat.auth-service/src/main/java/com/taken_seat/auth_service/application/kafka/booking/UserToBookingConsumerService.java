@@ -6,5 +6,5 @@ public interface UserToBookingConsumerService {
 
     UserBenefitMessage benefitUsage(UserBenefitMessage message);
 
-    UserBenefitMessage benefitCancel(UserBenefitMessage message);
+    UserBenefitMessage benefitPayment(UserBenefitMessage message);
 }

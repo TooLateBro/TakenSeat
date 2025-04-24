@@ -4,8 +4,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import com.taken_seat.performance_service.performance.application.dto.request.CreatePerformanceScheduleDto;
-import com.taken_seat.performance_service.performance.application.dto.request.CreateRequestDto;
+import com.taken_seat.performance_service.performance.application.dto.command.CreatePerformanceCommand;
+import com.taken_seat.performance_service.performance.application.dto.command.CreatePerformanceScheduleCommand;
 import com.taken_seat.performance_service.performance.domain.model.Performance;
 import com.taken_seat.performance_service.performance.domain.model.PerformanceSchedule;
 import com.taken_seat.performance_service.performance.domain.model.PerformanceScheduleStatus;
@@ -14,77 +14,78 @@ import com.taken_seat.performance_service.performance.domain.model.PerformanceSt
 
 public class PerformanceCreateHelper {
 
-	// Performance 객체 생성
-	public static Performance createPerformance(CreateRequestDto request, UUID createdBy) {
+	public static Performance createPerformance(CreatePerformanceCommand command, UUID createdBy) {
 		Performance performance = Performance.builder()
-			.title(request.getTitle())
-			.description(request.getDescription())
-			.startAt(request.getStartAt())
-			.endAt(request.getEndAt())
-			.status(PerformanceStatus.status(request.getStartAt(), request.getEndAt()))
-			.posterUrl(request.getPosterUrl())
-			.ageLimit(request.getAgeLimit())
-			.maxTicketCount(request.getMaxTicketCount())
-			.discountInfo(request.getDiscountInfo())
+			.title(command.title())
+			.description(command.description())
+			.startAt(command.startAt())
+			.endAt(command.endAt())
+			.status(null)
+			.posterUrl(command.posterUrl())
+			.ageLimit(command.ageLimit())
+			.maxTicketCount(command.maxTicketCount())
+			.discountInfo(command.discountInfo())
 			.build();
 
 		performance.prePersist(createdBy);
 		return performance;
 	}
 
-	// PerformanceSchedule 리스트 생성
-	public static List<PerformanceSchedule> createPerformanceSchedules(CreateRequestDto request,
+	public static void createPerformanceSchedules(CreatePerformanceCommand command,
 		Performance performance, UUID createdBy) {
 
-		List<PerformanceSchedule> schedules = request.getSchedules().stream()
-			.map(createPerformanceScheduleDto -> {
-				PerformanceSchedule schedule = createPerformanceSchedule(createPerformanceScheduleDto, performance);
+		List<PerformanceSchedule> schedules = command.schedules().stream()
+			.map(createPerformanceScheduleCommand -> {
+				PerformanceSchedule schedule = createPerformanceSchedule(createPerformanceScheduleCommand, performance);
 				schedule.prePersist(createdBy);
 
-				List<PerformanceSeatPrice> seatPrices = createPerformanceSeatPrices(createPerformanceScheduleDto,
+				List<PerformanceSeatPrice> seatPrices = createPerformanceSeatPrices(createPerformanceScheduleCommand,
 					schedule);
 				schedule.getSeatPrices().addAll(seatPrices);
 
-				seatPrices.forEach(seatPriceCreatedBy -> seatPriceCreatedBy.prePersist(createdBy));
+				seatPrices.forEach(seatPrice -> seatPrice.prePersist(createdBy));
 
 				return schedule;
 			})
 			.toList();
+
 		performance.getSchedules().addAll(schedules);
 
-		return schedules;
+		PerformanceStatus status = PerformanceStatus.status(
+			performance.getStartAt(),
+			performance.getEndAt(),
+			performance.getSchedules()
+		);
+
+		performance.updateStatus(status);
+
 	}
 
-	// PerformanceSchedule 객체 생성
 	private static PerformanceSchedule createPerformanceSchedule(
-		CreatePerformanceScheduleDto createPerformanceScheduleDto, Performance performance) {
+		CreatePerformanceScheduleCommand command, Performance performance) {
 
-		LocalDateTime saleStartAt = createPerformanceScheduleDto.getSaleStartAt();
-		LocalDateTime saleEndAt = createPerformanceScheduleDto.getSaleEndAt();
-
-		if (saleEndAt == null) {
-			saleEndAt = saleStartAt.minusMinutes(1);
-		}
+		LocalDateTime saleStartAt = command.saleStartAt();
+		LocalDateTime saleEndAt =
+			command.saleEndAt() != null ? command.saleEndAt() : saleStartAt.minusMinutes(1);
 
 		return PerformanceSchedule.builder()
 			.performance(performance)
-			.performanceHallId(createPerformanceScheduleDto.getPerformanceHallId())
-			.startAt(createPerformanceScheduleDto.getStartAt())
-			.endAt(createPerformanceScheduleDto.getEndAt())
+			.performanceHallId(command.performanceHallId())
+			.startAt(command.startAt())
+			.endAt(command.endAt())
 			.saleStartAt(saleStartAt)
 			.saleEndAt(saleEndAt)
 			.status(PerformanceScheduleStatus.status(saleStartAt, saleEndAt, false))
 			.build();
 	}
 
-	// PerformanceSeatPrice 리스트 생성
 	private static List<PerformanceSeatPrice> createPerformanceSeatPrices(
-		CreatePerformanceScheduleDto createPerformanceScheduleDto, PerformanceSchedule schedule) {
-		return createPerformanceScheduleDto.getSeatPrices().stream()
-			.map(CreateSeatPriceDto -> PerformanceSeatPrice.builder()
+		CreatePerformanceScheduleCommand command, PerformanceSchedule schedule) {
+		return command.seatPrices().stream()
+			.map(seatPriceCommand -> PerformanceSeatPrice.builder()
 				.performanceSchedule(schedule)
-				.seatType(CreateSeatPriceDto.getSeatType())
-				.price(CreateSeatPriceDto.getPrice())
+				.seatType(seatPriceCommand.seatType())
+				.price(seatPriceCommand.price())
 				.build())
 			.toList();
 	}

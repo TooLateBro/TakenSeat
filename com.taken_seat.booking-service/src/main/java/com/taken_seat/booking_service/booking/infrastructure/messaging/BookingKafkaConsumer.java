@@ -5,7 +5,9 @@ import org.springframework.stereotype.Component;
 
 import com.taken_seat.booking_service.booking.application.service.BookingService;
 import com.taken_seat.booking_service.booking.presentation.BookingConsumer;
+import com.taken_seat.common_service.message.BookingRequestMessage;
 import com.taken_seat.common_service.message.PaymentMessage;
+import com.taken_seat.common_service.message.PaymentRefundMessage;
 import com.taken_seat.common_service.message.UserBenefitMessage;
 
 import lombok.RequiredArgsConstructor;
@@ -17,23 +19,36 @@ public class BookingKafkaConsumer implements BookingConsumer {
 	private final BookingService bookingService;
 
 	@Override
-	@KafkaListener(topics = "${kafka.topic.payment-result}", groupId = "${kafka.consumer.group-id}")
+	@KafkaListener(topics = "${kafka.topic.payment-response}", groupId = "${kafka.consumer.group-id.booking-service}")
 	public void updateBooking(PaymentMessage message) {
 
 		bookingService.updateBooking(message);
 	}
 
+	@KafkaListener(topics = "${kafka.topic.payment-refund-response}", groupId = "${kafka.consumer.group-id.booking-service}")
+	public void updateBooking(PaymentRefundMessage message) {
+
+		bookingService.updateBooking(message);
+	}
+
 	@Override
-	@KafkaListener(topics = "${kafka.topic.benefit-usage-response}", groupId = "${kafka.consumer.group-id}")
+	@KafkaListener(topics = "${kafka.topic.benefit-usage-response}", groupId = "${kafka.consumer.group-id.booking-service}")
 	public void createPayment(UserBenefitMessage message) {
 
 		bookingService.createPayment(message);
 	}
 
 	@Override
-	@KafkaListener(topics = "${kafka.topic.benefit-refund-response}", groupId = "${kafka.consumer.group-id}")
+	@KafkaListener(topics = "${kafka.topic.benefit-refund-response}", groupId = "${kafka.consumer.group-id.booking-service}")
 	public void updateBenefitUsageHistory(UserBenefitMessage message) {
 
 		bookingService.updateBenefitUsageHistory(message);
+	}
+
+	@Override
+	@KafkaListener(topics = "${kafka.topic.queue-request}", groupId = "${kafka.consumer.group-id.booking-service}")
+	public void acceptFromQueue(BookingRequestMessage message) {
+
+		bookingService.acceptFromQueue(message);
 	}
 }

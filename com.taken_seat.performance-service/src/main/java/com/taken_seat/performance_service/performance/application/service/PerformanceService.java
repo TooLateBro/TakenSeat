@@ -1,6 +1,6 @@
 package com.taken_seat.performance_service.performance.application.service;
 
-import static com.taken_seat.performance_service.performance.application.dto.mapper.ResponseMapper.*;
+import static com.taken_seat.performance_service.performance.application.dto.mapper.PerformanceResponseMapper.*;
 
 import java.util.UUID;
 
@@ -10,27 +10,29 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.taken_seat.common_service.dto.AuthenticatedUser;
-import com.taken_seat.common_service.exception.customException.PerformanceException;
-import com.taken_seat.common_service.exception.enums.ResponseCode;
-import com.taken_seat.performance_service.performance.application.dto.mapper.ResponseMapper;
-import com.taken_seat.performance_service.performance.application.dto.request.CreateRequestDto;
-import com.taken_seat.performance_service.performance.application.dto.request.SearchFilterParam;
-import com.taken_seat.performance_service.performance.application.dto.request.UpdatePerformanceScheduleDto;
-import com.taken_seat.performance_service.performance.application.dto.request.UpdateRequestDto;
-import com.taken_seat.performance_service.performance.application.dto.response.CreateResponseDto;
-import com.taken_seat.performance_service.performance.application.dto.response.DetailResponseDto;
-import com.taken_seat.performance_service.performance.application.dto.response.PageResponseDto;
-import com.taken_seat.performance_service.performance.application.dto.response.PerformanceEndTimeDto;
-import com.taken_seat.performance_service.performance.application.dto.response.UpdateResponseDto;
+import com.taken_seat.common_service.dto.response.PerformanceEndTimeDto;
+import com.taken_seat.common_service.dto.response.PerformanceStartTimeDto;
+import com.taken_seat.performance_service.performance.application.dto.command.CreatePerformanceCommand;
+import com.taken_seat.performance_service.performance.application.dto.command.UpdatePerformanceCommand;
+import com.taken_seat.performance_service.performance.application.dto.command.UpdatePerformanceScheduleCommand;
+import com.taken_seat.performance_service.performance.application.dto.mapper.PerformanceCreateCommandMapper;
+import com.taken_seat.performance_service.performance.application.dto.mapper.PerformanceResponseMapper;
+import com.taken_seat.performance_service.performance.application.dto.mapper.PerformanceUpdateCommandMapper;
+import com.taken_seat.performance_service.performance.domain.helper.PerformanceUpdateHelper;
 import com.taken_seat.performance_service.performance.domain.model.Performance;
 import com.taken_seat.performance_service.performance.domain.model.PerformanceSchedule;
-import com.taken_seat.performance_service.performance.domain.model.PerformanceScheduleStatus;
-import com.taken_seat.performance_service.performance.domain.model.PerformanceStatus;
 import com.taken_seat.performance_service.performance.domain.repository.PerformanceRepository;
+import com.taken_seat.performance_service.performance.domain.validator.PerformanceExistenceValidator;
 import com.taken_seat.performance_service.performance.domain.validator.PerformanceValidator;
-import com.taken_seat.performance_service.performancehall.domain.model.PerformanceHall;
-import com.taken_seat.performance_service.performancehall.domain.model.SeatStatus;
-import com.taken_seat.performance_service.performancehall.domain.repository.PerformanceHallRepository;
+import com.taken_seat.performance_service.performance.presentation.dto.request.CreateRequestDto;
+import com.taken_seat.performance_service.performance.presentation.dto.request.SearchFilterParam;
+import com.taken_seat.performance_service.performance.presentation.dto.request.UpdateRequestDto;
+import com.taken_seat.performance_service.performance.presentation.dto.response.CreateResponseDto;
+import com.taken_seat.performance_service.performance.presentation.dto.response.DetailResponseDto;
+import com.taken_seat.performance_service.performance.presentation.dto.response.PageResponseDto;
+import com.taken_seat.performance_service.performance.presentation.dto.response.SearchResponseDto;
+import com.taken_seat.performance_service.performance.presentation.dto.response.UpdateResponseDto;
+import com.taken_seat.performance_service.performancehall.domain.facade.PerformanceHallFacade;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,19 +43,22 @@ import lombok.extern.slf4j.Slf4j;
 public class PerformanceService {
 
 	private final PerformanceRepository performanceRepository;
-	private final ResponseMapper responseMapper;
-	private final PerformanceHallRepository performanceHallRepository;
+	private final PerformanceResponseMapper performanceResponseMapper;
+	private final PerformanceHallFacade performanceHallFacade;
+	private final PerformanceExistenceValidator performanceExistenceValidator;
+	private final PerformanceCreateCommandMapper performanceCreateCommandMapper;
+	private final PerformanceUpdateCommandMapper performanceUpdateCommandMapper;
 
 	@Transactional
 	public CreateResponseDto create(CreateRequestDto request, AuthenticatedUser authenticatedUser) {
 
-		if (!isAuthorized(authenticatedUser)) {
-			throw new PerformanceException(ResponseCode.ACCESS_DENIED_EXCEPTION, "접근 권한이 없습니다.");
-		}
+		PerformanceValidator.validateAuthorized(authenticatedUser);
 
-		PerformanceValidator.validateDuplicateSchedules(request.getSchedules());
+		CreatePerformanceCommand command = performanceCreateCommandMapper.toCommand(request);
 
-		Performance performance = Performance.create(request, authenticatedUser.getUserId());
+		PerformanceValidator.validateDuplicateSchedules(command.schedules());
+
+		Performance performance = Performance.create(command, authenticatedUser.getUserId());
 
 		Performance saved = performanceRepository.save(performance);
 
@@ -63,16 +68,15 @@ public class PerformanceService {
 	@Transactional(readOnly = true)
 	public PageResponseDto search(SearchFilterParam filterParam, Pageable pageable) {
 
-		Page<Performance> pages = performanceRepository.findAll(filterParam, pageable);
+		Page<SearchResponseDto> pages = performanceRepository.findAll(filterParam, pageable);
 
-		return responseMapper.toPage(pages);
+		return performanceResponseMapper.toPage(pages);
 	}
 
 	@Transactional(readOnly = true)
 	public DetailResponseDto getDetail(UUID id) {
 
-		Performance performance = performanceRepository.findById(id)
-			.orElseThrow(() -> new PerformanceException(ResponseCode.PERFORMANCE_NOT_FOUND_EXCEPTION));
+		Performance performance = performanceExistenceValidator.validateByPerformanceId(id);
 
 		return detailToDto(performance);
 	}
@@ -80,22 +84,21 @@ public class PerformanceService {
 	@Transactional
 	public UpdateResponseDto update(UUID id, UpdateRequestDto request, AuthenticatedUser authenticatedUser) {
 
-		if (!isAuthorized(authenticatedUser)) {
-			throw new PerformanceException(ResponseCode.ACCESS_DENIED_EXCEPTION, "접근 권한이 없습니다.");
-		}
+		PerformanceValidator.validateAuthorized(authenticatedUser);
 
-		PerformanceValidator.validatePerformanceData(request);
+		Performance performance = performanceExistenceValidator.validateByPerformanceId(id);
 
-		for (UpdatePerformanceScheduleDto schedule : request.getSchedules()) {
+		UpdatePerformanceCommand command = performanceUpdateCommandMapper.toCommand(request);
+
+		PerformanceValidator.validatePerformanceData(command);
+
+		for (UpdatePerformanceScheduleCommand schedule : command.schedules()) {
 			PerformanceValidator.validateScheduleDataForUpdate(schedule);
 		}
 
-		PerformanceValidator.validateDuplicateSchedulesForUpdate(request.getSchedules());
+		PerformanceValidator.validateDuplicateSchedulesForUpdate(command.schedules());
 
-		Performance performance = performanceRepository.findById(id)
-			.orElseThrow(() -> new PerformanceException(ResponseCode.PERFORMANCE_NOT_FOUND_EXCEPTION));
-
-		performance.update(request, authenticatedUser.getUserId());
+		performance.update(command, authenticatedUser.getUserId());
 
 		return toUpdate(performance);
 	}
@@ -103,84 +106,44 @@ public class PerformanceService {
 	@Transactional
 	public void delete(UUID id, AuthenticatedUser authenticatedUser) {
 
-		if (!isAuthorized(authenticatedUser)) {
-			throw new PerformanceException(ResponseCode.ACCESS_DENIED_EXCEPTION, "접근 권한이 없습니다.");
-		}
+		PerformanceValidator.validateAuthorized(authenticatedUser);
 
-		Performance performance = performanceRepository.findById(id)
-			.orElseThrow(() -> new PerformanceException(ResponseCode.PERFORMANCE_NOT_FOUND_EXCEPTION,
-				"이미 삭제되었거나 존재하지 않는 공연입니다."));
+		Performance performance = performanceExistenceValidator.validateByPerformanceId(id);
 
 		performance.delete(authenticatedUser.getUserId());
+
 		performanceRepository.save(performance);
 	}
 
 	@Transactional
 	public PerformanceEndTimeDto getPerformanceEndTime(UUID performanceId, UUID performanceScheduleId) {
-		Performance performance = performanceRepository.findById(performanceId)
-			.orElseThrow(() -> new PerformanceException(ResponseCode.PERFORMANCE_NOT_FOUND_EXCEPTION));
+
+		Performance performance = performanceExistenceValidator.validateByPerformanceId(performanceId);
 
 		PerformanceSchedule schedule = performance.getScheduleById(performanceScheduleId);
 
 		return new PerformanceEndTimeDto(schedule.getEndAt());
 	}
 
-	private boolean isAuthorized(AuthenticatedUser authenticatedUser) {
-
-		String role = authenticatedUser.getRole();
-		return role.equals("ADMIN") || role.equals("MANAGER") || role.equals("PRODUCER");
-	}
-
 	@Transactional
 	public void updateStatus(UUID id, AuthenticatedUser authenticatedUser) {
 
-		if (!isAuthorized(authenticatedUser)) {
-			throw new PerformanceException(ResponseCode.ACCESS_DENIED_EXCEPTION, "접근 권한이 없습니다");
-		}
+		PerformanceValidator.validateAuthorized(authenticatedUser);
 
-		Performance performance = performanceRepository.findById(id)
-			.orElseThrow(() -> new PerformanceException(ResponseCode.PERFORMANCE_NOT_FOUND_EXCEPTION));
+		Performance performance = performanceExistenceValidator.validateByPerformanceId(id);
 
-		PerformanceStatus oldPerformanceStatus = performance.getStatus();
-		PerformanceStatus newPerformanceStatus = PerformanceStatus.status(
-			performance.getStartAt(), performance.getEndAt());
+		PerformanceUpdateHelper.updateStatus(performance, authenticatedUser, performanceHallFacade);
 
-		if (!performance.getStatus().equals(newPerformanceStatus)) {
-			performance.updateStatus(newPerformanceStatus);
-
-			log.info("[Performance] 공연 상태 변경 - 성공 - performanceId={}, oldStatus={}, newStatus={}, 변경자={}",
-				performance.getId(),
-				oldPerformanceStatus,
-				newPerformanceStatus,
-				authenticatedUser.getUserId());
-		}
-
-		for (PerformanceSchedule schedule : performance.getSchedules()) {
-
-			UUID performanceHallId = schedule.getPerformanceHallId();
-
-			PerformanceHall performanceHall = performanceHallRepository.findById(performanceHallId)
-				.orElseThrow(() -> new PerformanceException(ResponseCode.PERFORMANCE_HALL_NOT_FOUND_EXCEPTION));
-
-			boolean isSoldOut = performanceHall.getSeats().stream()
-				.noneMatch(seat -> seat.getStatus() == SeatStatus.AVAILABLE);
-
-			PerformanceScheduleStatus oldScheduleStatus = schedule.getStatus();
-			PerformanceScheduleStatus newPerformanceScheduleStatus =
-				PerformanceScheduleStatus.status(schedule.getSaleStartAt(), schedule.getSaleEndAt(), isSoldOut);
-
-			if (!schedule.getStatus().equals(newPerformanceScheduleStatus)) {
-				schedule.updateStatus(newPerformanceScheduleStatus);
-				schedule.preUpdate(authenticatedUser.getUserId());
-
-				log.info("[Performance] 회차 상태 변경 - 성공 - 공연회차 ID={}, oldStatus={}, newStatus={}, 공연 ID={}, 변경자={}",
-					schedule.getId(),
-					oldScheduleStatus,
-					newPerformanceScheduleStatus,
-					performance.getId(),
-					authenticatedUser.getUserId());
-			}
-		}
 		performanceRepository.save(performance);
+	}
+
+	@Transactional
+	public PerformanceStartTimeDto getPerformanceStartTime(UUID performanceId, UUID performanceScheduleId) {
+
+		Performance performance = performanceExistenceValidator.validateByPerformanceId(performanceId);
+
+		PerformanceSchedule schedule = performance.getScheduleById(performanceScheduleId);
+
+		return new PerformanceStartTimeDto(schedule.getStartAt());
 	}
 }

@@ -73,6 +73,7 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin
     volumes:
       - grafana-storage:/var/lib/grafana
+      - ~/grafana/config/grafana.ini:/etc/grafana/grafana.ini
     restart: always
 
   loki:

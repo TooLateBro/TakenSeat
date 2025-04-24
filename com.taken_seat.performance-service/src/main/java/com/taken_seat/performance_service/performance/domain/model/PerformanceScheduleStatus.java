@@ -9,7 +9,9 @@ public enum PerformanceScheduleStatus {
 	CLOSED,
 	SOLDOUT;
 
-	public static PerformanceScheduleStatus status(LocalDateTime saleStartAt, LocalDateTime saleEndAt,
+	public static PerformanceScheduleStatus status(
+		LocalDateTime saleStartAt,
+		LocalDateTime saleEndAt,
 		boolean isSoldOut) {
 
 		LocalDateTime now = LocalDateTime.now();

@@ -1,0 +1,120 @@
+name: 이선좌 - Multi-Module CI
+on:
+  push:
+    branches: [ master, dev ] # 머지 후 배포
+  pull_request:
+    branches: [ master, dev ] # PR 시 빌드만 수행
+
+jobs:
+  build:
+    name: Multi-Module Build & Docker Push
+    runs-on: ubuntu-latest
+
+    strategy: # 각 서비스 모듈에 대해 병렬로 빌드를 진행
+      matrix: # 여기서 정의된 모듈들에 대해 각각 빌드 작업을 실행
+        module:
+          - com.taken_seat.eureka-service
+          - com.taken_seat.common-service
+          - com.taken_seat.auth-service
+          - com.taken_seat.coupon-service
+          - com.taken_seat.queue-service
+          - com.taken_seat.booking-service
+          - com.taken_seat.performance-service
+          - com.taken_seat.payment-service
+          - com.taken_seat.review-service
+          - com.taken_seat.gateway-service
+      fail-fast: true  # 하나의 작업이 실패하면 나머지 작업 취소
+      max-parallel: 5 # 최대 5개의 모듈을 병렬로 빌드 진행
+
+    steps:
+      - name: 소스 코드 체크아웃
+        uses: actions/checkout@v4 # GitHub Actions에서 제공하는 `checkout` 액션 사용
+
+      - name: JDK 17 설정
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Gradle 실행 권한 부여
+        run: chmod +x ./gradlew
+
+      - name: 환경 변수 설정   # Docker 빌드 및 실행에 필요한 환경 변수 설정
+        run: |
+          echo "SPRING_DATASOURCE_URL=${{ secrets.SPRING_DATASOURCE_URL }}" >> $GITHUB_ENV
+          echo "SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_DATASOURCE_USERNAME }}" >> $GITHUB_ENV
+          echo "SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_DATASOURCE_PASSWORD }}" >> $GITHUB_ENV
+          echo "SPRING_DATASOURCE_DRIVER_CLASS_NAME=${{ secrets.SPRING_DATASOURCE_DRIVER_CLASS_NAME }}" >> $GITHUB_ENV
+          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> $GITHUB_ENV
+          echo "LOKI_URL=${{ secrets.LOKI_URL }}" >> $GITHUB_ENV
+
+      - name: Gradle 빌드 (서비스 모듈) # 각 모듈에 대해 Gradle 빌드를 실행
+        run: ./gradlew :${{ matrix.module }}:build --parallel --no-daemon # 병렬로 빌드 실행
+
+      - name: Docker 로그인 (GitHub Container Registry)  # GitHub Container Registry에 로그인
+        uses: docker/login-action@v2 # `docker/login-action` 사용
+        with:
+          registry: ghcr.io # GitHub Container Registry URL
+          username: ${{ secrets.MY_GITHUB_USERNAME }}
+          password: ${{ secrets.MY_GITHUB_TOKEN }}
+
+      - name: Docker 이미지 빌드 및 푸시
+        run: |
+          ORG_NAME=toolatebro # Docker 이미지의 조직 이름 설정
+          MODULE_NAME=$(basename "${{ matrix.module }}" | sed 's/com.taken_seat.//') # 모듈 이름에서 접두어 제거
+          MODULE_PATH=${{ matrix.module }}
+          
+          IMAGE_NAME=ghcr.io/${ORG_NAME}/${MODULE_NAME}:latest # Docker 이미지 이름 설정
+          
+          # Docker 이미지 빌드 명령어 실행
+          docker build -t $IMAGE_NAME -f $MODULE_PATH/Dockerfile $MODULE_PATH
+          
+          # Docker 이미지를 GitHub Container Registry에 푸시
+          docker push $IMAGE_NAME
+
+  deploy:
+    name: SSH 서버에 배포
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'push' # PR에선 배포 X, 머지(PUSH)일 때만 실행
+
+    steps:
+      - name: SSH로 서버 접속 & 반복 배포
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            echo "1. app 디렉토리 진입"
+            cd /home/ubuntu/takenseat/app
+            
+            echo "2. 모든 서비스 종료"
+            sudo docker-compose -f docker-compose.app.yml down
+            sudo docker-compose -f docker-compose.infra.yml down
+            
+            echo "3. 기존 이미지 삭제"
+            MODULES=(
+              gateway-service
+              review-service
+              payment-service
+              booking-service
+              performance-service
+              auth-service
+              coupon-service
+              queue-service
+              eureka-service
+            )
+            
+            for MODULE in "${MODULES[@]}"; do
+              IMAGE=ghcr.io/toolatebro/$MODULE:latest
+              echo "이미지 제거: $IMAGE"
+              sudo docker rmi -f $IMAGE || true
+            done
+            
+            echo "4. 서비스 재시작"
+            sudo docker-compose -f docker-compose.infra.yml up -d
+            sudo docker-compose -f docker-compose.app.yml up -d
+            
+            echo "5. 배포 완료"
+

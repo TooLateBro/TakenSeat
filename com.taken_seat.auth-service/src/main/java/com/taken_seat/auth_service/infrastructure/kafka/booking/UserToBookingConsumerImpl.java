@@ -17,23 +17,19 @@ public class UserToBookingConsumerImpl implements UserToBookingConsumer {
         this.userToBookingConsumerService = userToBookingConsumerService;
     }
 
-    private static final String RESPONSE_TOPIC = "benefit.usage.response";
-    private static final String REQUEST_CANCEL_TOPIC = "benefit.refund.request";
-    private static final String RESPONSE_CANCEL_TOPIC = "benefit.refund.response";
-
     @Override
     @KafkaListener(groupId = "${kafka.consumer.group-id}", topics = "${kafka.topic.benefit-usage-request}")
-    @SendTo(RESPONSE_TOPIC)
+    @SendTo("benefit.usage.response") // @SendTo는 컴파일 시점에 값이 결정되어야 하는 정적 애노테이션이기 때문에 직접 입력
     public UserBenefitMessage benefitConsume(@Payload UserBenefitMessage message) {
         UserBenefitMessage userBenefitMessage = userToBookingConsumerService.benefitUsage(message);
         return userBenefitMessage;
     }
 
     @Override
-    @KafkaListener(groupId = "${kafka.consumer.group-id}", topics = REQUEST_CANCEL_TOPIC)
-    @SendTo(RESPONSE_CANCEL_TOPIC)
-    public UserBenefitMessage benefitCancelConsume(@Payload UserBenefitMessage message) {
-        UserBenefitMessage userBenefitMessage = userToBookingConsumerService.benefitCancel(message);
+    @KafkaListener(groupId = "${kafka.consumer.group-id}", topics = "${kafka.topic.benefit-refund-request}")
+    @SendTo("benefit.refund.response")
+    public UserBenefitMessage benefitPaymentConsume(@Payload UserBenefitMessage message) {
+        UserBenefitMessage userBenefitMessage = userToBookingConsumerService.benefitPayment(message);
         return userBenefitMessage;
     }
 }

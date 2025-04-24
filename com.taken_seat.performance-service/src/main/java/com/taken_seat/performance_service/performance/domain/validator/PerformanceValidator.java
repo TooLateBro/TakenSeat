@@ -8,25 +8,33 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.common_service.exception.customException.PerformanceException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
-import com.taken_seat.performance_service.performance.application.dto.request.CreatePerformanceScheduleDto;
-import com.taken_seat.performance_service.performance.application.dto.request.UpdatePerformanceScheduleDto;
-import com.taken_seat.performance_service.performance.application.dto.request.UpdateRequestDto;
+import com.taken_seat.performance_service.performance.application.dto.command.CreatePerformanceScheduleCommand;
+import com.taken_seat.performance_service.performance.application.dto.command.UpdatePerformanceCommand;
+import com.taken_seat.performance_service.performance.application.dto.command.UpdatePerformanceScheduleCommand;
 
 public class PerformanceValidator {
 
-	public static void validateDuplicateSchedules(List<CreatePerformanceScheduleDto> schedules) {
+	public static void validateAuthorized(AuthenticatedUser authenticatedUser) {
+		String role = authenticatedUser.getRole();
+		if (!(role.equals("ADMIN") || role.equals("MANAGER") || role.equals("PRODUCER"))) {
+			throw new PerformanceException(ResponseCode.ACCESS_DENIED_EXCEPTION, "접근 권한이 없습니다.");
+		}
+	}
+
+	public static void validateDuplicateSchedules(List<CreatePerformanceScheduleCommand> schedules) {
 
 		validateDuplicateScheduleLogic(schedules.stream()
-			.map(dto -> new ScheduleDtoWrapper(dto.getPerformanceHallId(), dto.getStartAt(), dto.getEndAt()))
+			.map(dto -> new ScheduleDtoWrapper(dto.performanceHallId(), dto.startAt(), dto.endAt()))
 			.toList());
 	}
 
-	public static void validateDuplicateSchedulesForUpdate(List<UpdatePerformanceScheduleDto> schedules) {
+	public static void validateDuplicateSchedulesForUpdate(List<UpdatePerformanceScheduleCommand> schedules) {
 
 		validateDuplicateScheduleLogic(schedules.stream()
-			.map(dto -> new ScheduleDtoWrapper(dto.getPerformanceHallId(), dto.getStartAt(), dto.getEndAt()))
+			.map(dto -> new ScheduleDtoWrapper(dto.performanceHallId(), dto.startAt(), dto.endAt()))
 			.toList());
 	}
 
@@ -57,23 +65,23 @@ public class PerformanceValidator {
 	private record ScheduleDtoWrapper(UUID hallId, LocalDateTime startAt, LocalDateTime endAt) {
 	}
 
-	public static void validatePerformanceData(UpdateRequestDto request) {
+	public static void validatePerformanceData(UpdatePerformanceCommand command) {
 
-		if (request.getStartAt() != null && request.getEndAt() != null) {
-			if (!request.getStartAt().isBefore(request.getEndAt())) {
+		if (command.startAt() != null && command.endAt() != null) {
+			if (!command.startAt().isBefore(command.endAt())) {
 				throw new PerformanceException(ResponseCode.PERFORMANCE_VALIDATION_EXCEPTION, "공연 시작일은 종료일보다 빨라야 합니다.");
 			}
 		}
 	}
 
-	public static void validateScheduleDataForUpdate(UpdatePerformanceScheduleDto schedule) {
+	public static void validateScheduleDataForUpdate(UpdatePerformanceScheduleCommand schedule) {
 
-		if (schedule.getPerformanceHallId() == null) {
+		if (schedule.performanceHallId() == null) {
 			throw new PerformanceException(ResponseCode.PERFORMANCE_VALIDATION_EXCEPTION, "공연장 ID는 필수입니다.");
 		}
 
-		if (schedule.getStartAt() != null && schedule.getEndAt() != null) {
-			if (!schedule.getStartAt().isBefore(schedule.getEndAt())) {
+		if (schedule.startAt() != null && schedule.endAt() != null) {
+			if (!schedule.startAt().isBefore(schedule.endAt())) {
 				throw new PerformanceException(ResponseCode.PERFORMANCE_VALIDATION_EXCEPTION, "공연 시작일은 종료일보다 빨라야 합니다.");
 			}
 		}

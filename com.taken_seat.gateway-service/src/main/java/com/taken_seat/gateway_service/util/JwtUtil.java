@@ -7,7 +7,6 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.web.server.ServerWebExchange;
 
 import java.security.Key;
 import java.util.Base64;
@@ -26,12 +25,11 @@ public class JwtUtil {
         key = Keys.hmacShaKeyFor(bytes);
     }
 
-    public String extractToken(ServerWebExchange exchange) {
-        String header = exchange.getRequest().getHeaders().getFirst("Authorization");
-        if (header == null || !header.startsWith("Bearer ")) {
+    public String extractToken(String token) {
+        if (token == null || !token.startsWith("Bearer ")) {
             return null;
         }
-        return header.substring(7);
+        return token.substring(7);
     }
 
     public boolean validateToken(String token) {
