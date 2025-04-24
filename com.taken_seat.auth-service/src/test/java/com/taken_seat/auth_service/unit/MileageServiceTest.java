@@ -1,5 +1,6 @@
 package com.taken_seat.auth_service.unit;
 
+import com.taken_seat.auth_service.application.dto.PageResponseDto;
 import com.taken_seat.auth_service.application.dto.mileage.UserMileageResponseDto;
 import com.taken_seat.auth_service.application.service.mileage.MileageServiceImpl;
 import com.taken_seat.auth_service.domain.entity.mileage.Mileage;
@@ -19,11 +20,15 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.*;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -54,6 +59,9 @@ public class MileageServiceTest {
         user = User.create(
                 "testuser1","test@test.com","010-1111-1111"
                 ,"testPassword1!", Role.ADMIN
+        );
+        mileage = Mileage.create(
+                user, 30000
         );
     }
 
@@ -111,5 +119,37 @@ public class MileageServiceTest {
         AuthException exception = assertThrows(AuthException.class, () -> mileageService.getMileageUser(mileageId));
 
         assertEquals(ResponseCode.MILEAGE_NOT_FOUND, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("마일리지 히스토리 조회 성공 테스트")
+    public void getMileageHistoryUserSuccess() {
+        userId = UUID.randomUUID();
+        int page = 0;
+        int size = 10;
+
+        List<Mileage> mileages = List.of(mileage);
+        Page<Mileage> mileagePage = new PageImpl<>(mileages);
+
+        when(userRepository.findByIdAndDeletedAtIsNull(userId)).thenReturn(Optional.of(user));
+        when(mileageRepository.findMileageByUserIdAndDeletedAtIsNull(eq(user.getId()), any(Pageable.class)))
+                .thenReturn(mileagePage);
+
+        PageResponseDto<UserMileageResponseDto> result = mileageService.getMileageHistoryUser(userId, page, size);
+
+        assertNotNull(result);
+    }
+    @Test
+    @DisplayName("마일리지 히스토리 조회 실패 테스트 - 유저 없음")
+    public void getMileageHistoryUserFail_UserNotFound() {
+        userId = UUID.randomUUID();
+        int page = 0;
+        int size = 10;
+
+        when(userRepository.findByIdAndDeletedAtIsNull(userId)).thenReturn(Optional.empty());
+
+        AuthException exception = assertThrows(AuthException.class, () -> mileageService.getMileageHistoryUser(userId, page, size));
+
+        assertEquals(ResponseCode.USER_NOT_FOUND, exception.getErrorCode());
     }
 }
