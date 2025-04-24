@@ -11,6 +11,7 @@ import com.taken_seat.auth_service.domain.vo.Role;
 import com.taken_seat.auth_service.infrastructure.persistence.user.UserQueryRepositoryImpl;
 import com.taken_seat.auth_service.presentation.dto.user.UserUpdateRequestDto;
 import com.taken_seat.common_service.exception.customException.AuthException;
+import com.taken_seat.common_service.exception.customException.CouponException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -50,6 +51,7 @@ public class UserServiceTest {
     private UserCoupon userCoupon;
 
     private UUID userId;
+    private UUID couponId;
 
 
     @BeforeEach
@@ -226,5 +228,29 @@ public class UserServiceTest {
 
         assertEquals(ResponseCode.USER_NOT_FOUND, exception.getErrorCode());
     }
+    @Test
+    @DisplayName("쿠폰 발급 성공 테스트")
+    public void getCouponSuccess() {
+        couponId = UUID.randomUUID();
 
+        UserCoupon mockCoupon = Mockito.mock(UserCoupon.class);
+        when(userCouponRepository.findByCouponId(couponId)).thenReturn(Optional.of(mockCoupon));
+
+        String result = userService.getCoupon(couponId);
+
+        assertTrue(result.contains("축하합니다!"));
+        assertTrue(result.contains("수령에 성공했습니다!"));
+    }
+    @Test
+    @DisplayName("쿠폰 발급 실패 테스트 - 쿠폰 발급 실패")
+    public void getCouponFail_NoCouponFound() {
+        couponId = UUID.randomUUID();
+
+        when(userCouponRepository.findByCouponId(couponId)).thenReturn(Optional.empty());
+
+        CouponException exception = assertThrows(CouponException.class, ()->
+                userService.getCoupon(couponId));
+
+        assertEquals(ResponseCode.COUPON_QUANTITY_EXCEPTION, exception.getErrorCode());
+    }
 }
