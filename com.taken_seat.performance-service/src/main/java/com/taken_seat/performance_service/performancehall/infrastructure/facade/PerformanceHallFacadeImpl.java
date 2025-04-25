@@ -24,13 +24,6 @@ public class PerformanceHallFacadeImpl implements PerformanceHallFacade {
 	}
 
 	@Override
-	public boolean isSoldOut(UUID performanceHallId) {
-		PerformanceHall performanceHall = performanceHallExistenceValidator.validateByPerformanceHallId(
-			performanceHallId);
-		return performanceHall.isSoldOut();
-	}
-
-	@Override
 	public List<SeatTemplateInfo> getSeatTemplate(UUID performanceHallId) {
 		PerformanceHall performanceHall = performanceHallExistenceValidator.validateByPerformanceHallId(
 			performanceHallId

@@ -10,7 +10,5 @@ public interface PerformanceHallFacade {
 
 	PerformanceHall getByPerformanceHallId(UUID performanceHallId);
 
-	boolean isSoldOut(UUID performanceHallId);
-
 	List<SeatTemplateInfo> getSeatTemplate(UUID performanceHallId);
 }

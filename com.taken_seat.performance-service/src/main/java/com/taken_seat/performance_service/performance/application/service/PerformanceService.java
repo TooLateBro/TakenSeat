@@ -129,7 +129,7 @@ public class PerformanceService {
 
 		Performance performance = performanceExistenceValidator.validateByPerformanceId(id);
 
-		PerformanceUpdateHelper.updateStatus(performance, authenticatedUser, performanceHallFacade);
+		PerformanceUpdateHelper.updateStatus(performance, authenticatedUser);
 
 		performanceRepository.save(performance);
 	}
