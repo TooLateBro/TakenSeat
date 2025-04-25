@@ -1,5 +1,6 @@
 package com.taken_seat.performance_service.performance.application.dto.mapper;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -126,5 +127,18 @@ public class PerformanceResponseMapper {
 				))
 				.collect(Collectors.toList())
 		);
+	}
+
+	public static List<ScheduleSeatResponseDto> toSeatLayout(List<ScheduleSeat> seats) {
+		return seats.stream()
+			.map(seat -> new ScheduleSeatResponseDto(
+				seat.getId(),
+				seat.getRowNumber(),
+				seat.getSeatNumber(),
+				seat.getSeatType(),
+				seat.getSeatStatus(),
+				seat.getPrice()
+			))
+			.collect(Collectors.toList());
 	}
 }
