@@ -5,12 +5,10 @@ import com.taken_seat.auth_service.application.dto.user.v1.UserInfoResponseDtoV1
 import com.taken_seat.auth_service.application.service.user.v1.UserServiceV1;
 import com.taken_seat.auth_service.presentation.docs.UserControllerDocs;
 import com.taken_seat.auth_service.presentation.dto.user.UserUpdateRequestDto;
-import com.taken_seat.common_service.aop.vo.Role;
+import com.taken_seat.common_service.aop.annotation.RoleCheck;
 import com.taken_seat.common_service.dto.ApiResponseData;
 import com.taken_seat.common_service.dto.AuthenticatedUser;
-import com.taken_seat.common_service.exception.enums.ResponseCode;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -51,19 +49,13 @@ public class UserControllerV1 implements UserControllerDocs {
     }
 
     @GetMapping("/search")
+    @RoleCheck()
     public ResponseEntity<ApiResponseData<PageResponseDto<UserInfoResponseDtoV1>>> searchUser(@RequestParam(required = false) String username,
                                                                                               @RequestParam(required = false) String role,
                                                                                               @RequestParam(defaultValue = "0") int page,
                                                                                               @RequestParam(defaultValue = "10") int size,
                                                                                               AuthenticatedUser authenticatedUser) {
 
-        Role user_role = Role.valueOf(authenticatedUser.getRole());
-
-        if (!user_role.isAdmin() || user_role.isManager()){
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(ApiResponseData.failure(ResponseCode.ACCESS_DENIED_EXCEPTION.getCode()
-                            ,"접근 권한이 없습니다."));
-        }
         PageResponseDto<UserInfoResponseDtoV1> userInfo = userServiceV1.searchUser(username, role, page, size);
         return ResponseEntity.ok(ApiResponseData.success(userInfo));
     }
