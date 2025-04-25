@@ -8,7 +8,6 @@ import java.lang.annotation.Target;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -28,32 +27,6 @@ public @interface PaymentSwaggerDocs {
 		@ApiResponse(responseCode = "403", description = "접근 권한이 없음"),
 		@ApiResponse(responseCode = "500", description = "서버 오류")
 	})
-	@Parameters({
-		@Parameter(
-			name = "X-User-Id",
-			description = "사용자 고유 ID(UUID 형식)",
-			required = true,
-			in = ParameterIn.HEADER,
-			schema = @Schema(type = "string", format = "uuid"),
-			example = "550e8400-e29b-41d4-a716-446655440000"
-		),
-		@Parameter(
-			name = "X-Email",
-			description = "사용자 이메일",
-			required = true,
-			in = ParameterIn.HEADER,
-			schema = @Schema(type = "string", format = "email"),
-			example = "user@example.com"
-		),
-		@Parameter(
-			name = "X-Role",
-			description = "사용자 역할 (ex: ADMIN, USER)",
-			required = true,
-			in = ParameterIn.HEADER,
-			schema = @Schema(type = "string"),
-			example = "ADMIN"
-		)
-	})
 	@interface RegisterPayment {
 	}
 
@@ -65,16 +38,14 @@ public @interface PaymentSwaggerDocs {
 		@ApiResponse(responseCode = "404", description = "결제 정보를 찾을 수 없음"),
 		@ApiResponse(responseCode = "500", description = "서버 오류")
 	})
-	@Parameters({
-		@Parameter(
-			name = "X-User-Id",
-			description = "사용자 고유 ID(UUID 형식)",
-			required = true,
-			in = ParameterIn.HEADER,
-			schema = @Schema(type = "string", format = "uuid"),
-			example = "550e8400-e29b-41d4-a716-446655440000"
-		)
-	})
+	@Parameter(
+		name = "id",
+		description = "조회할 결제 ID(UUID 형식)",
+		required = true,
+		in = ParameterIn.PATH,
+		schema = @Schema(type = "string", format = "uuid"),
+		example = "123e4567-e89b-12d3-a456-426614174000"
+	)
 	@interface GetPaymentDetail {
 	}
 
@@ -140,40 +111,14 @@ public @interface PaymentSwaggerDocs {
 		@ApiResponse(responseCode = "404", description = "결제 정보를 찾을 수 없음"),
 		@ApiResponse(responseCode = "500", description = "서버 오류")
 	})
-	@Parameters({
-		@Parameter(
-			name = "id",
-			description = "수정할 결제 ID(UUID 형식)",
-			required = true,
-			in = ParameterIn.PATH,
-			schema = @Schema(type = "string", format = "uuid"),
-			example = "123e4567-e89b-12d3-a456-426614174000"
-		),
-		@Parameter(
-			name = "X-User-Id",
-			description = "사용자 고유 ID(UUID 형식)",
-			required = true,
-			in = ParameterIn.HEADER,
-			schema = @Schema(type = "string", format = "uuid"),
-			example = "550e8400-e29b-41d4-a716-446655440000"
-		),
-		@Parameter(
-			name = "X-Email",
-			description = "사용자 이메일",
-			required = true,
-			in = ParameterIn.HEADER,
-			schema = @Schema(type = "string", format = "email"),
-			example = "user@example.com"
-		),
-		@Parameter(
-			name = "X-Role",
-			description = "사용자 역할 (ex: ADMIN, USER)",
-			required = true,
-			in = ParameterIn.HEADER,
-			schema = @Schema(type = "string"),
-			example = "ADMIN"
-		)
-	})
+	@Parameter(
+		name = "id",
+		description = "수정할 결제 ID(UUID 형식)",
+		required = true,
+		in = ParameterIn.PATH,
+		schema = @Schema(type = "string", format = "uuid"),
+		example = "123e4567-e89b-12d3-a456-426614174000"
+	)
 	@interface UpdatePayment {
 	}
 
@@ -186,40 +131,14 @@ public @interface PaymentSwaggerDocs {
 		@ApiResponse(responseCode = "404", description = "결제 정보를 찾을 수 없음"),
 		@ApiResponse(responseCode = "500", description = "서버 오류")
 	})
-	@Parameters({
-		@Parameter(
-			name = "id",
-			description = "삭제할 결제 ID(UUID 형식)",
-			required = true,
-			in = ParameterIn.PATH,
-			schema = @Schema(type = "string", format = "uuid"),
-			example = "123e4567-e89b-12d3-a456-426614174000"
-		),
-		@Parameter(
-			name = "X-User-Id",
-			description = "사용자 고유 ID(UUID 형식)",
-			required = true,
-			in = ParameterIn.HEADER,
-			schema = @Schema(type = "string", format = "uuid"),
-			example = "550e8400-e29b-41d4-a716-446655440000"
-		),
-		@Parameter(
-			name = "X-Email",
-			description = "사용자 이메일",
-			required = true,
-			in = ParameterIn.HEADER,
-			schema = @Schema(type = "string", format = "email"),
-			example = "user@example.com"
-		),
-		@Parameter(
-			name = "X-Role",
-			description = "사용자 역할 (ex: ADMIN, USER)",
-			required = true,
-			in = ParameterIn.HEADER,
-			schema = @Schema(type = "string"),
-			example = "ADMIN"
-		)
-	})
+	@Parameter(
+		name = "id",
+		description = "삭제할 결제 ID(UUID 형식)",
+		required = true,
+		in = ParameterIn.PATH,
+		schema = @Schema(type = "string", format = "uuid"),
+		example = "123e4567-e89b-12d3-a456-426614174000"
+	)
 	@interface DeletePayment {
 	}
 }
