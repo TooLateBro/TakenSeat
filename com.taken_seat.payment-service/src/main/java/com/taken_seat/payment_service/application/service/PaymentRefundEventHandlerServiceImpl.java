@@ -7,7 +7,7 @@ import com.taken_seat.common_service.exception.customException.PaymentException;
 import com.taken_seat.common_service.exception.customException.PaymentHistoryException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.common_service.message.PaymentRefundMessage;
-import com.taken_seat.payment_service.application.kafka.producer.PaymentRefundResultProducer;
+import com.taken_seat.payment_service.application.kafka.producer.PaymentRefundResponseProducer;
 import com.taken_seat.payment_service.domain.model.Payment;
 import com.taken_seat.payment_service.domain.model.PaymentHistory;
 import com.taken_seat.payment_service.domain.repository.PaymentHistoryRepository;
@@ -25,7 +25,7 @@ public class PaymentRefundEventHandlerServiceImpl implements PaymentRefundEventH
 	private final PaymentRepository paymentRepository;
 	private final PaymentHistoryRepository paymentHistoryRepository;
 
-	private final PaymentRefundResultProducer paymentRefundResultProducer;
+	private final PaymentRefundResponseProducer paymentRefundResponseProducer;
 
 	@Override
 	public void processPaymentRefund(PaymentRefundMessage message) {
@@ -42,7 +42,7 @@ public class PaymentRefundEventHandlerServiceImpl implements PaymentRefundEventH
 				.type(PaymentRefundMessage.MessageType.RESULT)
 				.build();
 
-			paymentRefundResultProducer.sendPaymentRefundResult(paymentRefundMessage);
+			paymentRefundResponseProducer.sendPaymentRefundResult(paymentRefundMessage);
 
 			log.info("[Payment] 환불 실패 메시지 전송 - 성공 - bookingId={}", message.getBookingId());
 			return;
@@ -67,7 +67,7 @@ public class PaymentRefundEventHandlerServiceImpl implements PaymentRefundEventH
 			.type(PaymentRefundMessage.MessageType.RESULT)
 			.build();
 
-		paymentRefundResultProducer.sendPaymentRefundResult(paymentRefundMessage);
+		paymentRefundResponseProducer.sendPaymentRefundResult(paymentRefundMessage);
 		log.info("[Payment] 환불 성공 메시지 전송 - 성공 - bookingId={}", message.getBookingId());
 	}
 

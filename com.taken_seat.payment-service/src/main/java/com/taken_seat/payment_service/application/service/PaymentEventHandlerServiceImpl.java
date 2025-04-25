@@ -4,7 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.taken_seat.common_service.message.PaymentMessage;
-import com.taken_seat.payment_service.application.kafka.producer.PaymentResultProducer;
+import com.taken_seat.payment_service.application.kafka.producer.PaymentResponseProducer;
 import com.taken_seat.payment_service.domain.model.Payment;
 import com.taken_seat.payment_service.domain.model.PaymentHistory;
 import com.taken_seat.payment_service.domain.repository.PaymentHistoryRepository;
@@ -22,7 +22,7 @@ public class PaymentEventHandlerServiceImpl implements PaymentEventHandlerServic
 	private final PaymentRepository paymentRepository;
 	private final PaymentHistoryRepository paymentHistoryRepository;
 
-	private final PaymentResultProducer paymentResultProducer;
+	private final PaymentResponseProducer paymentResponseProducer;
 
 	@Override
 	public void processPayment(PaymentMessage message) {
@@ -39,7 +39,7 @@ public class PaymentEventHandlerServiceImpl implements PaymentEventHandlerServic
 				.type(PaymentMessage.MessageType.RESULT)
 				.build();
 
-			paymentResultProducer.sendPaymentResult(paymentResultMessage);
+			paymentResponseProducer.sendPaymentResult(paymentResultMessage);
 
 			log.info("[Payment] 결제 실패 메시지 전송 - 성공 - bookingId={}", message.getBookingId());
 			return;
@@ -67,7 +67,7 @@ public class PaymentEventHandlerServiceImpl implements PaymentEventHandlerServic
 			.type(PaymentMessage.MessageType.RESULT)
 			.build();
 
-		paymentResultProducer.sendPaymentResult(paymentResultMessage);
+		paymentResponseProducer.sendPaymentResult(paymentResultMessage);
 		log.info("[Payment] 결제 성공 메시지 전송 - 성공 - bookingId={}, paymentId={}", message.getBookingId(), payment.getId());
 	}
 
