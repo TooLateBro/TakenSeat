@@ -59,9 +59,9 @@ public class Payment extends BaseTimeEntity {
 
 	public static Payment register(PaymentRegisterReqDto paymentRegisterReqDto, AuthenticatedUser authenticatedUser) {
 		Payment payment = Payment.builder()
-			.bookingId(paymentRegisterReqDto.getBookingId())
+			.bookingId(paymentRegisterReqDto.bookingId())
 			.userId(authenticatedUser.getUserId())
-			.price(paymentRegisterReqDto.getPrice())
+			.price(paymentRegisterReqDto.price())
 			.paymentStatus(PaymentStatus.COMPLETED)
 			.build();
 

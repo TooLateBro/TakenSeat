@@ -56,8 +56,9 @@ public class PaymentServiceImpl implements PaymentService {
 		AuthenticatedUser authenticatedUser) {
 		// MASTER 계정이 직접 등록하는 API - 결제 API 호출 없이 수동 등록
 
-		if (paymentRegisterReqDto.getPrice() <= 0) {
-			throw new IllegalArgumentException("결제 금액은 1원 미만일 수 없습니다. 요청 금액 : " + paymentRegisterReqDto.getPrice());
+		if (paymentRegisterReqDto.price() <= 0) {
+			throw new PaymentException(ResponseCode.ILLEGAL_ARGUMENT,
+				"결제 금액은 1원 미만일 수 없습니다. 요청 금액 : " + paymentRegisterReqDto.price());
 		}
 
 		Payment payment = Payment.register(paymentRegisterReqDto, authenticatedUser);
@@ -147,8 +148,9 @@ public class PaymentServiceImpl implements PaymentService {
 	public PaymentDetailResDto updatePayment(UUID id, PaymentUpdateReqDto paymentUpdateReqDto,
 		AuthenticatedUser authenticatedUser) {
 
-		if (paymentUpdateReqDto.getPrice() <= 0) {
-			throw new IllegalArgumentException("결제 금액은 1원 미만일 수 없습니다. 요청 금액 : " + paymentUpdateReqDto.getPrice());
+		if (paymentUpdateReqDto.price() <= 0) {
+			throw new PaymentException(ResponseCode.ILLEGAL_ARGUMENT,
+				"결제 금액은 1원 미만일 수 없습니다. 요청 금액 : " + paymentUpdateReqDto.price());
 		}
 
 		Payment payment = paymentRepository.findByIdAndDeletedAtIsNull(id)
@@ -160,7 +162,7 @@ public class PaymentServiceImpl implements PaymentService {
 			.orElseThrow(() ->
 				new PaymentHistoryException(ResponseCode.PAYMENT_HISTORY_NOT_FOUND_EXCEPTION));
 
-		payment.update(paymentUpdateReqDto.getPrice(), paymentUpdateReqDto.getPaymentStatus(),
+		payment.update(paymentUpdateReqDto.price(), paymentUpdateReqDto.paymentStatus(),
 			authenticatedUser);
 		paymentHistory.updateHistory(payment);
 		return PaymentDetailResDto.toResponse(payment);
