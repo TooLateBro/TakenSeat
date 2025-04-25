@@ -46,6 +46,9 @@ dependencies {
     implementation project(':com.taken_seat.common-service')
     annotationProcessor project(':com.taken_seat.common-service')
 
+    // Swagger
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0'
+
     implementation 'me.paulschwarz:spring-dotenv:4.0.0'
 
     // jackson

@@ -57,7 +57,8 @@ public class PaymentServiceImpl implements PaymentService {
 		// MASTER 계정이 직접 등록하는 API - 결제 API 호출 없이 수동 등록
 
 		if (paymentRegisterReqDto.price() <= 0) {
-			throw new IllegalArgumentException("결제 금액은 1원 미만일 수 없습니다. 요청 금액 : " + paymentRegisterReqDto.price());
+			throw new PaymentException(ResponseCode.ILLEGAL_ARGUMENT,
+				"결제 금액은 1원 미만일 수 없습니다. 요청 금액 : " + paymentRegisterReqDto.price());
 		}
 
 		Payment payment = Payment.register(paymentRegisterReqDto, authenticatedUser);
@@ -148,7 +149,8 @@ public class PaymentServiceImpl implements PaymentService {
 		AuthenticatedUser authenticatedUser) {
 
 		if (paymentUpdateReqDto.price() <= 0) {
-			throw new IllegalArgumentException("결제 금액은 1원 미만일 수 없습니다. 요청 금액 : " + paymentUpdateReqDto.price());
+			throw new PaymentException(ResponseCode.ILLEGAL_ARGUMENT,
+				"결제 금액은 1원 미만일 수 없습니다. 요청 금액 : " + paymentUpdateReqDto.price());
 		}
 
 		Payment payment = paymentRepository.findByIdAndDeletedAtIsNull(id)

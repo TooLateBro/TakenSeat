@@ -23,19 +23,23 @@ import com.taken_seat.payment_service.application.dto.request.PaymentUpdateReqDt
 import com.taken_seat.payment_service.application.dto.response.PagePaymentResponseDto;
 import com.taken_seat.payment_service.application.dto.response.PaymentDetailResDto;
 import com.taken_seat.payment_service.application.service.PaymentService;
+import com.taken_seat.payment_service.infrastructure.swagger.PaymentSwaggerDocs;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/payments")
+@Tag(name = "Payment API", description = "결제 관련 API")
 public class PaymentController {
 
 	private final PaymentService paymentService;
 
 	@PostMapping
 	@RoleCheck(allowedRoles = Role.ADMIN)
+	@PaymentSwaggerDocs.RegisterPayment
 	public ResponseEntity<ApiResponseData<PaymentDetailResDto>> registerPayment(
 		@Valid @RequestBody PaymentRegisterReqDto paymentRegisterReqDto,
 		AuthenticatedUser authenticatedUser) {
@@ -46,6 +50,7 @@ public class PaymentController {
 	}
 
 	@GetMapping("/{id}")
+	@PaymentSwaggerDocs.GetPaymentDetail
 	public ResponseEntity<ApiResponseData<PaymentDetailResDto>> getPaymentDetail(@PathVariable("id") UUID id) {
 		return ResponseEntity.status(HttpStatus.OK)
 			.body(
@@ -53,6 +58,7 @@ public class PaymentController {
 	}
 
 	@GetMapping("/search")
+	@PaymentSwaggerDocs.SearchPayment
 	public ResponseEntity<ApiResponseData<PagePaymentResponseDto>> searchPayment(
 		@RequestParam(required = false) String q,
 		@RequestParam(required = false) String category,
@@ -67,6 +73,7 @@ public class PaymentController {
 
 	@PatchMapping("/{id}")
 	@RoleCheck(allowedRoles = Role.ADMIN)
+	@PaymentSwaggerDocs.UpdatePayment
 	public ResponseEntity<ApiResponseData<PaymentDetailResDto>> updatePayment(@PathVariable("id") UUID id,
 		@Valid @RequestBody PaymentUpdateReqDto paymentUpdateReqDto,
 		AuthenticatedUser authenticatedUser) {
@@ -79,6 +86,7 @@ public class PaymentController {
 
 	@DeleteMapping("/{id}")
 	@RoleCheck(allowedRoles = Role.ADMIN)
+	@PaymentSwaggerDocs.DeletePayment
 	public ResponseEntity<ApiResponseData<String>> deletePayment(@PathVariable("id") UUID id,
 		AuthenticatedUser authenticatedUser) {
 		paymentService.deletePayment(id, authenticatedUser);
