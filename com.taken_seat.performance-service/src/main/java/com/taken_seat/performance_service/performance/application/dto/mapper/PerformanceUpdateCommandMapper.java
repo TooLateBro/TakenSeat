@@ -5,10 +5,10 @@ import org.mapstruct.ReportingPolicy;
 
 import com.taken_seat.performance_service.performance.application.dto.command.UpdatePerformanceCommand;
 import com.taken_seat.performance_service.performance.application.dto.command.UpdatePerformanceScheduleCommand;
-import com.taken_seat.performance_service.performance.application.dto.command.UpdateSeatPriceCommand;
+import com.taken_seat.performance_service.performance.application.dto.command.UpdateScheduleSeatCommand;
 import com.taken_seat.performance_service.performance.presentation.dto.request.UpdatePerformanceScheduleDto;
 import com.taken_seat.performance_service.performance.presentation.dto.request.UpdateRequestDto;
-import com.taken_seat.performance_service.performance.presentation.dto.request.UpdateSeatPriceDto;
+import com.taken_seat.performance_service.performance.presentation.dto.request.UpdateScheduleSeatDto;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface PerformanceUpdateCommandMapper {
@@ -17,5 +17,5 @@ public interface PerformanceUpdateCommandMapper {
 
 	UpdatePerformanceScheduleCommand toCommand(UpdatePerformanceScheduleDto updatePerformanceScheduleDto);
 
-	UpdateSeatPriceCommand toCommand(UpdateSeatPriceDto updateSeatPriceDto);
+	UpdateScheduleSeatCommand toCommand(UpdateScheduleSeatDto updateSeatPriceDto);
 }
