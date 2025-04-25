@@ -5,10 +5,10 @@ import com.taken_seat.auth_service.application.dto.auth.AuthSignUpResponseDto;
 import com.taken_seat.auth_service.application.service.auth.AuthServiceImpl;
 import com.taken_seat.auth_service.domain.entity.user.User;
 import com.taken_seat.auth_service.domain.repository.user.UserRepository;
-import com.taken_seat.auth_service.domain.vo.Role;
 import com.taken_seat.auth_service.infrastructure.util.JwtUtil;
 import com.taken_seat.auth_service.presentation.dto.auth.AuthLoginRequestDto;
 import com.taken_seat.auth_service.presentation.dto.auth.AuthSignUpRequestDto;
+import com.taken_seat.common_service.aop.vo.Role;
 import com.taken_seat.common_service.exception.customException.AuthException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
 import io.jsonwebtoken.Claims;
@@ -71,7 +71,7 @@ public class AuthServiceTest {
 
         user = User.create(
                 "testuser1","test@test.com","010-1111-1111"
-                ,"testPassword1!",Role.ADMIN
+                ,"testPassword1!", Role.ADMIN
         );
     }
 
