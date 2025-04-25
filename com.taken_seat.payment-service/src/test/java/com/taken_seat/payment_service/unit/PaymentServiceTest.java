@@ -125,7 +125,7 @@ public class PaymentServiceTest {
 		PaymentRegisterReqDto paymentRegisterReqDto = new PaymentRegisterReqDto(registerTestPaymentId, 0);
 
 		// When & Then
-		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+		PaymentException exception = assertThrows(PaymentException.class, () -> {
 			paymentService.registerPayment(paymentRegisterReqDto, authenticatedUser);
 		});
 
@@ -236,7 +236,7 @@ public class PaymentServiceTest {
 		UUID updatedBy = UUID.randomUUID();
 
 		// When & Then
-		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+		PaymentException exception = assertThrows(PaymentException.class, () -> {
 			paymentService.updatePayment(testPaymentId, reqDto, authenticatedUser);
 		});
 
