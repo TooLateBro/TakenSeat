@@ -1,7 +1,7 @@
-package com.taken_seat.auth_service.application.service.user;
+package com.taken_seat.auth_service.application.service.user.v1;
 
 import com.taken_seat.auth_service.application.dto.PageResponseDto;
-import com.taken_seat.auth_service.application.dto.user.UserInfoResponseDto;
+import com.taken_seat.auth_service.application.dto.user.v1.UserInfoResponseDtoV1;
 import com.taken_seat.auth_service.application.dto.user.UserUpdateDto;
 import com.taken_seat.auth_service.domain.entity.user.User;
 import com.taken_seat.auth_service.domain.entity.user.UserCoupon;
@@ -23,13 +23,13 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-public class UserServiceImpl implements UserService {
+public class UserServiceV1Impl implements UserServiceV1 {
     
     private final UserRepository userRepository;
     private final UserCouponRepository userCouponRepository;
     private final UserQueryRepository userQueryRepository;
 
-    public UserServiceImpl(UserRepository userRepository, UserCouponRepository userCouponRepository, UserQueryRepository userQueryRepository) {
+    public UserServiceV1Impl(UserRepository userRepository, UserCouponRepository userCouponRepository, UserQueryRepository userQueryRepository) {
         this.userRepository = userRepository;
         this.userCouponRepository = userCouponRepository;
         this.userQueryRepository = userQueryRepository;
@@ -37,30 +37,30 @@ public class UserServiceImpl implements UserService {
 
     @Transactional(readOnly = true)
     @Override
-    public UserInfoResponseDto getUser(UUID userId) {
+    public UserInfoResponseDtoV1 getUser(UUID userId) {
         User user = userRepository.findByIdAndDeletedAtIsNull(userId)
                 .orElseThrow(()-> new AuthException(ResponseCode.USER_NOT_FOUND));
 
-        return UserInfoResponseDto.of(user);
+        return UserInfoResponseDtoV1.of(user);
     }
 
     @Transactional(readOnly = true)
     @Override
     @Cacheable(cacheNames = "searchUser", key = "#userId + '-' + #page+'-'+#size")
-    public UserInfoResponseDto getUserDetails(UUID userId, int page, int size) {
+    public UserInfoResponseDtoV1 getUserDetails(UUID userId, int page, int size) {
         User user = userRepository.findByIdAndDeletedAtIsNull(userId)
                 .orElseThrow(()-> new AuthException(ResponseCode.USER_NOT_FOUND));
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<UserCoupon> userCoupons = userCouponRepository.findCouponIdByUserIdAndIsActiveTrue(userId, pageable);
 
-        return UserInfoResponseDto.detailsOf(user, userCoupons);
+        return UserInfoResponseDtoV1.detailsOf(user, userCoupons);
     }
 
     @Transactional(readOnly = true)
     @Override
     @Cacheable(cacheNames = "searchUser", key = "#username + '-' + #role + '-' + #page + '-' + #size")
-    public PageResponseDto<UserInfoResponseDto> searchUser(String username, String role, int page, int size) {
+    public PageResponseDto<UserInfoResponseDtoV1> searchUser(String username, String role, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<User> userInfos = userQueryRepository.findAllByDeletedAtIsNull(username, role, pageable);
 
@@ -68,10 +68,10 @@ public class UserServiceImpl implements UserService {
             throw new AuthException(ResponseCode.USER_NOT_FOUND);
         }
 
-        Page<UserInfoResponseDto> userInfoPage = userInfos.map(user -> {
+        Page<UserInfoResponseDtoV1> userInfoPage = userInfos.map(user -> {
             List<UserCoupon> coupons = user.getUserCoupons();
             Page<UserCoupon> userCouponsPage = new PageImpl<>(coupons, pageable, coupons.size());
-            return UserInfoResponseDto.detailsOf(user, userCouponsPage);
+            return UserInfoResponseDtoV1.detailsOf(user, userCouponsPage);
         });
 
         return PageResponseDto.of(userInfoPage);
@@ -81,7 +81,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @CachePut(cacheNames = "userCache", key = "#result.userId")
     @CacheEvict(cacheNames = "searchUser", allEntries = true)
-    public UserInfoResponseDto updateUser(UUID userId, UserUpdateDto dto) {
+    public UserInfoResponseDtoV1 updateUser(UUID userId, UserUpdateDto dto) {
         User user = userRepository.findByIdAndDeletedAtIsNull(userId)
                 .orElseThrow(()-> new AuthException(ResponseCode.USER_NOT_FOUND));
 
@@ -96,7 +96,7 @@ public class UserServiceImpl implements UserService {
                 dto.role(),
                 userId
         );
-        return UserInfoResponseDto.of(user);
+        return UserInfoResponseDtoV1.of(user);
     }
 
     @Transactional

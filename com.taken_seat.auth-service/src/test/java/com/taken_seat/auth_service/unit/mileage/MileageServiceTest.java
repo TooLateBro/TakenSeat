@@ -1,4 +1,4 @@
-package com.taken_seat.auth_service.unit;
+package com.taken_seat.auth_service.unit.mileage;
 
 import com.taken_seat.auth_service.application.dto.PageResponseDto;
 import com.taken_seat.auth_service.application.dto.mileage.UserMileageResponseDto;

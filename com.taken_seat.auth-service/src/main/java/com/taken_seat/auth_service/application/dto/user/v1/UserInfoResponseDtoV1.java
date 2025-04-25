@@ -1,4 +1,4 @@
-package com.taken_seat.auth_service.application.dto.user;
+package com.taken_seat.auth_service.application.dto.user.v1;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.taken_seat.auth_service.application.dto.PageResponseDto;
@@ -12,7 +12,7 @@ import java.util.Comparator;
 import java.util.UUID;
 
 @JsonInclude(JsonInclude.Include.NON_NULL) // null 필드 제외
-public record UserInfoResponseDto (
+public record UserInfoResponseDtoV1(
         UUID userId,
         String username,
         String email,
@@ -22,8 +22,8 @@ public record UserInfoResponseDto (
         PageResponseDto<UUID> userCoupons
 ){
 
-    public static UserInfoResponseDto of(User user) {
-        return new UserInfoResponseDto(
+    public static UserInfoResponseDtoV1 of(User user) {
+        return new UserInfoResponseDtoV1(
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),
@@ -34,7 +34,7 @@ public record UserInfoResponseDto (
         );
     }
 
-    public static UserInfoResponseDto detailsOf(User user, Page<UserCoupon> userCoupons) {
+    public static UserInfoResponseDtoV1 detailsOf(User user, Page<UserCoupon> userCoupons) {
         PageResponseDto<UUID> couponsPage = PageResponseDto.of(userCoupons.map(UserCoupon::getCouponId));
 
         Integer latestMileage = user.getMileages().stream()
@@ -42,7 +42,7 @@ public record UserInfoResponseDto (
                 .map(Mileage::getMileage)
                 .orElse(0);
 
-        return new UserInfoResponseDto(
+        return new UserInfoResponseDtoV1(
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),
