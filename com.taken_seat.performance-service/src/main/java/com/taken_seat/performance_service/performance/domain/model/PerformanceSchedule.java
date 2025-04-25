@@ -63,7 +63,7 @@ public class PerformanceSchedule extends BaseTimeEntity {
 
 	@OneToMany(mappedBy = "performanceSchedule", cascade = CascadeType.ALL, orphanRemoval = true)
 	@Builder.Default
-	private List<PerformanceSeatPrice> seatPrices = new ArrayList<>();
+	private List<ScheduleSeat> scheduleSeats = new ArrayList<>();
 
 	public void update(UpdatePerformanceScheduleCommand command) {
 
@@ -77,5 +77,9 @@ public class PerformanceSchedule extends BaseTimeEntity {
 
 	public void updateStatus(PerformanceScheduleStatus newStatus) {
 		this.status = newStatus;
+	}
+
+	public void addSeats(List<ScheduleSeat> seats) {
+		this.scheduleSeats.addAll(seats);
 	}
 }
