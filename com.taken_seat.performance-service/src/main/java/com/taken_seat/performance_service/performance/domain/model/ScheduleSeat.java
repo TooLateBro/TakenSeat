@@ -3,6 +3,8 @@ package com.taken_seat.performance_service.performance.domain.model;
 import java.util.UUID;
 
 import com.taken_seat.common_service.entity.BaseTimeEntity;
+import com.taken_seat.common_service.exception.customException.PerformanceException;
+import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.performance_service.performance.application.dto.command.UpdateScheduleSeatCommand;
 import com.taken_seat.performance_service.performancehall.application.dto.command.SeatTemplateInfo;
 import com.taken_seat.performance_service.performancehall.domain.model.SeatStatus;
@@ -79,5 +81,14 @@ public class ScheduleSeat extends BaseTimeEntity {
 		seatType = command.seatType();
 		seatStatus = command.seatStatus();
 		price = command.price();
+	}
+
+	public void updateStatus(SeatStatus newStatus) {
+		if (this.seatStatus == SeatStatus.DISABLED) {
+			throw new PerformanceException(ResponseCode.SEAT_STATUS_CHANGE_NOT_ALLOWED);
+		}
+		this.seatStatus = newStatus;
+
+		performanceSchedule.updateStatusBasedOnSeats();
 	}
 }
