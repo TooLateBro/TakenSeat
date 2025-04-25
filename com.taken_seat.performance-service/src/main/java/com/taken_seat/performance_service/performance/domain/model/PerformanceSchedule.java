@@ -6,7 +6,10 @@ import java.util.List;
 import java.util.UUID;
 
 import com.taken_seat.common_service.entity.BaseTimeEntity;
+import com.taken_seat.common_service.exception.customException.PerformanceException;
+import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.performance_service.performance.application.dto.command.UpdatePerformanceScheduleCommand;
+import com.taken_seat.performance_service.performancehall.domain.model.SeatStatus;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -80,5 +83,25 @@ public class PerformanceSchedule extends BaseTimeEntity {
 
 	public void addSeats(List<ScheduleSeat> seats) {
 		scheduleSeats.addAll(seats);
+	}
+
+	public ScheduleSeat getScheduleSeatById(UUID scheduleSeatId) {
+		return scheduleSeats.stream()
+			.filter(scheduleSeat -> scheduleSeat.getId().equals(scheduleSeatId))
+			.findFirst()
+			.orElseThrow(() -> new PerformanceException(ResponseCode.SEAT_NOT_FOUND_EXCEPTION));
+	}
+
+	public boolean isSoldOut() {
+		return scheduleSeats.stream()
+			.noneMatch(scheduleSeat -> scheduleSeat.getSeatStatus() == SeatStatus.AVAILABLE);
+	}
+
+	public void updateStatusBasedOnSeats() {
+		status = PerformanceScheduleStatus.status(saleStartAt, saleEndAt, isSoldOut());
+
+		if (performance != null) {
+			performance.updateStatusBasedOnSchedules();
+		}
 	}
 }
