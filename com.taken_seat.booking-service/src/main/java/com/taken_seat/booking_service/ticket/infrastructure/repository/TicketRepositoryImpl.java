@@ -34,7 +34,7 @@ public class TicketRepositoryImpl implements TicketRepository {
 	}
 
 	@Override
-	public Page<Ticket> findAllByUserId(Pageable pageable, UUID userId) {
-		return ticketJpaRepository.findAllByUserIdAndDeletedAtIsNull(pageable, userId);
+	public Page<Ticket> findAllByUserIdAndBookingId(Pageable pageable, UUID userId, UUID bookingId) {
+		return ticketJpaRepository.findAllByUserIdAndBookingIdAndDeletedAtIsNull(pageable, userId, bookingId);
 	}
 }

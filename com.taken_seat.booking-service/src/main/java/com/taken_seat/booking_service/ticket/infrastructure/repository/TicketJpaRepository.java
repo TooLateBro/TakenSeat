@@ -14,5 +14,5 @@ public interface TicketJpaRepository extends JpaRepository<Ticket, UUID> {
 
 	Optional<Ticket> findByBookingIdAndDeletedAtIsNull(UUID bookingId);
 
-	Page<Ticket> findAllByUserIdAndDeletedAtIsNull(Pageable pageable, UUID userId);
+	Page<Ticket> findAllByUserIdAndBookingIdAndDeletedAtIsNull(Pageable pageable, UUID userId, UUID bookingId);
 }

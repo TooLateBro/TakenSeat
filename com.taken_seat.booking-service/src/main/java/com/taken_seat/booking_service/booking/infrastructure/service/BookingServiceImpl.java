@@ -25,7 +25,6 @@ import com.taken_seat.booking_service.booking.application.dto.response.SeatLayou
 import com.taken_seat.booking_service.booking.application.service.BookingClientService;
 import com.taken_seat.booking_service.booking.application.service.BookingProducer;
 import com.taken_seat.booking_service.booking.application.service.BookingService;
-import com.taken_seat.booking_service.booking.application.service.RedisService;
 import com.taken_seat.booking_service.booking.application.service.RedissonService;
 import com.taken_seat.booking_service.booking.domain.BenefitUsageHistory;
 import com.taken_seat.booking_service.booking.domain.Booking;
@@ -34,6 +33,7 @@ import com.taken_seat.booking_service.booking.domain.repository.BenefitUsageHist
 import com.taken_seat.booking_service.booking.domain.repository.BookingAdminRepository;
 import com.taken_seat.booking_service.booking.domain.repository.BookingRepository;
 import com.taken_seat.booking_service.common.message.TicketRequestMessage;
+import com.taken_seat.booking_service.common.service.RedisService;
 import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.common_service.dto.request.BookingSeatClientRequestDto;
 import com.taken_seat.common_service.dto.response.BookingSeatClientResponseDto;
@@ -64,10 +64,6 @@ public class BookingServiceImpl implements BookingService {
 
 	@Override
 	@Transactional
-	@Caching(evict = {
-		@CacheEvict(value = "readBooking", key = "#result.bookingId"),
-		@CacheEvict(value = "adminReadBooking", key = "#result.bookingId")
-	})
 	public BookingCreateResponse createBooking(AuthenticatedUser authenticatedUser, BookingCreateRequest request) {
 
 		log.info("[Booking] 예약 생성 - 시도: | userId={}", authenticatedUser.getUserId());
@@ -115,8 +111,8 @@ public class BookingServiceImpl implements BookingService {
 
 		log.info("[Booking] 예약 생성 - 성공: | userId={}", authenticatedUser.getUserId());
 
-		redisService.evictAllCaches("readBookings", authenticatedUser.getUserId());
-		redisService.evictAllCaches("adminReadBookings", authenticatedUser.getUserId());
+		redisService.evictAllCaches("readBookings", authenticatedUser.getUserId().toString());
+		redisService.evictAllCaches("adminReadBookings", authenticatedUser.getUserId().toString());
 		return BookingCreateResponse.toDto(saved);
 	}
 
@@ -221,8 +217,8 @@ public class BookingServiceImpl implements BookingService {
 		booking.cancel(authenticatedUser.getUserId());
 		log.info("[Booking] 예약 취소 - 성공: | userId={}", authenticatedUser.getUserId());
 
-		redisService.evictAllCaches("readBookings", authenticatedUser.getUserId());
-		redisService.evictAllCaches("adminReadBookings", authenticatedUser.getUserId());
+		redisService.evictAllCaches("readBookings", authenticatedUser.getUserId().toString());
+		redisService.evictAllCaches("adminReadBookings", authenticatedUser.getUserId().toString());
 	}
 
 	@Override
@@ -250,8 +246,8 @@ public class BookingServiceImpl implements BookingService {
 		booking.delete(authenticatedUser.getUserId());
 		log.info("[Booking] 예약 삭제 - 성공: | userId={}", authenticatedUser.getUserId());
 
-		redisService.evictAllCaches("readBookings", authenticatedUser.getUserId());
-		redisService.evictAllCaches("adminReadBookings", authenticatedUser.getUserId());
+		redisService.evictAllCaches("readBookings", authenticatedUser.getUserId().toString());
+		redisService.evictAllCaches("adminReadBookings", authenticatedUser.getUserId().toString());
 	}
 
 	@Override
@@ -424,8 +420,8 @@ public class BookingServiceImpl implements BookingService {
 				message.getBookingId()
 			);
 
-			redisService.evictAllCaches("readBookings", message.getUserId());
-			redisService.evictAllCaches("adminReadBookings", message.getUserId());
+			redisService.evictAllCaches("readBookings", message.getUserId().toString());
+			redisService.evictAllCaches("adminReadBookings", message.getUserId().toString());
 		} else {
 			// 실패시 사용한 쿠폰, 마일리지 원복처리
 
@@ -528,8 +524,8 @@ public class BookingServiceImpl implements BookingService {
 				message.getBookingId()
 			);
 
-			redisService.evictAllCaches("readBookings", message.getUserId());
-			redisService.evictAllCaches("adminReadBookings", message.getUserId());
+			redisService.evictAllCaches("readBookings", message.getUserId().toString());
+			redisService.evictAllCaches("adminReadBookings", message.getUserId().toString());
 		} else {
 			log.warn(
 				"[Booking] 예매 쿠폰, 마일리지 적용 메시지 수신 - 실패: {} | userId={}, bookingId={}",
@@ -602,8 +598,8 @@ public class BookingServiceImpl implements BookingService {
 				message.getBookingId()
 			);
 
-			redisService.evictAllCaches("readBookings", message.getUserId());
-			redisService.evictAllCaches("adminReadBookings", message.getUserId());
+			redisService.evictAllCaches("readBookings", message.getUserId().toString());
+			redisService.evictAllCaches("adminReadBookings", message.getUserId().toString());
 		} else {
 			log.warn(
 				"[Booking] 예매 환불 메시지 수신 - 실패: {} | userId={}, bookingId={}",
@@ -652,8 +648,8 @@ public class BookingServiceImpl implements BookingService {
 
 			log.info("[Booking] 예매 만기 - 성공: | bookingId={}", bookingId);
 
-			redisService.evictAllCaches("readBookings", booking.getUserId());
-			redisService.evictAllCaches("adminReadBookings", booking.getUserId());
+			redisService.evictAllCaches("readBookings", booking.getUserId().toString());
+			redisService.evictAllCaches("adminReadBookings", booking.getUserId().toString());
 		}
 	}
 
