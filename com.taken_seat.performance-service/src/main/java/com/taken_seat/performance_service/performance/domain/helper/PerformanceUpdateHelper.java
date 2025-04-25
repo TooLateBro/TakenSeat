@@ -6,11 +6,10 @@ import java.util.UUID;
 
 import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.performance_service.performance.application.dto.command.UpdatePerformanceScheduleCommand;
-import com.taken_seat.performance_service.performance.application.dto.command.UpdateSeatPriceCommand;
+import com.taken_seat.performance_service.performance.application.dto.command.UpdateScheduleSeatCommand;
 import com.taken_seat.performance_service.performance.domain.model.Performance;
 import com.taken_seat.performance_service.performance.domain.model.PerformanceSchedule;
 import com.taken_seat.performance_service.performance.domain.model.PerformanceScheduleStatus;
-import com.taken_seat.performance_service.performance.domain.model.PerformanceSeatPrice;
 import com.taken_seat.performance_service.performance.domain.model.PerformanceStatus;
 import com.taken_seat.performance_service.performancehall.domain.facade.PerformanceHallFacade;
 
@@ -42,7 +41,7 @@ public class PerformanceUpdateHelper {
 		schedule.preUpdate(updatedBy);
 		schedule.update(command);
 
-		updateSeatPrices(schedule, command.seatPrices(), updatedBy);
+		updateScheduleSeats(schedule, command.seatPrices(), updatedBy);
 	}
 
 	private static PerformanceSchedule createNewSchedule(UpdatePerformanceScheduleCommand command,
@@ -60,33 +59,29 @@ public class PerformanceUpdateHelper {
 			.build();
 
 		schedule.prePersist(updatedBy);
-		updateSeatPrices(schedule, command.seatPrices(), updatedBy);
+		updateScheduleSeats(schedule, command.seatPrices(), updatedBy);
 		return schedule;
 	}
 
-	private static void updateSeatPrices(PerformanceSchedule schedule, List<UpdateSeatPriceCommand> seatPrices,
-		UUID updatedBy) {
+	private static void updateScheduleSeats(
+		PerformanceSchedule schedule,
+		List<UpdateScheduleSeatCommand> scheduleSeatCommands,
+		UUID updatedBy
+	) {
 
-		if (seatPrices == null)
+		if (scheduleSeatCommands == null)
 			return;
 
-		for (UpdateSeatPriceCommand seatPrice : seatPrices) {
-			Optional<PerformanceSeatPrice> matched = schedule.getSeatPrices().stream()
-				.filter(p -> p.getId().equals(seatPrice.performanceSeatPriceId()))
-				.findFirst();
-
-			if (matched.isPresent()) {
-				matched.get().update(seatPrice);
-			} else {
-				PerformanceSeatPrice newPrice = PerformanceSeatPrice.builder()
-					.performanceSchedule(schedule)
-					.seatType(seatPrice.seatType())
-					.price(seatPrice.price())
-					.build();
-				newPrice.prePersist(updatedBy);
-				schedule.getSeatPrices().add(newPrice);
-			}
+		for (UpdateScheduleSeatCommand command : scheduleSeatCommands) {
+			schedule.getScheduleSeats().stream()
+				.filter(scheduleSeat -> scheduleSeat.getId().equals(command.scheduleSeatId()))
+				.findFirst()
+				.ifPresent(scheduleSeat -> {
+					scheduleSeat.preUpdate(updatedBy);
+					scheduleSeat.update(command);
+				});
 		}
+
 	}
 
 	public static void updateStatus(Performance performance, AuthenticatedUser authenticatedUser,
