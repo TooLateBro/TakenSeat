@@ -1,7 +1,7 @@
 package com.taken_seat.auth_service.application.dto.auth;
 
 import com.taken_seat.auth_service.domain.entity.user.User;
-import com.taken_seat.auth_service.domain.vo.Role;
+import com.taken_seat.common_service.aop.vo.Role;
 
 import java.util.UUID;
 

@@ -1,7 +1,7 @@
 package com.taken_seat.auth_service.presentation.dto.user;
 
 import com.taken_seat.auth_service.application.dto.user.UserUpdateDto;
-import com.taken_seat.auth_service.domain.vo.Role;
+import com.taken_seat.common_service.aop.vo.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
