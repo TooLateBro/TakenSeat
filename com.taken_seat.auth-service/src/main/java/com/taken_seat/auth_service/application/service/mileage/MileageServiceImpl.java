@@ -40,7 +40,10 @@ public class MileageServiceImpl implements MileageService {
 
     @Transactional
     @Override
-    @CacheEvict(cacheNames = "searchMileage", allEntries = true)
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "searchUser", allEntries = true),
+            @CacheEvict(cacheNames = "searchMileage", allEntries = true)
+    })
     public UserMileageResponseDto createMileageUser(UUID userId, UserMileageDto dto) {
         User user = userRepository.findByIdAndDeletedAtIsNull(userId)
                 .orElseThrow(()-> new AuthException(ResponseCode.USER_NOT_FOUND));
