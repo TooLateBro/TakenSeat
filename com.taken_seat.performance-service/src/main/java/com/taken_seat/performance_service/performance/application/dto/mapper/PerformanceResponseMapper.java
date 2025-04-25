@@ -113,10 +113,13 @@ public class PerformanceResponseMapper {
 					schedule.getSaleStartAt(),
 					schedule.getSaleEndAt(),
 					schedule.getStatus(),
-					schedule.getSeatPrices().stream()
-						.map(seatPrice -> new SeatPriceResponseDto(
+					schedule.getScheduleSeats().stream()
+						.map(seatPrice -> new ScheduleSeatResponseDto(
 							seatPrice.getId(),
+							seatPrice.getRowNumber(),
+							seatPrice.getSeatNumber(),
 							seatPrice.getSeatType(),
+							seatPrice.getSeatStatus(),
 							seatPrice.getPrice()
 						))
 						.collect(Collectors.toList())
