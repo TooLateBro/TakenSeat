@@ -42,7 +42,7 @@ public class PaymentRefundEventHandlerServiceImpl implements PaymentRefundEventH
 				.type(PaymentRefundMessage.MessageType.RESULT)
 				.build();
 
-			paymentRefundResponseProducer.sendPaymentRefundResult(paymentRefundMessage);
+			paymentRefundResponseProducer.sendPaymentRefundResponse(paymentRefundMessage);
 
 			log.info("[Payment] 환불 실패 메시지 전송 - 성공 - bookingId={}", message.getBookingId());
 			return;
@@ -67,7 +67,7 @@ public class PaymentRefundEventHandlerServiceImpl implements PaymentRefundEventH
 			.type(PaymentRefundMessage.MessageType.RESULT)
 			.build();
 
-		paymentRefundResponseProducer.sendPaymentRefundResult(paymentRefundMessage);
+		paymentRefundResponseProducer.sendPaymentRefundResponse(paymentRefundMessage);
 		log.info("[Payment] 환불 성공 메시지 전송 - 성공 - bookingId={}", message.getBookingId());
 	}
 

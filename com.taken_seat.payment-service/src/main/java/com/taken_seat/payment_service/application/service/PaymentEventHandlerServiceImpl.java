@@ -39,7 +39,7 @@ public class PaymentEventHandlerServiceImpl implements PaymentEventHandlerServic
 				.type(PaymentMessage.MessageType.RESULT)
 				.build();
 
-			paymentResponseProducer.sendPaymentResult(paymentResultMessage);
+			paymentResponseProducer.sendPaymentResponse(paymentResultMessage);
 
 			log.info("[Payment] 결제 실패 메시지 전송 - 성공 - bookingId={}", message.getBookingId());
 			return;
@@ -67,7 +67,7 @@ public class PaymentEventHandlerServiceImpl implements PaymentEventHandlerServic
 			.type(PaymentMessage.MessageType.RESULT)
 			.build();
 
-		paymentResponseProducer.sendPaymentResult(paymentResultMessage);
+		paymentResponseProducer.sendPaymentResponse(paymentResultMessage);
 		log.info("[Payment] 결제 성공 메시지 전송 - 성공 - bookingId={}, paymentId={}", message.getBookingId(), payment.getId());
 	}
 
