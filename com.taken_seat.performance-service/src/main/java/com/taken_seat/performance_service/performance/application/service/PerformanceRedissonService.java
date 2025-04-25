@@ -1,4 +1,4 @@
-package com.taken_seat.performance_service.performancehall.application.service;
+package com.taken_seat.performance_service.performance.application.service;
 
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -20,10 +20,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class PerformanceHallRedissonService {
+public class PerformanceRedissonService {
 
 	private final RedissonClient redissonClient;
-	private final PerformanceHallClientService performanceHallClientService;
+	private final PerformanceClientService performanceClientService;
 
 	@Value("${variable.lock-wait-time}")
 	private long LOCK_WAIT_TIME;
@@ -31,11 +31,11 @@ public class PerformanceHallRedissonService {
 	private long LOCK_LEASE_TIME;
 
 	public BookingSeatClientResponseDto updateSeatStatusWithLock(BookingSeatClientRequestDto request) {
-		return executeWithLock(request.getSeatId(), () -> performanceHallClientService.updateSeatStatus(request));
+		return executeWithLock(request.getSeatId(), () -> performanceClientService.updateSeatStatus(request));
 	}
 
 	public BookingSeatClientResponseDto updateSeatStatusCancelWithLock(BookingSeatClientRequestDto request) {
-		return executeWithLock(request.getSeatId(), () -> performanceHallClientService.cancelSeatStatus(request));
+		return executeWithLock(request.getSeatId(), () -> performanceClientService.cancelSeatStatus(request));
 	}
 
 	private BookingSeatClientResponseDto executeWithLock(UUID seatId, Supplier<BookingSeatClientResponseDto> supplier) {

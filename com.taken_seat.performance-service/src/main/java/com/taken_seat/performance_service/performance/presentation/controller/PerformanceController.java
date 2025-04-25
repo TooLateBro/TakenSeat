@@ -20,9 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.taken_seat.common_service.dto.ApiResponseData;
 import com.taken_seat.common_service.dto.AuthenticatedUser;
-import com.taken_seat.common_service.dto.response.PerformanceEndTimeDto;
-import com.taken_seat.common_service.dto.response.PerformanceStartTimeDto;
-import com.taken_seat.performance_service.performance.application.service.PerformanceClientService;
 import com.taken_seat.performance_service.performance.application.service.PerformanceService;
 import com.taken_seat.performance_service.performance.presentation.docs.PerformanceControllerDocs;
 import com.taken_seat.performance_service.performance.presentation.dto.request.CreateRequestDto;
@@ -42,7 +39,6 @@ import lombok.RequiredArgsConstructor;
 public class PerformanceController implements PerformanceControllerDocs {
 
 	private final PerformanceService performanceService;
-	private final PerformanceClientService performanceClientService;
 
 	@PostMapping
 	public ResponseEntity<ApiResponseData<CreateResponseDto>> create(
@@ -87,16 +83,6 @@ public class PerformanceController implements PerformanceControllerDocs {
 		return ResponseEntity.noContent().build();
 	}
 
-	@GetMapping("/{performanceId}/schedules/{performanceScheduleId}/end-time")
-	public ResponseEntity<ApiResponseData<PerformanceEndTimeDto>> getPerformanceEndTime(
-		@PathVariable("performanceId") UUID performanceId,
-		@PathVariable("performanceScheduleId") UUID performanceScheduleId) {
-
-		PerformanceEndTimeDto response = performanceClientService.getPerformanceEndTime(performanceId,
-			performanceScheduleId);
-		return ResponseEntity.ok(ApiResponseData.success(response));
-	}
-
 	@PatchMapping("/{id}/status")
 	public ResponseEntity<ApiResponseData<Void>> updateStatus(
 		@PathVariable("id") UUID id,
@@ -104,15 +90,5 @@ public class PerformanceController implements PerformanceControllerDocs {
 
 		performanceService.updateStatus(id, authenticatedUser);
 		return ResponseEntity.noContent().build();
-	}
-
-	@GetMapping("/{performanceId}/schedules/{performanceScheduleId}/start-time")
-	public ResponseEntity<ApiResponseData<PerformanceStartTimeDto>> getPerformanceStartTime(
-		@PathVariable("performanceId") UUID performanceId,
-		@PathVariable("performanceScheduleId") UUID performanceScheduleId) {
-
-		PerformanceStartTimeDto response = performanceClientService.getPerformanceStartTime(performanceId,
-			performanceScheduleId);
-		return ResponseEntity.ok(ApiResponseData.success(response));
 	}
 }
