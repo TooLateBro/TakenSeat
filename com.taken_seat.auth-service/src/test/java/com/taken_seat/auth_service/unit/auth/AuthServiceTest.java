@@ -1,4 +1,4 @@
-package com.taken_seat.auth_service.unit;
+package com.taken_seat.auth_service.unit.auth;
 
 import com.taken_seat.auth_service.application.dto.auth.AuthLoginResponseDto;
 import com.taken_seat.auth_service.application.dto.auth.AuthSignUpResponseDto;
