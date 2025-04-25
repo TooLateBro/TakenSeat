@@ -2,6 +2,7 @@ package com.taken_seat.performance_service.performance.domain.helper;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import com.taken_seat.performance_service.performance.application.dto.command.CreatePerformanceCommand;
@@ -11,8 +12,18 @@ import com.taken_seat.performance_service.performance.domain.model.PerformanceSc
 import com.taken_seat.performance_service.performance.domain.model.PerformanceScheduleStatus;
 import com.taken_seat.performance_service.performance.domain.model.PerformanceSeatPrice;
 import com.taken_seat.performance_service.performance.domain.model.PerformanceStatus;
+import com.taken_seat.performance_service.performance.domain.model.ScheduleSeat;
+import com.taken_seat.performance_service.performancehall.application.dto.command.SeatTemplateInfo;
+import com.taken_seat.performance_service.performancehall.domain.facade.PerformanceHallFacade;
+import com.taken_seat.performance_service.performancehall.domain.model.SeatType;
 
 public class PerformanceCreateHelper {
+
+	private final PerformanceHallFacade performanceHallFacade;
+
+	public PerformanceCreateHelper(PerformanceHallFacade performanceHallFacade) {
+		this.performanceHallFacade = performanceHallFacade;
+	}
 
 	public static Performance createPerformance(CreatePerformanceCommand command, UUID createdBy) {
 		Performance performance = Performance.builder()
@@ -87,6 +98,20 @@ public class PerformanceCreateHelper {
 				.seatType(seatPriceCommand.seatType())
 				.price(seatPriceCommand.price())
 				.build())
+			.toList();
+	}
+
+	private static List<ScheduleSeat> createScheduleSeats(
+		List<SeatTemplateInfo> seatTemplates,
+		PerformanceSchedule schedule,
+		Map<SeatType, Integer> seatPrice
+	) {
+		return seatTemplates.stream()
+			.map(seatTemplate -> ScheduleSeat.fromSeatTemplate(
+				seatTemplate,
+				schedule,
+				seatPrice.getOrDefault(seatTemplate.seatType(), 0)
+			))
 			.toList();
 	}
 }
