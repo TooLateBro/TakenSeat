@@ -11,7 +11,6 @@ import com.taken_seat.performance_service.performance.domain.model.Performance;
 import com.taken_seat.performance_service.performance.domain.model.PerformanceSchedule;
 import com.taken_seat.performance_service.performance.domain.model.PerformanceScheduleStatus;
 import com.taken_seat.performance_service.performance.domain.model.PerformanceStatus;
-import com.taken_seat.performance_service.performancehall.domain.facade.PerformanceHallFacade;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -84,8 +83,9 @@ public class PerformanceUpdateHelper {
 
 	}
 
-	public static void updateStatus(Performance performance, AuthenticatedUser authenticatedUser,
-		PerformanceHallFacade performanceHallFacade) {
+	public static void updateStatus(
+		Performance performance,
+		AuthenticatedUser authenticatedUser) {
 
 		PerformanceStatus oldPerformanceStatus = performance.getStatus();
 		PerformanceStatus newPerformanceStatus = PerformanceStatus.status(
@@ -106,22 +106,21 @@ public class PerformanceUpdateHelper {
 
 		for (PerformanceSchedule schedule : performance.getSchedules()) {
 
-			UUID performanceHallId = schedule.getPerformanceHallId();
-
-			boolean isSoldOut = performanceHallFacade.isSoldOut(performanceHallId);
-
 			PerformanceScheduleStatus oldScheduleStatus = schedule.getStatus();
-			PerformanceScheduleStatus newPerformanceScheduleStatus =
-				PerformanceScheduleStatus.status(schedule.getSaleStartAt(), schedule.getSaleEndAt(), isSoldOut);
+			PerformanceScheduleStatus newScheduleStatus =
+				PerformanceScheduleStatus.status(
+					schedule.getSaleStartAt(),
+					schedule.getSaleEndAt(),
+					schedule.isSoldOut());
 
-			if (!schedule.getStatus().equals(newPerformanceScheduleStatus)) {
-				schedule.updateStatus(newPerformanceScheduleStatus);
+			if (!schedule.getStatus().equals(newScheduleStatus)) {
+				schedule.updateStatus(newScheduleStatus);
 				schedule.preUpdate(authenticatedUser.getUserId());
 
 				log.info("[Performance] 회차 상태 변경 - 성공 - 공연회차 ID={}, oldStatus={}, newStatus={}, 공연 ID={}, 변경자={}",
 					schedule.getId(),
 					oldScheduleStatus,
-					newPerformanceScheduleStatus,
+					newScheduleStatus,
 					performance.getId(),
 					authenticatedUser.getUserId());
 			}
