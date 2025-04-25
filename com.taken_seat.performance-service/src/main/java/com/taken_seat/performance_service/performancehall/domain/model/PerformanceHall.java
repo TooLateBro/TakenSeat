@@ -8,6 +8,7 @@ import com.taken_seat.common_service.entity.BaseTimeEntity;
 import com.taken_seat.common_service.exception.customException.PerformanceException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.performance_service.performancehall.application.dto.command.CreatePerformanceHallCommand;
+import com.taken_seat.performance_service.performancehall.application.dto.command.SeatTemplateInfo;
 import com.taken_seat.performance_service.performancehall.application.dto.command.UpdatePerformanceHallCommand;
 import com.taken_seat.performance_service.performancehall.application.dto.command.UpdateSeatCommand;
 import com.taken_seat.performance_service.performancehall.domain.helper.PerformanceHallCreateHelper;
@@ -109,5 +110,16 @@ public class PerformanceHall extends BaseTimeEntity {
 	public boolean isSoldOut() {
 		return seats.stream()
 			.noneMatch(seat -> seat.getStatus() == SeatStatus.AVAILABLE);
+	}
+
+	public List<SeatTemplateInfo> toSeatTemplateInfos() {
+		return seats.stream()
+			.map(seat -> new SeatTemplateInfo(
+				seat.getRowNumber(),
+				seat.getSeatNumber(),
+				seat.getSeatType(),
+				seat.getStatus()
+			))
+			.toList();
 	}
 }
