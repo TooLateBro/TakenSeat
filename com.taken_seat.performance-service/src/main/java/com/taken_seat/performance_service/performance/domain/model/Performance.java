@@ -97,11 +97,10 @@ public class Performance extends BaseTimeEntity {
 	}
 
 	public Integer findPriceByScheduleAndSeatType(UUID performanceScheduleId, SeatType seatType) {
-		return this.schedules.stream()
-			.filter(performanceSchedule -> performanceSchedule.getId().equals(performanceScheduleId))
-			.flatMap(performanceSchedule -> performanceSchedule.getSeatPrices().stream())
-			.filter(performanceSeatPrice -> performanceSeatPrice.getSeatType().equals(seatType))
-			.map(PerformanceSeatPrice::getPrice)
+		return this.getScheduleById(performanceScheduleId)
+			.getScheduleSeats().stream()
+			.filter(scheduleSeat -> scheduleSeat.getSeatType().equals(seatType))
+			.map(ScheduleSeat::getPrice)
 			.findFirst()
 			.orElseThrow(() -> new PerformanceException(ResponseCode.SEAT_PRICE_NOT_FOUND_EXCEPTION));
 	}
