@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 import com.taken_seat.performance_service.performance.application.dto.command.CreatePerformanceCommand;
 import com.taken_seat.performance_service.performance.application.dto.command.CreatePerformanceScheduleCommand;
-import com.taken_seat.performance_service.performance.application.dto.command.CreateSeatPriceCommand;
+import com.taken_seat.performance_service.performance.application.dto.command.CreateScheduleSeatCommand;
 import com.taken_seat.performance_service.performance.domain.model.Performance;
 import com.taken_seat.performance_service.performance.domain.model.PerformanceSchedule;
 import com.taken_seat.performance_service.performance.domain.model.PerformanceScheduleStatus;
@@ -56,8 +56,8 @@ public class PerformanceCreateHelper {
 
 				Map<SeatType, Integer> seatPriceMap = command.seatPrices().stream()
 					.collect(Collectors.toMap(
-						CreateSeatPriceCommand::seatType,
-						CreateSeatPriceCommand::price
+						CreateScheduleSeatCommand::seatType,
+						CreateScheduleSeatCommand::price
 					));
 
 				List<SeatTemplateInfo> seatTemplates =
