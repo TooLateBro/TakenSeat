@@ -76,15 +76,15 @@ public class Performance extends BaseTimeEntity {
 	public void update(UpdatePerformanceCommand command, UUID updatedBy) {
 		this.preUpdate(updatedBy);
 
-		this.title = command.title();
-		this.description = command.description();
-		this.startAt = command.startAt();
-		this.endAt = command.endAt();
-		this.status = command.status();
-		this.posterUrl = command.posterUrl();
-		this.ageLimit = command.ageLimit();
-		this.maxTicketCount = command.maxTicketCount();
-		this.discountInfo = command.discountInfo();
+		title = command.title();
+		description = command.description();
+		startAt = command.startAt();
+		endAt = command.endAt();
+		status = command.status();
+		posterUrl = command.posterUrl();
+		ageLimit = command.ageLimit();
+		maxTicketCount = command.maxTicketCount();
+		discountInfo = command.discountInfo();
 
 		PerformanceUpdateHelper.updateSchedules(this, command.schedules(), updatedBy);
 	}
