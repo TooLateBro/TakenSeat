@@ -8,9 +8,7 @@ import java.util.UUID;
 import com.taken_seat.common_service.entity.BaseTimeEntity;
 import com.taken_seat.common_service.exception.customException.PerformanceException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
-import com.taken_seat.performance_service.performance.application.dto.command.CreatePerformanceCommand;
 import com.taken_seat.performance_service.performance.application.dto.command.UpdatePerformanceCommand;
-import com.taken_seat.performance_service.performance.domain.helper.PerformanceCreateHelper;
 import com.taken_seat.performance_service.performance.domain.helper.PerformanceUpdateHelper;
 import com.taken_seat.performance_service.performancehall.domain.model.SeatType;
 
@@ -71,14 +69,8 @@ public class Performance extends BaseTimeEntity {
 	@Builder.Default
 	private List<PerformanceSchedule> schedules = new ArrayList<>();
 
-	public static Performance create(CreatePerformanceCommand command, UUID createdBy) {
-
-		Performance performance = PerformanceCreateHelper.createPerformance(command, createdBy);
-
-		PerformanceCreateHelper.createPerformanceSchedules(command, performance,
-			createdBy);
-
-		return performance;
+	public void addSchedules(List<PerformanceSchedule> schedules) {
+		this.schedules.addAll(schedules);
 	}
 
 	public void update(UpdatePerformanceCommand command, UUID updatedBy) {
