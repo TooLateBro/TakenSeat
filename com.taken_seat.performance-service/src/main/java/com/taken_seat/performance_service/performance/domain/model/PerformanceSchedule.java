@@ -66,20 +66,19 @@ public class PerformanceSchedule extends BaseTimeEntity {
 	private List<ScheduleSeat> scheduleSeats = new ArrayList<>();
 
 	public void update(UpdatePerformanceScheduleCommand command) {
-
-		this.performanceHallId = command.performanceHallId();
-		this.startAt = command.startAt();
-		this.endAt = command.endAt();
-		this.saleStartAt = command.saleStartAt();
-		this.saleEndAt = command.saleEndAt();
-		this.status = command.status();
+		performanceHallId = command.performanceHallId();
+		startAt = command.startAt();
+		endAt = command.endAt();
+		saleStartAt = command.saleStartAt();
+		saleEndAt = command.saleEndAt();
+		status = command.status();
 	}
 
 	public void updateStatus(PerformanceScheduleStatus newStatus) {
-		this.status = newStatus;
+		status = newStatus;
 	}
 
 	public void addSeats(List<ScheduleSeat> seats) {
-		this.scheduleSeats.addAll(seats);
+		scheduleSeats.addAll(seats);
 	}
 }
