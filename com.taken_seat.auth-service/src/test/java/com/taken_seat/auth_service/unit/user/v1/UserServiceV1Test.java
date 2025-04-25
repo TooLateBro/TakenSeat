@@ -1,8 +1,11 @@
-package com.taken_seat.auth_service.unit;
+package com.taken_seat.auth_service.unit.user.v1;
 
 import com.taken_seat.auth_service.application.dto.PageResponseDto;
-import com.taken_seat.auth_service.application.dto.user.UserInfoResponseDto;
-import com.taken_seat.auth_service.application.service.user.UserServiceImpl;
+import com.taken_seat.auth_service.application.dto.user.v1.UserInfoResponseDtoV1;
+import com.taken_seat.auth_service.application.dto.user.v2.UserMapper;
+import com.taken_seat.auth_service.application.dto.user.v2.UserInfoResponseDtoV2;
+import com.taken_seat.auth_service.application.service.user.v1.UserServiceV1Impl;
+import com.taken_seat.auth_service.application.service.user.v2.UserServiceV2Impl;
 import com.taken_seat.auth_service.domain.entity.user.User;
 import com.taken_seat.auth_service.domain.entity.user.UserCoupon;
 import com.taken_seat.auth_service.domain.repository.user.UserRepository;
@@ -33,7 +36,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class UserServiceTest {
+public class UserServiceV1Test {
 
     @Mock
     private UserRepository userRepository;
@@ -44,8 +47,14 @@ public class UserServiceTest {
     @Mock
     private UserQueryRepositoryImpl userQueryRepository;
 
+    @Mock
+    private UserMapper userMapper;
+
     @InjectMocks
-    private UserServiceImpl userService;
+    private UserServiceV1Impl userServiceV1;
+
+    @InjectMocks
+    private UserServiceV2Impl userServiceV2;
 
     private User user;
 
@@ -62,16 +71,31 @@ public class UserServiceTest {
     }
 
     @Test
-    @DisplayName("유저 단건 조회 성공 테스트")
-    public void getUserSuccess() {
-        userId = UUID.randomUUID();
-
+    @DisplayName("유저 단건 조회 V1 vs V2 성능 비교 테스트")
+    void compareV1AndV2Performance() {
         when(userRepository.findByIdAndDeletedAtIsNull(userId)).thenReturn(Optional.of(user));
 
-        UserInfoResponseDto result = userService.getUser(userId);
+        long startV1 = System.nanoTime();
+        UserInfoResponseDtoV1 resultV1 = userServiceV1.getUser(userId);
+        long endV1 = System.nanoTime();
 
-        assertNotNull(result);
-        assertEquals("testuser1", result.username());
+        UserInfoResponseDtoV2 mappedDto = new UserInfoResponseDtoV2(
+                user.getId(), user.getUsername(), user.getEmail(), user.getPhone(), user.getRole(), null, null
+        );
+        when(userMapper.userToUserInfoResponseDto(user)).thenReturn(mappedDto);
+
+        long startV2 = System.nanoTime();
+        UserInfoResponseDtoV2 resultV2 = userServiceV2.getUser(userId);
+        long endV2 = System.nanoTime();
+
+        long durationV1 = endV1 - startV1;
+        long durationV2 = endV2 - startV2;
+
+        System.out.println("V1 (직접 매핑) Execution Time: " + durationV1 + "ns");
+        System.out.println("V2 (MapStruct) Execution Time: " + durationV2 + "ns");
+
+        assertNotNull(resultV1);
+        assertNotNull(resultV2);
     }
 
     @Test
@@ -81,7 +105,7 @@ public class UserServiceTest {
 
         when(userRepository.findByIdAndDeletedAtIsNull(userId)).thenReturn(Optional.empty());
 
-        AuthException exception = assertThrows(AuthException.class, () -> userService.getUser(userId));
+        AuthException exception = assertThrows(AuthException.class, () -> userServiceV1.getUser(userId));
 
         assertEquals(ResponseCode.USER_NOT_FOUND, exception.getErrorCode());
     }
@@ -107,7 +131,7 @@ public class UserServiceTest {
         when(userCouponRepository.findCouponIdByUserIdAndIsActiveTrue(any(UUID.class), eq(pageable)))
                 .thenReturn(userCouponPage);
 
-        UserInfoResponseDto result = userService.getUserDetails(userId, page, size);
+        UserInfoResponseDtoV1 result = userServiceV1.getUserDetails(userId, page, size);
 
         assertNotNull(result);
         assertEquals("testuser1", result.username());
@@ -122,7 +146,7 @@ public class UserServiceTest {
         when(userRepository.findByIdAndDeletedAtIsNull(userId)).thenReturn(Optional.empty());
 
         AuthException exception = assertThrows(AuthException.class, () ->
-                userService.getUserDetails(userId, page, size)
+                userServiceV1.getUserDetails(userId, page, size)
         );
         assertEquals(ResponseCode.USER_NOT_FOUND, exception.getErrorCode());
     }
@@ -142,7 +166,7 @@ public class UserServiceTest {
         Page<User> userPage = new PageImpl<>(userList, pageable, userList.size());
         when(userQueryRepository.findAllByDeletedAtIsNull(null, null, pageable)).thenReturn(userPage);
 
-        PageResponseDto<UserInfoResponseDto> result = userService.searchUser(null, null, page, size);
+        PageResponseDto<UserInfoResponseDtoV1> result = userServiceV1.searchUser(null, null, page, size);
 
         assertNotNull(result);
     }
@@ -159,7 +183,7 @@ public class UserServiceTest {
         when(userQueryRepository.findAllByDeletedAtIsNull(username, null, pageable)).thenReturn(emptyUserPage);
 
         AuthException exception = assertThrows(AuthException.class, () ->
-                userService.searchUser(username, null, page, size));
+                userServiceV1.searchUser(username, null, page, size));
 
         assertNotNull(exception);
     }
@@ -180,9 +204,9 @@ public class UserServiceTest {
                 username, password, phone, email, role
         );
 
-        UserInfoResponseDto userInfoResponseDto = userService.updateUser(userId, userUpdateRequestDto.toDto());
+        UserInfoResponseDtoV1 userInfoResponseDtoV1 = userServiceV1.updateUser(userId, userUpdateRequestDto.toDto());
 
-        assertNotNull(userInfoResponseDto);
+        assertNotNull(userInfoResponseDtoV1);
     }
     @Test
     @DisplayName("유저 수정 실패 테스트 - 유저 없음")
@@ -201,7 +225,7 @@ public class UserServiceTest {
         );
 
         AuthException exception = assertThrows(AuthException.class, () ->
-                userService.updateUser(userId, userUpdateRequestDto.toDto()));
+                userServiceV1.updateUser(userId, userUpdateRequestDto.toDto()));
 
         assertEquals(ResponseCode.USER_NOT_FOUND, exception.getErrorCode());
     }
@@ -211,7 +235,7 @@ public class UserServiceTest {
         userId = UUID.randomUUID();
 
         when(userRepository.findByIdAndDeletedAtIsNull(userId)).thenReturn(Optional.of(user));
-        userService.deleteUser(userId);
+        userServiceV1.deleteUser(userId);
 
         assertNotNull(user.getDeletedAt());
     }
@@ -223,7 +247,7 @@ public class UserServiceTest {
         when(userRepository.findByIdAndDeletedAtIsNull(userId)).thenReturn(Optional.empty());
 
         AuthException exception = assertThrows(AuthException.class, ()->
-                userService.deleteUser(userId));
+                userServiceV1.deleteUser(userId));
 
         assertEquals(ResponseCode.USER_NOT_FOUND, exception.getErrorCode());
     }
@@ -235,7 +259,7 @@ public class UserServiceTest {
         UserCoupon mockCoupon = Mockito.mock(UserCoupon.class);
         when(userCouponRepository.findByCouponId(couponId)).thenReturn(Optional.of(mockCoupon));
 
-        String result = userService.getCoupon(couponId);
+        String result = userServiceV1.getCoupon(couponId);
 
         assertTrue(result.contains("축하합니다!"));
         assertTrue(result.contains("수령에 성공했습니다!"));
@@ -248,7 +272,7 @@ public class UserServiceTest {
         when(userCouponRepository.findByCouponId(couponId)).thenReturn(Optional.empty());
 
         CouponException exception = assertThrows(CouponException.class, ()->
-                userService.getCoupon(couponId));
+                userServiceV1.getCoupon(couponId));
 
         assertEquals(ResponseCode.COUPON_QUANTITY_EXCEPTION, exception.getErrorCode());
     }
