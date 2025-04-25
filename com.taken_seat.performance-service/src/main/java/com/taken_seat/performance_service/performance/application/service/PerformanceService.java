@@ -10,8 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.taken_seat.common_service.dto.AuthenticatedUser;
-import com.taken_seat.common_service.dto.response.PerformanceEndTimeDto;
-import com.taken_seat.common_service.dto.response.PerformanceStartTimeDto;
 import com.taken_seat.performance_service.performance.application.dto.command.CreatePerformanceCommand;
 import com.taken_seat.performance_service.performance.application.dto.command.UpdatePerformanceCommand;
 import com.taken_seat.performance_service.performance.application.dto.command.UpdatePerformanceScheduleCommand;
@@ -20,7 +18,6 @@ import com.taken_seat.performance_service.performance.application.dto.mapper.Per
 import com.taken_seat.performance_service.performance.application.dto.mapper.PerformanceUpdateCommandMapper;
 import com.taken_seat.performance_service.performance.domain.helper.PerformanceUpdateHelper;
 import com.taken_seat.performance_service.performance.domain.model.Performance;
-import com.taken_seat.performance_service.performance.domain.model.PerformanceSchedule;
 import com.taken_seat.performance_service.performance.domain.repository.PerformanceRepository;
 import com.taken_seat.performance_service.performance.domain.validator.PerformanceExistenceValidator;
 import com.taken_seat.performance_service.performance.domain.validator.PerformanceValidator;
@@ -116,16 +113,6 @@ public class PerformanceService {
 	}
 
 	@Transactional
-	public PerformanceEndTimeDto getPerformanceEndTime(UUID performanceId, UUID performanceScheduleId) {
-
-		Performance performance = performanceExistenceValidator.validateByPerformanceId(performanceId);
-
-		PerformanceSchedule schedule = performance.getScheduleById(performanceScheduleId);
-
-		return new PerformanceEndTimeDto(schedule.getEndAt());
-	}
-
-	@Transactional
 	public void updateStatus(UUID id, AuthenticatedUser authenticatedUser) {
 
 		PerformanceValidator.validateAuthorized(authenticatedUser);
@@ -135,15 +122,5 @@ public class PerformanceService {
 		PerformanceUpdateHelper.updateStatus(performance, authenticatedUser, performanceHallFacade);
 
 		performanceRepository.save(performance);
-	}
-
-	@Transactional
-	public PerformanceStartTimeDto getPerformanceStartTime(UUID performanceId, UUID performanceScheduleId) {
-
-		Performance performance = performanceExistenceValidator.validateByPerformanceId(performanceId);
-
-		PerformanceSchedule schedule = performance.getScheduleById(performanceScheduleId);
-
-		return new PerformanceStartTimeDto(schedule.getStartAt());
 	}
 }
