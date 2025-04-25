@@ -1,7 +1,7 @@
-package com.taken_seat.auth_service.infrastructure.role.aop;
+package com.taken_seat.common_service.aop;
 
-import com.taken_seat.auth_service.domain.vo.Role;
-import com.taken_seat.auth_service.infrastructure.role.RoleCheck;
+import com.taken_seat.common_service.aop.annotation.RoleCheck;
+import com.taken_seat.common_service.aop.vo.Role;
 import com.taken_seat.common_service.dto.ApiResponseData;
 import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
@@ -21,8 +21,8 @@ import java.util.Arrays;
 public class RoleCheckAspect {
 
     // @RoleCheck 어노테이션이 메서드 또는 클래스에 붙은 경우를 가로챔
-    @Around("@annotation(com.taken_seat.auth_service.infrastructure.role.RoleCheck) || " +
-            "@within(com.taken_seat.auth_service.infrastructure.role.RoleCheck)")
+    @Around("@annotation(com.taken_seat.common_service.aop.annotation.RoleCheck) || " +
+            "@within(com.taken_seat.common_service.aop.annotation.RoleCheck)")
     public Object checkRole(ProceedingJoinPoint joinPoint) throws Throwable {
 
         // 현재 실행되는 메서드 정보 추출

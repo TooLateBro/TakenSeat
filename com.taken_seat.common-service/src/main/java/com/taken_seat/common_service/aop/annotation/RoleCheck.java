@@ -1,6 +1,6 @@
-package com.taken_seat.auth_service.infrastructure.role;
+package com.taken_seat.common_service.aop.annotation;
 
-import com.taken_seat.auth_service.domain.vo.Role;
+import com.taken_seat.common_service.aop.vo.Role;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
