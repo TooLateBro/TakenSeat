@@ -12,7 +12,7 @@ import com.taken_seat.common_service.dto.AuthenticatedUser;
 public interface TicketService {
 	TicketReadResponse readTicket(AuthenticatedUser authenticatedUser, UUID id);
 
-	TicketPageResponse readTickets(AuthenticatedUser authenticatedUser, Pageable pageable);
+	TicketPageResponse readTickets(AuthenticatedUser authenticatedUser, UUID bookingId, Pageable pageable);
 
 	void createTicket(TicketRequestMessage message);
 
