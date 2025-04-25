@@ -5,7 +5,7 @@ import com.taken_seat.auth_service.application.dto.PageResponseDto;
 import com.taken_seat.auth_service.domain.entity.mileage.Mileage;
 import com.taken_seat.auth_service.domain.entity.user.User;
 import com.taken_seat.auth_service.domain.entity.user.UserCoupon;
-import com.taken_seat.auth_service.domain.vo.Role;
+import com.taken_seat.common_service.aop.vo.Role;
 import org.springframework.data.domain.Page;
 
 import java.util.Comparator;

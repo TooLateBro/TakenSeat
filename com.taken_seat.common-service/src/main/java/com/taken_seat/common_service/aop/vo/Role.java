@@ -1,5 +1,4 @@
-package com.taken_seat.auth_service.domain.vo;
-
+package com.taken_seat.common_service.aop.vo;
 
 public enum Role {
     CUSTOMER, MANAGER, ADMIN, PRODUCER;

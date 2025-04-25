@@ -7,7 +7,7 @@ import com.taken_seat.auth_service.domain.entity.mileage.QMileage;
 import com.taken_seat.auth_service.domain.entity.user.QUser;
 import com.taken_seat.auth_service.domain.entity.user.User;
 import com.taken_seat.auth_service.domain.repository.user.UserQueryRepository;
-import com.taken_seat.auth_service.domain.vo.Role;
+import com.taken_seat.common_service.aop.vo.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;

@@ -1,7 +1,7 @@
 package com.taken_seat.auth_service.domain.entity.user;
 
 import com.taken_seat.auth_service.domain.entity.mileage.Mileage;
-import com.taken_seat.auth_service.domain.vo.Role;
+import com.taken_seat.common_service.aop.vo.Role;
 import com.taken_seat.common_service.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;

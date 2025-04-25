@@ -1,12 +1,12 @@
 package com.taken_seat.coupon_service.presentation.controller;
 
+import com.taken_seat.common_service.aop.annotation.RoleCheck;
+import com.taken_seat.common_service.aop.vo.Role;
 import com.taken_seat.common_service.dto.ApiResponseData;
 import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.coupon_service.application.dto.CouponResponseDto;
 import com.taken_seat.coupon_service.application.dto.PageResponseDto;
 import com.taken_seat.coupon_service.application.service.CouponService;
-import com.taken_seat.coupon_service.domain.entity.vo.Role;
-import com.taken_seat.coupon_service.infrastructure.role.RoleCheck;
 import com.taken_seat.coupon_service.presentation.docs.CouponControllerDocs;
 import com.taken_seat.coupon_service.presentation.dto.CreateCouponRequestDto;
 import com.taken_seat.coupon_service.presentation.dto.UpdateCouponRequestDto;
