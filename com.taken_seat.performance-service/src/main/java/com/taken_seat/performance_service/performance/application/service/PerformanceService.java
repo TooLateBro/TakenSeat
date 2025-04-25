@@ -2,6 +2,7 @@ package com.taken_seat.performance_service.performance.application.service;
 
 import static com.taken_seat.performance_service.performance.application.dto.mapper.PerformanceResponseMapper.*;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -16,8 +17,10 @@ import com.taken_seat.performance_service.performance.application.dto.command.Up
 import com.taken_seat.performance_service.performance.application.dto.mapper.PerformanceCreateCommandMapper;
 import com.taken_seat.performance_service.performance.application.dto.mapper.PerformanceResponseMapper;
 import com.taken_seat.performance_service.performance.application.dto.mapper.PerformanceUpdateCommandMapper;
+import com.taken_seat.performance_service.performance.domain.helper.PerformanceCreateHelper;
 import com.taken_seat.performance_service.performance.domain.helper.PerformanceUpdateHelper;
 import com.taken_seat.performance_service.performance.domain.model.Performance;
+import com.taken_seat.performance_service.performance.domain.model.PerformanceSchedule;
 import com.taken_seat.performance_service.performance.domain.repository.PerformanceRepository;
 import com.taken_seat.performance_service.performance.domain.validator.PerformanceExistenceValidator;
 import com.taken_seat.performance_service.performance.domain.validator.PerformanceValidator;
@@ -45,6 +48,7 @@ public class PerformanceService {
 	private final PerformanceExistenceValidator performanceExistenceValidator;
 	private final PerformanceCreateCommandMapper performanceCreateCommandMapper;
 	private final PerformanceUpdateCommandMapper performanceUpdateCommandMapper;
+	private final PerformanceCreateHelper performanceCreateHelper;
 
 	@Transactional
 	public CreateResponseDto create(CreateRequestDto request, AuthenticatedUser authenticatedUser) {
@@ -55,7 +59,13 @@ public class PerformanceService {
 
 		PerformanceValidator.validateDuplicateSchedules(command.schedules());
 
-		Performance performance = Performance.create(command, authenticatedUser.getUserId());
+		Performance performance = performanceCreateHelper.createPerformance(command, authenticatedUser.getUserId());
+
+		List<PerformanceSchedule> schedules = performanceCreateHelper.createPerformanceSchedules(
+			command.schedules(), performance, authenticatedUser.getUserId()
+		);
+
+		performance.addSchedules(schedules);
 
 		Performance saved = performanceRepository.save(performance);
 
