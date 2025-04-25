@@ -9,15 +9,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import com.taken_seat.common_service.dto.ApiResponseData;
 import com.taken_seat.common_service.dto.AuthenticatedUser;
-import com.taken_seat.common_service.dto.request.BookingSeatClientRequestDto;
-import com.taken_seat.common_service.dto.response.BookingSeatClientResponseDto;
 import com.taken_seat.performance_service.performancehall.presentation.dto.request.CreateRequestDto;
 import com.taken_seat.performance_service.performancehall.presentation.dto.request.SearchFilterParam;
 import com.taken_seat.performance_service.performancehall.presentation.dto.request.UpdateRequestDto;
 import com.taken_seat.performance_service.performancehall.presentation.dto.response.CreateResponseDto;
 import com.taken_seat.performance_service.performancehall.presentation.dto.response.DetailResponseDto;
 import com.taken_seat.performance_service.performancehall.presentation.dto.response.PageResponseDto;
-import com.taken_seat.performance_service.performancehall.presentation.dto.response.SeatLayoutResponseDto;
 import com.taken_seat.performance_service.performancehall.presentation.dto.response.UpdateResponseDto;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -66,20 +63,5 @@ public interface PerformanceHallControllerDocs {
 	ResponseEntity<ApiResponseData<Void>> delete(
 		@Parameter(description = "공연장 ID") UUID id,
 		AuthenticatedUser authenticatedUser
-	);
-
-	@Operation(summary = "좌석 상태 변경", description = "좌석 예약 시 좌석 상태를 변경합니다.")
-	ResponseEntity<ApiResponseData<BookingSeatClientResponseDto>> updateSeatStatus(
-		@Valid @RequestBody BookingSeatClientRequestDto request
-	);
-
-	@Operation(summary = "좌석 상태 취소", description = "예약 취소 시 좌석 상태를 원래대로 되돌립니다.")
-	ResponseEntity<ApiResponseData<BookingSeatClientResponseDto>> cancelSeatStatus(
-		@Valid @RequestBody BookingSeatClientRequestDto request
-	);
-
-	@Operation(summary = "좌석 배치도 조회", description = "공연 스케줄 ID를 기반으로 공연장의 좌석 배치도를 조회합니다.")
-	ResponseEntity<ApiResponseData<SeatLayoutResponseDto>> getSeatLayout(
-		@Parameter(description = "공연 스케줄 ID") UUID performanceScheduleId
 	);
 }
