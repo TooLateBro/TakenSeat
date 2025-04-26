@@ -21,17 +21,18 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/performancetickets")
 public class PerformanceTicketController {
 
-	private final PerformanceTicketService performenceTicketService;
+	private final PerformanceTicketService performanceTicketService;
 
-	@GetMapping("/{performanceId}/schedules/{performanceScheduleId}/seats/{seatId}")
+	@GetMapping("/{performanceId}/schedules/{performanceScheduleId}/schedule-seats/{scheduleSeatId}")
 	public ResponseEntity<ApiResponseData<TicketPerformanceClientResponse>> getPerformanceInfo(
 		@PathVariable UUID performanceId,
 		@PathVariable UUID performanceScheduleId,
-		@PathVariable UUID seatId) {
+		@PathVariable UUID scheduleSeatId) {
 
-		TicketPerformanceClientRequest request = RequestMapper.fromParams(performanceId, performanceScheduleId, seatId);
+		TicketPerformanceClientRequest request = RequestMapper.fromParams
+			(performanceId, performanceScheduleId, scheduleSeatId);
 
-		TicketPerformanceClientResponse response = performenceTicketService.getPerformanceInfo(request);
+		TicketPerformanceClientResponse response = performanceTicketService.getPerformanceInfo(request);
 		return ResponseEntity.ok(ApiResponseData.success(response));
 	}
 }
