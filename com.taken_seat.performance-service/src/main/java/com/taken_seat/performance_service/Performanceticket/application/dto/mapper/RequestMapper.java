@@ -9,11 +9,11 @@ public class RequestMapper {
 	public static TicketPerformanceClientRequest fromParams(
 		UUID performanceId,
 		UUID performanceScheduleId,
-		UUID seatId) {
-		return TicketPerformanceClientRequest.builder()
-			.performanceId(performanceId)
-			.performanceScheduleId(performanceScheduleId)
-			.seatId(seatId)
-			.build();
+		UUID scheduleSeatId) {
+		return new TicketPerformanceClientRequest(
+			performanceId,
+			performanceScheduleId,
+			scheduleSeatId
+		);
 	}
 }
