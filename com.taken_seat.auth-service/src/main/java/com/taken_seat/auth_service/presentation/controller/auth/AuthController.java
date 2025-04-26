@@ -1,7 +1,7 @@
 package com.taken_seat.auth_service.presentation.controller.auth;
 
 import com.taken_seat.auth_service.application.dto.auth.AuthLoginResponseDto;
-import com.taken_seat.auth_service.application.dto.auth.AuthSignUpResponseDto;
+import com.taken_seat.auth_service.application.dto.user.v1.UserInfoResponseDtoV1;
 import com.taken_seat.auth_service.application.service.auth.AuthService;
 import com.taken_seat.auth_service.presentation.docs.AuthControllerDocs;
 import com.taken_seat.auth_service.presentation.dto.auth.AuthLoginRequestDto;
@@ -23,8 +23,8 @@ public class AuthController implements AuthControllerDocs {
     }
 
     @PostMapping("/signUp")
-    public ResponseEntity<ApiResponseData<AuthSignUpResponseDto>> signUp(@Valid @RequestBody AuthSignUpRequestDto requestDto){
-        AuthSignUpResponseDto userinfo = authService.signUp(requestDto.toDto());
+    public ResponseEntity<ApiResponseData<UserInfoResponseDtoV1>> signUp(@Valid @RequestBody AuthSignUpRequestDto requestDto){
+        UserInfoResponseDtoV1 userinfo = authService.signUp(requestDto.toDto());
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponseData.success(userinfo));
