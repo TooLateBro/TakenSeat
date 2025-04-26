@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.taken_seat.common_service.aop.annotation.RoleCheck;
+import com.taken_seat.common_service.aop.vo.Role;
 import com.taken_seat.common_service.dto.ApiResponseData;
 import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.review_service.application.dto.request.ReviewRegisterReqDto;
@@ -35,6 +37,7 @@ public class ReviewController {
 	private final ReviewLikeService reviewLikeService;
 
 	@PostMapping
+	@RoleCheck(allowedRoles = {Role.ADMIN, Role.MANAGER, Role.CUSTOMER})
 	public ResponseEntity<ApiResponseData<ReviewDetailResDto>> registerReview(
 		@Valid @RequestBody ReviewRegisterReqDto reviewRegisterReqDto,
 		AuthenticatedUser authenticatedUser) {
@@ -44,10 +47,11 @@ public class ReviewController {
 
 	}
 
-	@GetMapping("/{id}")
-	public ResponseEntity<ApiResponseData<ReviewDetailResDto>> getReviewDetail(@PathVariable("id") UUID id) {
+	@GetMapping("/{reviewId}")
+	public ResponseEntity<ApiResponseData<ReviewDetailResDto>> getReviewDetail(
+		@PathVariable("reviewId") UUID reviewId) {
 		return ResponseEntity.status(HttpStatus.OK)
-			.body(ApiResponseData.success(reviewServices.getReviewDetail(id)));
+			.body(ApiResponseData.success(reviewServices.getReviewDetail(reviewId)));
 	}
 
 	@GetMapping("/search")
@@ -65,26 +69,29 @@ public class ReviewController {
 					reviewServices.searchReview(performance_id, q, category, page, size, sort, order)));
 	}
 
-	@PatchMapping("/{id}")
-	public ResponseEntity<ApiResponseData<ReviewDetailResDto>> updateReview(@PathVariable("id") UUID id,
+	@PatchMapping("/{reviewId}")
+	@RoleCheck(allowedRoles = {Role.ADMIN, Role.MANAGER, Role.CUSTOMER})
+	public ResponseEntity<ApiResponseData<ReviewDetailResDto>> updateReview(@PathVariable("reviewId") UUID reviewId,
 		@Valid @RequestBody ReviewUpdateReqDto reviewUpdateReqDto,
 		AuthenticatedUser authenticatedUser) {
 		return ResponseEntity.status(HttpStatus.OK)
-			.body(ApiResponseData.success(reviewServices.updateReview(id, reviewUpdateReqDto, authenticatedUser)));
+			.body(
+				ApiResponseData.success(reviewServices.updateReview(reviewId, reviewUpdateReqDto, authenticatedUser)));
 	}
 
-	@DeleteMapping("/{id}")
-	public ResponseEntity<ApiResponseData<Void>> deleteReview(@PathVariable("id") UUID id,
+	@DeleteMapping("/{reviewId}")
+	@RoleCheck(allowedRoles = {Role.ADMIN, Role.MANAGER, Role.CUSTOMER})
+	public ResponseEntity<ApiResponseData<Void>> deleteReview(@PathVariable("reviewId") UUID reviewId,
 		AuthenticatedUser authenticatedUser) {
-		reviewServices.deleteReview(id, authenticatedUser);
+		reviewServices.deleteReview(reviewId, authenticatedUser);
 		return ResponseEntity.status(HttpStatus.OK)
 			.body(ApiResponseData.success());
 	}
 
-	@PostMapping("/{id}/like")
-	public ResponseEntity<ApiResponseData<Void>> toggleReviewLike(@PathVariable("id") UUID id,
+	@PostMapping("/{reviewId}/like")
+	public ResponseEntity<ApiResponseData<Void>> toggleReviewLike(@PathVariable("reviewId") UUID reviewId,
 		AuthenticatedUser authenticatedUser) {
-		reviewLikeService.toggleReviewLike(id, authenticatedUser);
+		reviewLikeService.toggleReviewLike(reviewId, authenticatedUser);
 
 		return ResponseEntity.status(HttpStatus.OK)
 			.body(ApiResponseData.success());
