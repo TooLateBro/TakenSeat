@@ -1,4 +1,4 @@
-package com.taken_seat.payment_service.application.dto.response;
+package com.taken_seat.payment_service.application.dto.controller.response;
 
 import java.io.Serializable;
 import java.util.List;

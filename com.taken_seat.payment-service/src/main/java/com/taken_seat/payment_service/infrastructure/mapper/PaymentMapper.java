@@ -6,9 +6,9 @@ import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 
 import com.taken_seat.common_service.dto.AuthenticatedUser;
-import com.taken_seat.payment_service.application.dto.request.PaymentRegisterReqDto;
-import com.taken_seat.payment_service.application.dto.request.PaymentUpdateReqDto;
-import com.taken_seat.payment_service.application.dto.response.PaymentDetailResDto;
+import com.taken_seat.payment_service.application.dto.controller.request.PaymentRegisterReqDto;
+import com.taken_seat.payment_service.application.dto.controller.request.PaymentUpdateReqDto;
+import com.taken_seat.payment_service.application.dto.controller.response.PaymentDetailResDto;
 import com.taken_seat.payment_service.application.dto.service.PaymentDto;
 import com.taken_seat.payment_service.domain.model.Payment;
 
