@@ -35,25 +35,25 @@ public class PerformanceClientService {
 	@Transactional
 	public BookingSeatClientResponseDto updateSeatStatus(BookingSeatClientRequestDto request) {
 
-		Performance performance = performanceExistenceValidator.validateByPerformanceId(request.getPerformanceId());
-		PerformanceSchedule schedule = performance.getScheduleById(request.getPerformanceScheduleId());
-		ScheduleSeat scheduleSeat = schedule.getScheduleSeatById(request.getSeatId());
+		Performance performance = performanceExistenceValidator.validateByPerformanceId(request.performanceId());
+		PerformanceSchedule schedule = performance.getScheduleById(request.performanceScheduleId());
+		ScheduleSeat scheduleSeat = schedule.getScheduleSeatById(request.scheduleSeatId());
 
 		if (scheduleSeat.getSeatStatus() == SeatStatus.SOLDOUT) {
-			log.warn("[Performance] 좌석 선점 - 실패 - seatId={}, scheduleId={}, 이유=이미 선점됨",
-				request.getSeatId(), request.getPerformanceScheduleId());
+			log.warn("[Performance] 좌석 선점 - 실패 - scheduleSeatId={}, scheduleId={}, 이유=이미 선점됨",
+				request.scheduleSeatId(), request.performanceScheduleId());
 			return new BookingSeatClientResponseDto(null, false, "이미 선점된 좌석입니다.");
 		}
 
 		scheduleSeat.updateStatus(SeatStatus.SOLDOUT);
 
 		Integer price = performance.findPriceByScheduleAndSeatType(
-			request.getPerformanceScheduleId(),
+			request.performanceScheduleId(),
 			scheduleSeat.getSeatType()
 		);
 
-		log.info("[Performance] 좌석 선점 - 성공 - seatId={}, scheduleId={}, seatType={}, price={}",
-			request.getSeatId(), request.getPerformanceScheduleId(), scheduleSeat.getSeatType(), price);
+		log.info("[Performance] 좌석 선점 - 성공 - scheduleSeatId={}, scheduleId={}, seatType={}, price={}",
+			request.scheduleSeatId(), request.performanceScheduleId(), scheduleSeat.getSeatType(), price);
 
 		return new BookingSeatClientResponseDto(price, true, "좌석 선점에 성공했습니다.");
 	}
@@ -61,20 +61,20 @@ public class PerformanceClientService {
 	@Transactional
 	public BookingSeatClientResponseDto cancelSeatStatus(BookingSeatClientRequestDto request) {
 
-		Performance performance = performanceExistenceValidator.validateByPerformanceId(request.getPerformanceId());
-		PerformanceSchedule schedule = performance.getScheduleById(request.getPerformanceScheduleId());
-		ScheduleSeat scheduleSeat = schedule.getScheduleSeatById(request.getSeatId());
+		Performance performance = performanceExistenceValidator.validateByPerformanceId(request.performanceId());
+		PerformanceSchedule schedule = performance.getScheduleById(request.performanceScheduleId());
+		ScheduleSeat scheduleSeat = schedule.getScheduleSeatById(request.scheduleSeatId());
 
 		if (scheduleSeat.getSeatStatus() == SeatStatus.DISABLED) {
-			log.warn("[Performance] 좌석 선점 취소 - 실패 - seatId={}, 이유=변경 불가 상태(DISABLED)",
-				request.getSeatId());
+			log.warn("[Performance] 좌석 선점 취소 - 실패 - scheduleSeatId={}, 이유=변경 불가 상태(DISABLED)",
+				request.scheduleSeatId());
 			throw new PerformanceException(ResponseCode.SEAT_STATUS_CHANGE_NOT_ALLOWED);
 		}
 
 		scheduleSeat.updateStatus(SeatStatus.AVAILABLE);
 
-		log.info("[Performance] 좌석 선점 취소 - 성공 - seatId={}, scheduleId={}",
-			request.getSeatId(), request.getPerformanceScheduleId());
+		log.info("[Performance] 좌석 선점 취소 - 성공 - scheduleSeatId={}, scheduleId={}",
+			request.scheduleSeatId(), request.performanceScheduleId());
 
 		return new BookingSeatClientResponseDto(null, false, "좌석 선점이 취소되었습니다.");
 	}
