@@ -109,11 +109,6 @@ public class Performance extends BaseTimeEntity {
 		this.status = newStatus;
 	}
 
-	public void updateScheduleStatus(UUID performanceScheduleId) {
-		PerformanceSchedule schedule = getScheduleById(performanceScheduleId);
-		schedule.updateStatusBasedOnSeats();
-	}
-
 	public void updateStatusBasedOnSchedules() {
 		this.status = PerformanceStatus.status(startAt, endAt, schedules);
 	}
