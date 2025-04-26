@@ -51,7 +51,7 @@
 // 			.userId(userId)
 // 			.performanceId(UUID.randomUUID())
 // 			.performanceScheduleId(UUID.randomUUID())
-// 			.seatId(UUID.randomUUID())
+// 			.scheduleSeatId(UUID.randomUUID())
 // 			.build();
 //
 // 		Booking saved = bookingJpaRepository.saveAndFlush(booking);
@@ -78,14 +78,14 @@
 // 			.userId(userId)
 // 			.performanceId(UUID.randomUUID())
 // 			.performanceScheduleId(UUID.randomUUID())
-// 			.seatId(UUID.randomUUID())
+// 			.scheduleSeatId(UUID.randomUUID())
 // 			.build();
 //
 // 		Booking booking2 = Booking.builder()
 // 			.userId(userId)
 // 			.performanceId(UUID.randomUUID())
 // 			.performanceScheduleId(UUID.randomUUID())
-// 			.seatId(UUID.randomUUID())
+// 			.scheduleSeatId(UUID.randomUUID())
 // 			.build();
 //
 // 		List<Booking> list = List.of(booking1, booking2);
@@ -114,7 +114,7 @@
 // 			.userId(userId)
 // 			.performanceId(UUID.randomUUID())
 // 			.performanceScheduleId(UUID.randomUUID())
-// 			.seatId(UUID.randomUUID())
+// 			.scheduleSeatId(UUID.randomUUID())
 // 			.build();
 //
 // 		Booking saved = bookingJpaRepository.saveAndFlush(booking);
@@ -135,7 +135,7 @@
 // 			.userId(userId)
 // 			.performanceId(UUID.randomUUID())
 // 			.performanceScheduleId(UUID.randomUUID())
-// 			.seatId(UUID.randomUUID())
+// 			.scheduleSeatId(UUID.randomUUID())
 // 			.canceledAt(LocalDateTime.now())
 // 			.build();
 //
@@ -156,7 +156,7 @@
 // 			.userId(randomUserId)
 // 			.performanceId(UUID.randomUUID())
 // 			.performanceScheduleId(UUID.randomUUID())
-// 			.seatId(UUID.randomUUID())
+// 			.scheduleSeatId(UUID.randomUUID())
 // 			.canceledAt(LocalDateTime.now())
 // 			.build();
 //
@@ -186,7 +186,7 @@
 // 			.userId(randomUserId)
 // 			.performanceId(UUID.randomUUID())
 // 			.performanceScheduleId(UUID.randomUUID())
-// 			.seatId(UUID.randomUUID())
+// 			.scheduleSeatId(UUID.randomUUID())
 // 			.canceledAt(LocalDateTime.now())
 // 			.build();
 //
@@ -194,7 +194,7 @@
 // 			.userId(randomUserId)
 // 			.performanceId(UUID.randomUUID())
 // 			.performanceScheduleId(UUID.randomUUID())
-// 			.seatId(UUID.randomUUID())
+// 			.scheduleSeatId(UUID.randomUUID())
 // 			.canceledAt(LocalDateTime.now())
 // 			.build();
 //
@@ -224,7 +224,7 @@
 // 			.userId(userId)
 // 			.performanceId(performanceId)
 // 			.performanceScheduleId(UUID.randomUUID())
-// 			.seatId(UUID.randomUUID())
+// 			.scheduleSeatId(UUID.randomUUID())
 // 			.canceledAt(LocalDateTime.now())
 // 			.build();
 //

@@ -3,6 +3,7 @@ package com.taken_seat.performance_service.performancehall.domain.model;
 import java.util.UUID;
 
 import com.taken_seat.common_service.entity.BaseTimeEntity;
+import com.taken_seat.performance_service.performancehall.application.dto.command.UpdateSeatCommand;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -50,4 +51,11 @@ public class Seat extends BaseTimeEntity {
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private SeatStatus status;
+
+	public void update(UpdateSeatCommand command) {
+		rowNumber = command.rowNumber();
+		seatNumber = command.seatNumber();
+		seatType = command.seatType();
+		status = command.status();
+	}
 }
