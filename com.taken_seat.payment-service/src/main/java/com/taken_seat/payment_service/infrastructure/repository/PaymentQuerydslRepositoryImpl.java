@@ -23,6 +23,7 @@ import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.taken_seat.common_service.exception.customException.PaymentException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
+import com.taken_seat.payment_service.application.dto.request.PaymentSearchReqDto;
 import com.taken_seat.payment_service.domain.enums.PaymentStatus;
 import com.taken_seat.payment_service.domain.model.Payment;
 import com.taken_seat.payment_service.domain.model.QPayment;
@@ -40,22 +41,25 @@ public class PaymentQuerydslRepositoryImpl implements PaymentQuerydslRepository 
 	private static final List<String> VALID_SORT_BY = Arrays.asList("createdAt", "updatedAt", "deletedAt");
 
 	@Override
-	public Page<Payment> search(String query, String category, int page, int size, String sortBy, String order) {
-		size = validateSize(size);
-		Sort sort = getSortOrder(sortBy, order);
-		Pageable pageable = PageRequest.of(page, size, sort);
+	public Page<Payment> search(PaymentSearchReqDto searchReqDto) {
+		int size = validateSize(searchReqDto.getSize());
+
+		Sort sort = getSortOrder(searchReqDto.getSort(), searchReqDto.getOrder());
+		Pageable pageable = PageRequest.of(searchReqDto.getPage(), size, sort);
 
 		QPayment payment = QPayment.payment;
+
+		BooleanExpression condition = buildSearchCondition(searchReqDto.getQ(), searchReqDto.getCategory());
 
 		List<Payment> contents = queryFactory
 			.selectFrom(payment)
 			.where(
 				payment.deletedAt.isNull(),
-				buildSearchCondition(query, category)
+				condition
 			)
 			.offset(pageable.getOffset())
 			.limit(pageable.getPageSize())
-			.orderBy(toOrderSpecifier(sortBy, order))
+			.orderBy(toOrderSpecifier(searchReqDto.getSort(), searchReqDto.getOrder()))
 			.fetch();
 
 		Long total = queryFactory
@@ -63,7 +67,7 @@ public class PaymentQuerydslRepositoryImpl implements PaymentQuerydslRepository 
 			.from(payment)
 			.where(
 				payment.deletedAt.isNull(),
-				buildSearchCondition(query, category)
+				condition
 			)
 			.fetchOne();
 
@@ -78,7 +82,8 @@ public class PaymentQuerydslRepositoryImpl implements PaymentQuerydslRepository 
 			case "status" -> statusContains(query);
 			case "approvedAt" -> approvedAtEquals(query);
 			case "refundRequestedAt" -> refundRequestedAtEquals(query);
-			default -> null;
+			default -> throw new PaymentException(ResponseCode.ILLEGAL_ARGUMENT,
+				"지원하지 않는 검색 카테고리입니다. (status, approvedAt, refundRequestedAt 중 하나여야 합니다.)");
 		};
 	}
 
