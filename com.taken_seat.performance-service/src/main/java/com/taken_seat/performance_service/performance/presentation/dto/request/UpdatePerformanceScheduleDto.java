@@ -14,7 +14,7 @@ public record UpdatePerformanceScheduleDto(
 	LocalDateTime saleStartAt,
 	LocalDateTime saleEndAt,
 	PerformanceScheduleStatus status,
-	List<UpdateScheduleSeatDto> seatPrices
+	List<UpdateScheduleSeatDto> scheduleSeats
 ) {
 }
 

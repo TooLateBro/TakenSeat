@@ -14,7 +14,7 @@ public record PerformanceScheduleResponseDto(
 	LocalDateTime saleStartAt,
 	LocalDateTime saleEndAt,
 	PerformanceScheduleStatus status,
-	List<ScheduleSeatResponseDto> seatPrices
+	List<ScheduleSeatResponseDto> scheduleSeats
 ) {
 }
 

@@ -40,7 +40,7 @@ public class PerformanceUpdateHelper {
 		schedule.preUpdate(updatedBy);
 		schedule.update(command);
 
-		updateScheduleSeats(schedule, command.seatPrices(), updatedBy);
+		updateScheduleSeats(schedule, command.scheduleSeats(), updatedBy);
 	}
 
 	private static PerformanceSchedule createNewSchedule(UpdatePerformanceScheduleCommand command,
@@ -58,7 +58,7 @@ public class PerformanceUpdateHelper {
 			.build();
 
 		schedule.prePersist(updatedBy);
-		updateScheduleSeats(schedule, command.seatPrices(), updatedBy);
+		updateScheduleSeats(schedule, command.scheduleSeats(), updatedBy);
 		return schedule;
 	}
 

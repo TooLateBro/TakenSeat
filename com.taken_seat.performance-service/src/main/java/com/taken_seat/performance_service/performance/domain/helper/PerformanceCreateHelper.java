@@ -54,7 +54,7 @@ public class PerformanceCreateHelper {
 				PerformanceSchedule schedule = createPerformanceSchedule(command, performance);
 				schedule.prePersist(createdBy);
 
-				Map<SeatType, Integer> seatPriceMap = command.seatPrices().stream()
+				Map<SeatType, Integer> seatPriceMap = command.scheduleSeats().stream()
 					.collect(Collectors.toMap(
 						CreateScheduleSeatCommand::seatType,
 						CreateScheduleSeatCommand::price
