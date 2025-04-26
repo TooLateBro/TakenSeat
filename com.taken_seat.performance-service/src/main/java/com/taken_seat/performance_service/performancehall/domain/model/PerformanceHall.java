@@ -89,7 +89,10 @@ public class PerformanceHall extends BaseTimeEntity {
 		}
 
 		for (UpdateSeatCommand seatDto : seatDtoList) {
-			Seat existingSeat = this.getSeatById(seatDto.seatId());
+			Seat existingSeat = this.seats.stream()
+				.filter(seat -> seat.getId().equals(seatDto.seatId()))
+				.findFirst()
+				.orElse(null);
 
 			if (existingSeat != null) {
 				existingSeat.update(seatDto);
@@ -105,11 +108,6 @@ public class PerformanceHall extends BaseTimeEntity {
 			}
 		}
 		this.totalSeats = this.seats.size();
-	}
-
-	public boolean isSoldOut() {
-		return seats.stream()
-			.noneMatch(seat -> seat.getStatus() == SeatStatus.AVAILABLE);
 	}
 
 	public List<SeatTemplateInfo> toSeatTemplateInfos() {
