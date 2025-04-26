@@ -32,7 +32,6 @@ import com.taken_seat.performance_service.performance.presentation.dto.response.
 import com.taken_seat.performance_service.performance.presentation.dto.response.PageResponseDto;
 import com.taken_seat.performance_service.performance.presentation.dto.response.SearchResponseDto;
 import com.taken_seat.performance_service.performance.presentation.dto.response.UpdateResponseDto;
-import com.taken_seat.performance_service.performancehall.domain.facade.PerformanceHallFacade;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,7 +43,6 @@ public class PerformanceService {
 
 	private final PerformanceRepository performanceRepository;
 	private final PerformanceResponseMapper performanceResponseMapper;
-	private final PerformanceHallFacade performanceHallFacade;
 	private final PerformanceExistenceValidator performanceExistenceValidator;
 	private final PerformanceCreateCommandMapper performanceCreateCommandMapper;
 	private final PerformanceUpdateCommandMapper performanceUpdateCommandMapper;
