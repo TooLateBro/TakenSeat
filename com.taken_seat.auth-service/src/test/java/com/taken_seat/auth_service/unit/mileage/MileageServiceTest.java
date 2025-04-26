@@ -1,6 +1,7 @@
 package com.taken_seat.auth_service.unit.mileage;
 
 import com.taken_seat.auth_service.application.dto.PageResponseDto;
+import com.taken_seat.auth_service.application.dto.mileage.MileageMapper;
 import com.taken_seat.auth_service.application.dto.mileage.UserMileageResponseDto;
 import com.taken_seat.auth_service.application.service.mileage.MileageServiceImpl;
 import com.taken_seat.auth_service.domain.entity.mileage.Mileage;
@@ -18,12 +19,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -31,8 +34,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -43,6 +45,9 @@ public class MileageServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private MileageMapper mileageMapper;
 
     @Mock
     private MileageQueryRepository mileageQueryRepository;
@@ -56,9 +61,11 @@ public class MileageServiceTest {
 
     private UUID userId;
     private UUID mileageId;
+    private LocalDateTime updatedAt;
 
     @BeforeEach
     public void setUp() {
+        updatedAt = LocalDateTime.parse("2025-12-31T23:59:59");
         user = User.create(
                 "testuser1","test@test.com","010-1111-1111"
                 ,"testPassword1!", Role.ADMIN
@@ -74,15 +81,19 @@ public class MileageServiceTest {
     @DisplayName("마일리지 생성 성공 테스트")
     public void createMileageSuccess() {
         userId = UUID.randomUUID();
+        UserMileageRequestDto mileageRequestDto = new UserMileageRequestDto(30000);
 
-        UserMileageRequestDto mileageRequestDto = new UserMileageRequestDto(
-                30000
-        );
+        User user = mock(User.class);
         when(userRepository.findByIdAndDeletedAtIsNull(userId)).thenReturn(Optional.of(user));
+
+        UserMileageResponseDto mappedDto = new UserMileageResponseDto(30000, updatedAt);
+        when(mileageMapper.userToUserMileageResponseDto(any(Mileage.class))).thenReturn(mappedDto);
+
         UserMileageResponseDto responseDto = mileageService.createMileageUser(userId, mileageRequestDto.toDto());
 
         assertNotNull(responseDto);
     }
+
     @Test
     @DisplayName("마일리지 생성 실패 테스트 - 유저 없음")
     public void createMileageFail_UserNotFound() {
@@ -104,16 +115,18 @@ public class MileageServiceTest {
         mileageId = UUID.randomUUID();
 
         Mileage mockMileage = Mockito.mock(Mileage.class);
-        when(mockMileage.getId()).thenReturn(mileageId);
-        when(mockMileage.getUser()).thenReturn(user);
-        when(mockMileage.getMileage()).thenReturn(30000);
 
         when(mileageRepository.findByIdAndDeletedAtIsNull(mileageId)).thenReturn(Optional.of(mockMileage));
+
+        UserMileageResponseDto mappedDto = new UserMileageResponseDto(30000, updatedAt);
+        when(mileageMapper.userToUserMileageResponseDto(mockMileage)).thenReturn(mappedDto);
 
         UserMileageResponseDto responseDto = mileageService.getMileageUser(mileageId);
 
         assertNotNull(responseDto);
     }
+
+
     @Test
     @DisplayName("마일리지 단건 조회 실패 테스트 - 마일리지 없음")
     public void getMileageUserFail_MileageNotFound() {
@@ -201,9 +214,12 @@ public class MileageServiceTest {
         when(mileageRepository.findByIdAndDeletedAtIsNull(mileageId)).thenReturn(Optional.of(mileage));
 
         UserMileageRequestDto requestDto = new UserMileageRequestDto(40000);
+        UserMileageResponseDto mappedDto = new UserMileageResponseDto(400000, updatedAt);
+        when(mileageMapper.userToUserMileageResponseDto(mileage)).thenReturn(mappedDto);
         UserMileageResponseDto responseDto = mileageService.updateMileageUser(mileageId, authenticatedUser, requestDto.toDto());
 
         assertNotNull(responseDto);
+        assertNotNull(mappedDto);
     }
     @Test
     @DisplayName("마일리지 수정 실패 테스트 - 마일리지 없음")
