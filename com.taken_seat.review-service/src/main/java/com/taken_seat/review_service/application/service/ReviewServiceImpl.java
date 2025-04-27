@@ -134,7 +134,7 @@ public class ReviewServiceImpl implements ReviewService {
 
 	private void validateAccessAuthority(Review review, ReviewDto reviewDto) {
 		boolean isAuthor = review.getAuthorId().equals(reviewDto.getUserId());
-		boolean isMaster = "MASTER".equals(reviewDto.getRole());
+		boolean isMaster = "ADMIN".equals(reviewDto.getRole());
 
 		if (!(isAuthor || isMaster)) {
 			throw new ReviewException(ResponseCode.FORBIDDEN_REVIEW_ACCESS);
