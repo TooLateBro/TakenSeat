@@ -10,23 +10,23 @@ import java.time.LocalDateTime;
 
 public record CreateCouponRequestDto(
         @Size(min = 1, max = 100, message = "쿠폰 이름은 1자 이상 100자 이하로 입력해주세요.")
-        @Schema(name = "CouponName")
+        @Schema(example = "CouponName")
         String name,
 
         @Size(min = 1, max = 50, message = "코드는 1자 이상 50자 이하로 입력해주세요.")
-        @Schema(name = "CouponCode")
+        @Schema(example = "CouponCode")
         String code,
 
         @Min(value = 1, message = "수량은 1 이상이어야 합니다.")
-        @Schema(name = "1")
+        @Schema(example = "1")
         Long quantity,
 
         @Min(value = 1, message = "할인율은 1 이상이어야 합니다.")
-        @Schema(name = "1")
+        @Schema(example = "1")
         Integer discount,
 
         @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-        @Schema(name = "2025-12-31 23:59:59")
+        @Schema(example = "2025-12-31 23:59:59")
         LocalDateTime expiredAt
 ) {
     public CouponDto toDto(){
