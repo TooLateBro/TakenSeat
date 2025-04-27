@@ -1,7 +1,7 @@
 package com.taken_seat.coupon_service.presentation.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.taken_seat.coupon_service.application.dto.CouponUpdateDto;
+import com.taken_seat.coupon_service.application.dto.CouponDto;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -32,7 +32,7 @@ public class UpdateCouponRequestDto {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime expiredAt;
 
-    public CouponUpdateDto toDto(){
-        return CouponUpdateDto.update(this.name, this.code, this.quantity, this.discount, this.expiredAt);
+    public CouponDto toDto(){
+        return CouponDto.update(this.name, this.code, this.quantity, this.discount, this.expiredAt);
     }
 }

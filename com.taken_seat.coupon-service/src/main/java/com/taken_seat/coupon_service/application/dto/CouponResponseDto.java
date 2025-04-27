@@ -14,12 +14,4 @@ public record CouponResponseDto(
         Integer discount,
         @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
         LocalDateTime expiredAt
-) {
-
-    public static CouponResponseDto of(Coupon coupon) {
-        return new CouponResponseDto(
-                coupon.getId(), coupon.getName(), coupon.getCode(),
-                coupon.getQuantity(), coupon.getDiscount(), LocalDateTime.now()
-        );
-    }
-}
+) {}
