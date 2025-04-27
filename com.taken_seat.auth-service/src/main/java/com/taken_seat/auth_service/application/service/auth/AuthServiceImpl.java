@@ -3,7 +3,8 @@ package com.taken_seat.auth_service.application.service.auth;
 import com.taken_seat.auth_service.application.dto.auth.AuthLoginDto;
 import com.taken_seat.auth_service.application.dto.auth.AuthLoginResponseDto;
 import com.taken_seat.auth_service.application.dto.auth.AuthSignUpDto;
-import com.taken_seat.auth_service.application.dto.auth.AuthSignUpResponseDto;
+import com.taken_seat.auth_service.application.dto.user.v1.UserInfoResponseDtoV1;
+import com.taken_seat.auth_service.application.dto.user.v1.UserMapper;
 import com.taken_seat.auth_service.domain.entity.user.User;
 import com.taken_seat.auth_service.domain.repository.user.UserRepository;
 import com.taken_seat.auth_service.infrastructure.util.JwtUtil;
@@ -21,12 +22,14 @@ import java.util.concurrent.TimeUnit;
 public class AuthServiceImpl implements AuthService{
 
     private final UserRepository userRepository;
+    private final UserMapper userMapper;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final JwtUtil jwtUtil;
     private final RedisTemplate<String, String> redisTemplate;
 
-    public AuthServiceImpl(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder, JwtUtil jwtUtil, RedisTemplate<String, String> redisTemplate) {
+    public AuthServiceImpl(UserRepository userRepository, UserMapper userMapper, BCryptPasswordEncoder bCryptPasswordEncoder, JwtUtil jwtUtil, RedisTemplate<String, String> redisTemplate) {
         this.userRepository = userRepository;
+        this.userMapper = userMapper;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.jwtUtil = jwtUtil;
         this.redisTemplate = redisTemplate;
@@ -34,7 +37,7 @@ public class AuthServiceImpl implements AuthService{
 
     @Transactional
     @Override
-    public AuthSignUpResponseDto signUp(AuthSignUpDto dto) {
+    public UserInfoResponseDtoV1 signUp(AuthSignUpDto dto) {
         if(userRepository.findByEmail(dto.email()).isPresent()){
             throw new AuthException(ResponseCode.USER_BAD_EMAIL);
         }
@@ -45,7 +48,7 @@ public class AuthServiceImpl implements AuthService{
         );
         userRepository.save(user);
 
-        return AuthSignUpResponseDto.of(user);
+        return userMapper.userToUserInfoResponseDto(user);
     }
 
     @Transactional(readOnly = true)

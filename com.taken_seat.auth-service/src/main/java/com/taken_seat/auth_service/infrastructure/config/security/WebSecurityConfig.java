@@ -16,7 +16,6 @@ public class WebSecurityConfig {
     private final String[] auth_Urls = {
             "/api/v1/auths/**",
             "/api/v1/users/**",
-            "/api/v2/users/**",
             "/swagger-ui/**",
             "v3/api-docs/**",
             "/actuator/**"
