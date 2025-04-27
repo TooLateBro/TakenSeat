@@ -2,37 +2,37 @@ package com.taken_seat.booking_service.booking.application.service;
 
 import java.util.UUID;
 
-import org.springframework.data.domain.Pageable;
-
-import com.taken_seat.booking_service.booking.application.dto.request.BookingCreateRequest;
-import com.taken_seat.booking_service.booking.application.dto.request.BookingPayRequest;
-import com.taken_seat.booking_service.booking.application.dto.response.AdminBookingPageResponse;
-import com.taken_seat.booking_service.booking.application.dto.response.AdminBookingReadResponse;
-import com.taken_seat.booking_service.booking.application.dto.response.BookingCreateResponse;
-import com.taken_seat.booking_service.booking.application.dto.response.BookingPageResponse;
-import com.taken_seat.booking_service.booking.application.dto.response.BookingReadResponse;
-import com.taken_seat.common_service.dto.AuthenticatedUser;
+import com.taken_seat.booking_service.booking.application.dto.command.BookingAdminPageReadCommand;
+import com.taken_seat.booking_service.booking.application.dto.command.BookingCreateCommand;
+import com.taken_seat.booking_service.booking.application.dto.command.BookingPageReadCommand;
+import com.taken_seat.booking_service.booking.application.dto.command.BookingPaymentCommand;
+import com.taken_seat.booking_service.booking.application.dto.command.BookingSingleTargetCommand;
+import com.taken_seat.booking_service.booking.presentation.dto.response.AdminBookingPageResponse;
+import com.taken_seat.booking_service.booking.presentation.dto.response.AdminBookingReadResponse;
+import com.taken_seat.booking_service.booking.presentation.dto.response.BookingCreateResponse;
+import com.taken_seat.booking_service.booking.presentation.dto.response.BookingPageResponse;
+import com.taken_seat.booking_service.booking.presentation.dto.response.BookingReadResponse;
 import com.taken_seat.common_service.message.BookingRequestMessage;
 import com.taken_seat.common_service.message.PaymentMessage;
 import com.taken_seat.common_service.message.PaymentRefundMessage;
 import com.taken_seat.common_service.message.UserBenefitMessage;
 
 public interface BookingService {
-	BookingCreateResponse createBooking(AuthenticatedUser authenticatedUser, BookingCreateRequest request);
+	BookingCreateResponse createBooking(BookingCreateCommand command);
 
-	BookingReadResponse readBooking(AuthenticatedUser authenticatedUser, UUID id);
+	BookingReadResponse readBooking(BookingSingleTargetCommand command);
 
-	BookingPageResponse readBookings(AuthenticatedUser authenticatedUser, Pageable pageable);
+	BookingPageResponse readBookings(BookingPageReadCommand command);
 
-	void cancelBooking(AuthenticatedUser authenticatedUser, UUID id);
+	void cancelBooking(BookingSingleTargetCommand command);
 
-	void deleteBooking(AuthenticatedUser authenticatedUser, UUID id);
+	void deleteBooking(BookingSingleTargetCommand command);
 
-	AdminBookingReadResponse adminReadBooking(AuthenticatedUser authenticatedUser, UUID id);
+	AdminBookingReadResponse adminReadBooking(BookingSingleTargetCommand command);
 
-	AdminBookingPageResponse adminReadBookings(AuthenticatedUser authenticatedUser, UUID userId, Pageable pageable);
+	AdminBookingPageResponse adminReadBookings(BookingAdminPageReadCommand command);
 
-	void createPayment(AuthenticatedUser authenticatedUser, UUID id, BookingPayRequest request);
+	void createPayment(BookingPaymentCommand command);
 
 	void updateBooking(PaymentMessage message);
 

@@ -10,18 +10,14 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.taken_seat.booking_service.booking.application.dto.request.BookingCreateRequest;
-import com.taken_seat.booking_service.booking.application.dto.request.BookingPayRequest;
-import com.taken_seat.booking_service.booking.application.dto.response.AdminBookingPageResponse;
-import com.taken_seat.booking_service.booking.application.dto.response.AdminBookingReadResponse;
-import com.taken_seat.booking_service.booking.application.dto.response.BookingCreateResponse;
-import com.taken_seat.booking_service.booking.application.dto.response.BookingPageResponse;
-import com.taken_seat.booking_service.booking.application.dto.response.BookingReadResponse;
-import com.taken_seat.booking_service.booking.application.dto.response.SeatLayoutResponseDto;
+import com.taken_seat.booking_service.booking.application.dto.command.BookingAdminPageReadCommand;
+import com.taken_seat.booking_service.booking.application.dto.command.BookingCreateCommand;
+import com.taken_seat.booking_service.booking.application.dto.command.BookingPageReadCommand;
+import com.taken_seat.booking_service.booking.application.dto.command.BookingPaymentCommand;
+import com.taken_seat.booking_service.booking.application.dto.command.BookingSingleTargetCommand;
 import com.taken_seat.booking_service.booking.application.service.BookingClientService;
 import com.taken_seat.booking_service.booking.application.service.BookingProducer;
 import com.taken_seat.booking_service.booking.application.service.BookingService;
@@ -32,9 +28,14 @@ import com.taken_seat.booking_service.booking.domain.BookingStatus;
 import com.taken_seat.booking_service.booking.domain.repository.BenefitUsageHistoryRepository;
 import com.taken_seat.booking_service.booking.domain.repository.BookingAdminRepository;
 import com.taken_seat.booking_service.booking.domain.repository.BookingRepository;
+import com.taken_seat.booking_service.booking.presentation.dto.response.AdminBookingPageResponse;
+import com.taken_seat.booking_service.booking.presentation.dto.response.AdminBookingReadResponse;
+import com.taken_seat.booking_service.booking.presentation.dto.response.BookingCreateResponse;
+import com.taken_seat.booking_service.booking.presentation.dto.response.BookingPageResponse;
+import com.taken_seat.booking_service.booking.presentation.dto.response.BookingReadResponse;
+import com.taken_seat.booking_service.booking.presentation.dto.response.SeatLayoutResponseDto;
 import com.taken_seat.booking_service.common.message.TicketRequestMessage;
 import com.taken_seat.booking_service.common.service.RedisService;
-import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.common_service.dto.request.BookingSeatClientRequestDto;
 import com.taken_seat.common_service.dto.response.BookingSeatClientResponseDto;
 import com.taken_seat.common_service.dto.response.TicketPerformanceClientResponse;
@@ -64,38 +65,38 @@ public class BookingServiceImpl implements BookingService {
 
 	@Override
 	@Transactional
-	public BookingCreateResponse createBooking(AuthenticatedUser authenticatedUser, BookingCreateRequest request) {
+	public BookingCreateResponse createBooking(BookingCreateCommand command) {
 
-		log.info("[Booking] 예약 생성 - 시도: | userId={}", authenticatedUser.getUserId());
+		log.info("[Booking] 예약 생성 - 시도: | userId={}", command.userId());
 
 		// 중복 체크
-		if (bookingRepository.isUniqueBooking(authenticatedUser.getUserId(), request.getPerformanceId(),
-			request.getPerformanceScheduleId(), request.getSeatId())) {
+		if (bookingRepository.isUniqueBooking(command.userId(), command.performanceId(),
+			command.performanceScheduleId(), command.scheduleSeatId())) {
 
 			log.warn(
 				"[Booking] 예약 생성 - 실패: {} | userId={}",
 				ResponseCode.BOOKING_DUPLICATED_EXCEPTION.getMessage(),
-				authenticatedUser.getUserId()
+				command.userId()
 			);
 			throw new BookingException(ResponseCode.BOOKING_DUPLICATED_EXCEPTION);
 		}
 
 		// 좌석 선점
 		BookingSeatClientResponseDto responseDto = redissonService.tryHoldSeat(
-			request.getPerformanceId(),
-			request.getPerformanceScheduleId(),
-			request.getSeatId()
+			command.performanceId(),
+			command.performanceScheduleId(),
+			command.scheduleSeatId()
 		);
 
 		Booking booking = Booking.builder()
-			.userId(authenticatedUser.getUserId())
-			.performanceId(request.getPerformanceId())
-			.performanceScheduleId(request.getPerformanceScheduleId())
-			.seatId(request.getSeatId())
+			.userId(command.userId())
+			.performanceId(command.performanceId())
+			.performanceScheduleId(command.performanceScheduleId())
+			.scheduleSeatId(command.scheduleSeatId())
 			.price(responseDto.price())
 			.discountedPrice(responseDto.price())
 			.build();
-		booking.prePersist(authenticatedUser.getUserId());
+		booking.prePersist(command.userId());
 
 		Booking saved = bookingRepository.save(booking);
 
@@ -104,46 +105,46 @@ public class BookingServiceImpl implements BookingService {
 
 		// 대기열 입장 메시지 전송
 		QueueEnterMessage queueEnterMessage = QueueEnterMessage.builder()
-			.performanceId(request.getPerformanceId())
-			.performanceScheduleId(request.getPerformanceScheduleId())
+			.performanceId(command.performanceId())
+			.performanceScheduleId(command.performanceScheduleId())
 			.build();
 		bookingProducer.sendQueueEnterResponse(queueEnterMessage);
 
-		log.info("[Booking] 예약 생성 - 성공: | userId={}", authenticatedUser.getUserId());
+		log.info("[Booking] 예약 생성 - 성공: | userId={}", command.userId());
 
-		redisService.evictAllCaches("readBookings", authenticatedUser.getUserId().toString());
-		redisService.evictAllCaches("adminReadBookings", authenticatedUser.getUserId().toString());
+		redisService.evictAllCaches("readBookings", command.userId().toString());
+		redisService.evictAllCaches("adminReadBookings", command.userId().toString());
 		return BookingCreateResponse.toDto(saved);
 	}
 
 	@Override
 	@Transactional(readOnly = true)
-	@Cacheable(value = "readBooking", key = "#id")
-	public BookingReadResponse readBooking(AuthenticatedUser authenticatedUser, UUID id) {
+	@Cacheable(value = "readBooking", key = "#command.bookingId()")
+	public BookingReadResponse readBooking(BookingSingleTargetCommand command) {
 
-		log.info("[Booking] 조회 - 시도: | userId={}", authenticatedUser.getUserId());
+		log.info("[Booking] 조회 - 시도: | userId={}", command.userId());
 
-		Booking booking = findBookingByIdAndUserId(id, authenticatedUser.getUserId());
+		Booking booking = findBookingByIdAndUserId(command.bookingId(), command.userId());
 		TicketPerformanceClientResponse response = bookingClientService.getPerformanceInfo(
-			booking.getPerformanceId(), booking.getPerformanceScheduleId(), booking.getSeatId());
+			booking.getPerformanceId(), booking.getPerformanceScheduleId(), booking.getScheduleSeatId());
 
-		log.info("[Booking] 조회 - 성공: | userId={}", authenticatedUser.getUserId());
+		log.info("[Booking] 조회 - 성공: | userId={}", command.userId());
 
 		return BookingReadResponse.toDto(booking, response);
 	}
 
 	@Override
 	@Transactional(readOnly = true)
-	@Cacheable(value = "readBookings", key = "#authenticatedUser.userId + ':' + #pageable.pageNumber + ':' + #pageable.pageSize + ':' + #pageable.sort")
-	public BookingPageResponse readBookings(AuthenticatedUser authenticatedUser, Pageable pageable) {
+	@Cacheable(value = "readBookings", key = "#command.userId() + ':' + #command.pageable().pageNumber + ':' + #command.pageable().pageSize + ':' + #command.pageable().sort")
+	public BookingPageResponse readBookings(BookingPageReadCommand command) {
 
-		log.info("[Booking] 조회 - 시도: | userId={}", authenticatedUser.getUserId());
-		Page<Booking> page = bookingRepository.findAllByUserId(pageable, authenticatedUser.getUserId());
+		log.info("[Booking] 조회 - 시도: | userId={}", command.userId());
+		Page<Booking> page = bookingRepository.findAllByUserId(command.pageable(), command.userId());
 		List<TicketPerformanceClientResponse> responses = page.getContent().stream()
 			.map(e -> bookingClientService.getPerformanceInfo(e.getPerformanceId(), e.getPerformanceScheduleId(),
-				e.getSeatId()))
+				e.getScheduleSeatId()))
 			.toList();
-		log.info("[Booking] 조회 - 성공: | userId={}", authenticatedUser.getUserId());
+		log.info("[Booking] 조회 - 성공: | userId={}", command.userId());
 
 		return BookingPageResponse.toDto(page, responses);
 	}
@@ -151,14 +152,14 @@ public class BookingServiceImpl implements BookingService {
 	@Override
 	@Transactional
 	@Caching(evict = {
-		@CacheEvict(value = "readBooking", key = "#id"),
-		@CacheEvict(value = "adminReadBooking", key = "#id")
+		@CacheEvict(value = "readBooking", key = "#command.bookingId()"),
+		@CacheEvict(value = "adminReadBooking", key = "#command.bookingId()")
 	})
-	public void cancelBooking(AuthenticatedUser authenticatedUser, UUID id) {
+	public void cancelBooking(BookingSingleTargetCommand command) {
 
-		log.info("[Booking] 예약 취소 - 시도: | userId={}", authenticatedUser.getUserId());
+		log.info("[Booking] 예약 취소 - 시도: | userId={}", command.userId());
 
-		Booking booking = findBookingByIdAndUserId(id, authenticatedUser.getUserId());
+		Booking booking = findBookingByIdAndUserId(command.bookingId(), command.userId());
 		BookingStatus status = booking.getBookingStatus();
 
 		LocalDateTime startAt = bookingClientService.getPerformanceStartTime(booking.getPerformanceId(),
@@ -170,7 +171,7 @@ public class BookingServiceImpl implements BookingService {
 			log.warn(
 				"[Booking] 예약 취소 - 실패: {} | userId={}",
 				ResponseCode.BOOKING_CANCEL_NOT_ALLOWED_EXCEPTION.getMessage(),
-				authenticatedUser.getUserId()
+				command.userId()
 			);
 			throw new BookingException(ResponseCode.BOOKING_CANCEL_NOT_ALLOWED_EXCEPTION);
 		}
@@ -179,7 +180,7 @@ public class BookingServiceImpl implements BookingService {
 			log.warn(
 				"[Booking] 예약 취소 - 실패: {} | userId={}",
 				ResponseCode.BOOKING_ALREADY_CANCELED_EXCEPTION.getMessage(),
-				authenticatedUser.getUserId()
+				command.userId()
 			);
 			throw new BookingException(ResponseCode.BOOKING_ALREADY_CANCELED_EXCEPTION);
 		} else if (status == BookingStatus.COMPLETED) {
@@ -194,152 +195,151 @@ public class BookingServiceImpl implements BookingService {
 
 			bookingProducer.sendPaymentRefundRequest(message);
 
-			log.info("[Booking] 예약 취소 - 환불 요청 전송: | userId={}", authenticatedUser.getUserId());
+			log.info("[Booking] 예약 취소 - 환불 요청 전송: | userId={}", command.userId());
 		}
 
 		// 좌석 선점 해제 요청 보내기
-		BookingSeatClientRequestDto dto = BookingSeatClientRequestDto.builder()
-			.performanceId(booking.getPerformanceId())
-			.performanceScheduleId(booking.getPerformanceScheduleId())
-			.seatId(booking.getSeatId())
-			.build();
+		BookingSeatClientRequestDto dto = new BookingSeatClientRequestDto(
+			booking.getPerformanceId(),
+			booking.getPerformanceScheduleId(),
+			booking.getScheduleSeatId()
+		);
 		BookingSeatClientResponseDto responseDto = bookingClientService.cancelSeatStatus(dto);
 
 		if (responseDto.reserved()) {
 			log.warn(
 				"[Booking] 예약 취소 - 실패: {} | userId={}",
 				ResponseCode.BOOKING_SEAT_CANCEL_FAILED_EXCEPTION.getMessage(),
-				authenticatedUser.getUserId()
+				command.userId()
 			);
 			throw new BookingException(ResponseCode.BOOKING_SEAT_CANCEL_FAILED_EXCEPTION);
 		}
 
-		booking.cancel(authenticatedUser.getUserId());
-		log.info("[Booking] 예약 취소 - 성공: | userId={}", authenticatedUser.getUserId());
+		booking.cancel(command.userId());
+		log.info("[Booking] 예약 취소 - 성공: | userId={}", command.userId());
 
-		redisService.evictAllCaches("readBookings", authenticatedUser.getUserId().toString());
-		redisService.evictAllCaches("adminReadBookings", authenticatedUser.getUserId().toString());
+		redisService.evictAllCaches("readBookings", command.userId().toString());
+		redisService.evictAllCaches("adminReadBookings", command.userId().toString());
 	}
 
 	@Override
 	@Transactional
 	@Caching(evict = {
-		@CacheEvict(value = "readBooking", key = "#id"),
-		@CacheEvict(value = "adminReadBooking", key = "#id")
+		@CacheEvict(value = "readBooking", key = "#command.bookingId()"),
+		@CacheEvict(value = "adminReadBooking", key = "#command.bookingId()")
 	})
-	public void deleteBooking(AuthenticatedUser authenticatedUser, UUID id) {
+	public void deleteBooking(BookingSingleTargetCommand command) {
 
-		log.info("[Booking] 예약 삭제 - 시도: | userId={}", authenticatedUser.getUserId());
+		log.info("[Booking] 예약 삭제 - 시도: | userId={}", command.userId());
 
-		Booking booking = findBookingByIdAndUserId(id, authenticatedUser.getUserId());
+		Booking booking = findBookingByIdAndUserId(command.bookingId(), command.userId());
 		BookingStatus status = booking.getBookingStatus();
 
 		if (status == BookingStatus.PENDING) {
 			log.warn(
 				"[Booking] 예약 삭제 - 실패: {} | userId={}",
 				ResponseCode.BOOKING_DELETE_NOT_ALLOWED_EXCEPTION.getMessage(),
-				authenticatedUser.getUserId()
+				command.userId()
 			);
 			throw new BookingException(ResponseCode.BOOKING_DELETE_NOT_ALLOWED_EXCEPTION);
 		}
 
-		booking.delete(authenticatedUser.getUserId());
-		log.info("[Booking] 예약 삭제 - 성공: | userId={}", authenticatedUser.getUserId());
+		booking.delete(command.userId());
+		log.info("[Booking] 예약 삭제 - 성공: | userId={}", command.userId());
 
-		redisService.evictAllCaches("readBookings", authenticatedUser.getUserId().toString());
-		redisService.evictAllCaches("adminReadBookings", authenticatedUser.getUserId().toString());
+		redisService.evictAllCaches("readBookings", command.userId().toString());
+		redisService.evictAllCaches("adminReadBookings", command.userId().toString());
 	}
 
 	@Override
 	@Transactional(readOnly = true)
-	@Cacheable(value = "adminReadBooking", key = "#id")
-	public AdminBookingReadResponse adminReadBooking(AuthenticatedUser authenticatedUser, UUID id) {
+	@Cacheable(value = "adminReadBooking", key = "#command.bookingId()")
+	public AdminBookingReadResponse adminReadBooking(BookingSingleTargetCommand command) {
 
-		log.info("[Booking] 관리자 예매 조회 - 시도: | userId={}", authenticatedUser.getUserId());
+		log.info("[Booking] 관리자 예매 조회 - 시도: | userId={}", command.userId());
 
-		String role = authenticatedUser.getRole();
+		String role = command.role();
 		if (role == null || (!role.equals("MANAGER") && !role.equals("MASTER"))) {
 			log.warn(
 				"[Booking] 관리자 예매 조회 - 실패: {} | userId={}",
 				ResponseCode.ACCESS_DENIED_EXCEPTION.getMessage(),
-				authenticatedUser.getUserId()
+				command.userId()
 			);
 			throw new BookingException(ResponseCode.ACCESS_DENIED_EXCEPTION);
 		}
 
-		Booking booking = bookingAdminRepository.findById(id)
+		Booking booking = bookingAdminRepository.findById(command.bookingId())
 			.orElseThrow(() -> new BookingException(ResponseCode.BOOKING_NOT_FOUND_EXCEPTION));
-		log.info("[Booking] 관리자 예매 조회 - 성공: | userId={}", authenticatedUser.getUserId());
+		log.info("[Booking] 관리자 예매 조회 - 성공: | userId={}", command.userId());
 
 		return AdminBookingReadResponse.toDto(booking);
 	}
 
 	@Override
 	@Transactional(readOnly = true)
-	@Cacheable(value = "adminReadBookings", key = "#userId + ':' + #pageable.pageNumber + ':' + #pageable.pageSize + ':' + #pageable.sort")
-	public AdminBookingPageResponse adminReadBookings(AuthenticatedUser authenticatedUser, UUID userId,
-		Pageable pageable) {
+	@Cacheable(value = "adminReadBookings", key = "#command.queryUserId() + ':' + #command.pageable().pageNumber + ':' + #command.pageable().pageSize + ':' + #command.pageable().sort")
+	public AdminBookingPageResponse adminReadBookings(BookingAdminPageReadCommand command) {
 
-		log.info("[Booking] 관리자 예매 조회 - 시도: | userId={}", authenticatedUser.getUserId());
+		log.info("[Booking] 관리자 예매 조회 - 시도: | userId={}", command.userId());
 
-		String role = authenticatedUser.getRole();
+		String role = command.role();
 		if (role == null || (!role.equals("MANAGER") && !role.equals("MASTER"))) {
 			log.warn(
 				"[Booking] 관리자 예매 조회 - 실패: {} | userId={}",
 				ResponseCode.ACCESS_DENIED_EXCEPTION.getMessage(),
-				authenticatedUser.getUserId()
+				command.userId()
 			);
 			throw new BookingException(ResponseCode.ACCESS_DENIED_EXCEPTION);
 		}
 
-		if (userId == null) {
+		if (command.queryUserId() == null) {
 			log.warn(
 				"[Booking] 관리자 예매 조회 - 실패: {} | userId={}",
 				ResponseCode.BOOKING_QUERY_MISSING_EXCEPTION.getMessage(),
-				authenticatedUser.getUserId()
+				command.userId()
 			);
 			throw new BookingException(ResponseCode.BOOKING_QUERY_MISSING_EXCEPTION);
 		}
 
-		Page<Booking> page = bookingAdminRepository.findAll(pageable);
-		log.info("[Booking] 관리자 예매 조회 - 성공: | userId={}", authenticatedUser.getUserId());
+		Page<Booking> page = bookingAdminRepository.findAll(command.pageable());
+		log.info("[Booking] 관리자 예매 조회 - 성공: | userId={}", command.userId());
 
 		return AdminBookingPageResponse.toDto(page);
 	}
 
 	@Override
-	public void createPayment(AuthenticatedUser authenticatedUser, UUID id, BookingPayRequest request) {
+	public void createPayment(BookingPaymentCommand command) {
 
-		log.info("[Booking] 예매 결제 - 시도: | userId={}, bookingId={}", authenticatedUser.getUserId(), id);
+		log.info("[Booking] 예매 결제 - 시도: | userId={}, bookingId={}", command.userId(), command.bookingId());
 
-		Booking booking = findBookingByIdAndUserId(id, authenticatedUser.getUserId());
+		Booking booking = findBookingByIdAndUserId(command.bookingId(), command.userId());
 
-		boolean isUsedCoupon = request.getCouponId() != null;
-		boolean isUsedMileage = request.getMileage() != null && request.getMileage() > 0;
+		boolean isUsedCoupon = command.couponId() != null;
+		boolean isUsedMileage = command.mileage() != null && command.mileage() > 0;
 
 		// 마일리지나 쿠폰을 사용한 경우 -> 비동기 차감 요청 이벤트 전송
 		if (isUsedCoupon || isUsedMileage) {
 			UserBenefitMessage benefitUsageRequestMessage = UserBenefitMessage.builder()
-				.bookingId(id)
-				.userId(authenticatedUser.getUserId())
-				.couponId(request.getCouponId())
-				.mileage(request.getMileage())
+				.bookingId(command.bookingId())
+				.userId(command.userId())
+				.couponId(command.couponId())
+				.mileage(command.mileage())
 				.price(booking.getPrice())
 				.build();
 
 			bookingProducer.sendBenefitUsageRequest(benefitUsageRequestMessage);
 			log.info(
 				"[Booking] 예매 결제 - 쿠폰, 마일리지 사용 요청 전송: | userId={}, bookingId={}",
-				authenticatedUser.getUserId(),
-				id
+				command.userId(),
+				command.bookingId()
 			);
 			return;
 		}
 
 		// 마일리지, 쿠폰을 사용하지 않은 경우 바로 결제 요청
 		PaymentMessage message = PaymentMessage.builder()
-			.bookingId(id)
-			.userId(authenticatedUser.getUserId())
+			.bookingId(command.bookingId())
+			.userId(command.userId())
 			.price(booking.getPrice())
 			.type(PaymentMessage.MessageType.REQUEST)
 			.build();
@@ -347,8 +347,8 @@ public class BookingServiceImpl implements BookingService {
 		bookingProducer.sendPaymentRequest(message);
 		log.info(
 			"[Booking] 예매 결제 - 쿠폰, 마일리지 사용 없이 결제 요청 전송: | userId={}, bookingId={}",
-			authenticatedUser.getUserId(),
-			id
+			command.userId(),
+			command.bookingId()
 		);
 	}
 
@@ -390,7 +390,7 @@ public class BookingServiceImpl implements BookingService {
 					.bookingId(booking.getId())
 					.performanceId(booking.getPerformanceId())
 					.performanceScheduleId(booking.getPerformanceScheduleId())
-					.seatId(booking.getSeatId())
+					.seatId(booking.getScheduleSeatId())
 					.build()
 			);
 
@@ -560,11 +560,11 @@ public class BookingServiceImpl implements BookingService {
 				booking.getId());
 
 			// 좌석 선점 취소 요청
-			BookingSeatClientRequestDto dto = BookingSeatClientRequestDto.builder()
-				.performanceId(booking.getPerformanceId())
-				.performanceScheduleId(booking.getPerformanceScheduleId())
-				.seatId(booking.getSeatId())
-				.build();
+			BookingSeatClientRequestDto dto = new BookingSeatClientRequestDto(
+				booking.getPerformanceId(),
+				booking.getPerformanceScheduleId(),
+				booking.getScheduleSeatId()
+			);
 			BookingSeatClientResponseDto responseDto = bookingClientService.cancelSeatStatus(dto);
 
 			if (responseDto.reserved()) {
@@ -630,11 +630,11 @@ public class BookingServiceImpl implements BookingService {
 			booking.cancel(system);
 			booking.delete(system);
 
-			BookingSeatClientRequestDto dto = BookingSeatClientRequestDto.builder()
-				.performanceId(booking.getPerformanceId())
-				.performanceScheduleId(booking.getPerformanceScheduleId())
-				.seatId(booking.getSeatId())
-				.build();
+			BookingSeatClientRequestDto dto = new BookingSeatClientRequestDto(
+				booking.getPerformanceId(),
+				booking.getPerformanceScheduleId(),
+				booking.getScheduleSeatId()
+			);
 			BookingSeatClientResponseDto responseDto = bookingClientService.cancelSeatStatus(dto);
 
 			if (responseDto.reserved()) {
@@ -698,23 +698,24 @@ public class BookingServiceImpl implements BookingService {
 		);
 
 		SeatLayoutResponseDto layout = bookingClientService.getSeatLayout(message.getPerformanceScheduleId());
-		List<UUID> seatIds = layout.getSeats().stream()
-			.filter(e -> e.getStatus().equals(SeatLayoutResponseDto.SeatDto.SeatStatus.AVAILABLE))
-			.map(SeatLayoutResponseDto.SeatDto::getSeatId)
+		List<UUID> seatIds = layout.seats().stream()
+			.filter(e -> e.seatStatus().equals(SeatLayoutResponseDto.ScheduleSeatResponseDto.SeatStatus.AVAILABLE))
+			.map(SeatLayoutResponseDto.ScheduleSeatResponseDto::scheduleSeatId)
 			.toList();
 
 		Random random = new Random();
 		int i = random.nextInt(seatIds.size());
 		UUID seatId = seatIds.get(i);
 
-		AuthenticatedUser authenticatedUser = new AuthenticatedUser(message.getUserId(), "", "");
-		BookingCreateRequest request = BookingCreateRequest.builder()
-			.performanceId(message.getPerformanceId())
-			.performanceScheduleId(message.getPerformanceScheduleId())
-			.seatId(seatId)
-			.build();
+		BookingCreateCommand command = new BookingCreateCommand(
+			message.getUserId(),
+			"",
+			"",
+			message.getPerformanceId(),
+			message.getPerformanceScheduleId(), seatId
+		);
 
-		createBooking(authenticatedUser, request);
+		createBooking(command);
 	}
 
 	private boolean isValidPrice(int price) {
