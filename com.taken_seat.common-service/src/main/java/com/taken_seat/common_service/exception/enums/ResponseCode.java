@@ -63,7 +63,7 @@ public enum ResponseCode {
 	// User
 	USER_NOT_FOUND(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "해당 유저 정보를 찾을 수 없습니다."),
 	USER_BAD_PASSWORD(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), "비밀번호가 일치하지 않습니다."),
-	USER_BAD_EMAIL(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), "이미 존재하는 이메일 입니다."),
+	USER_CONFLICT_EMAIL(HttpStatus.CONFLICT, HttpStatus.CONFLICT.value(), "이미 존재하는 이메일 입니다."),
 
 	// Mileage
 	MILEAGE_NOT_FOUND(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "마일리지가 존재하지 않습니다."),

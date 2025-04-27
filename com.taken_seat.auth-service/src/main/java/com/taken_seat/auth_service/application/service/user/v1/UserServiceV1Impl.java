@@ -90,7 +90,7 @@ public class UserServiceV1Impl implements UserServiceV1 {
                 .orElseThrow(()-> new AuthException(ResponseCode.USER_NOT_FOUND));
 
         if(userRepository.findByEmail(String.valueOf(dto.email())).isPresent()){
-            throw new AuthException(ResponseCode.USER_BAD_EMAIL);
+            throw new AuthException(ResponseCode.USER_CONFLICT_EMAIL);
         }
         user.update(
                 dto.username(),
