@@ -91,4 +91,14 @@ public class PerformanceController implements PerformanceControllerDocs {
 		performanceService.updateStatus(id, authenticatedUser);
 		return ResponseEntity.noContent().build();
 	}
+
+	@DeleteMapping("/{performanceId}/schedules/{performanceScheduleId}")
+	public ResponseEntity<ApiResponseData<Void>> deletePerformanceSchedule(
+		@PathVariable("performanceId") UUID performanceId,
+		@PathVariable("performanceScheduleId") UUID performanceScheduleId,
+		AuthenticatedUser authenticatedUser) {
+
+		performanceService.deletePerformanceSchedule(performanceId, performanceScheduleId, authenticatedUser);
+		return ResponseEntity.noContent().build();
+	}
 }
