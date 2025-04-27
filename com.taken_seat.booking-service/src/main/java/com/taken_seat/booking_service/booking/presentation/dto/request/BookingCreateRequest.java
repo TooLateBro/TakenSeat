@@ -1,4 +1,4 @@
-package com.taken_seat.booking_service.booking.application.dto.request;
+package com.taken_seat.booking_service.booking.presentation.dto.request;
 
 import java.util.UUID;
 
@@ -20,5 +20,5 @@ public class BookingCreateRequest {
 	private UUID performanceScheduleId;
 
 	@NotNull(message = "좌석 ID는 필수값입니다.")
-	private UUID seatId;
+	private UUID scheduleSeatId;
 }
