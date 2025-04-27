@@ -27,7 +27,7 @@
 // 	@Autowired
 // 	private BookingService bookingService;
 //
-// 	private final UUID seatId = UUID.randomUUID();
+// 	private final UUID scheduleSeatId = UUID.randomUUID();
 //
 // 	@Test
 // 	@DisplayName("동시 요청시 하나만 성공")
@@ -46,7 +46,7 @@
 // 						"testRole");
 //
 // 					BookingCreateRequest request = BookingCreateRequest.builder()
-// 						.seatId(seatId)
+// 						.scheduleSeatId(scheduleSeatId)
 // 						.build();
 //
 // 					bookingService.createBooking(authenticatedUser, request);

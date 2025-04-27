@@ -2,25 +2,38 @@ package com.taken_seat.performance_service.performance.domain.helper;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Component;
 
 import com.taken_seat.performance_service.performance.application.dto.command.CreatePerformanceCommand;
 import com.taken_seat.performance_service.performance.application.dto.command.CreatePerformanceScheduleCommand;
+import com.taken_seat.performance_service.performance.application.dto.command.CreateScheduleSeatCommand;
 import com.taken_seat.performance_service.performance.domain.model.Performance;
 import com.taken_seat.performance_service.performance.domain.model.PerformanceSchedule;
 import com.taken_seat.performance_service.performance.domain.model.PerformanceScheduleStatus;
-import com.taken_seat.performance_service.performance.domain.model.PerformanceSeatPrice;
-import com.taken_seat.performance_service.performance.domain.model.PerformanceStatus;
+import com.taken_seat.performance_service.performance.domain.model.ScheduleSeat;
+import com.taken_seat.performance_service.performancehall.application.dto.command.SeatTemplateInfo;
+import com.taken_seat.performance_service.performancehall.domain.facade.PerformanceHallFacade;
+import com.taken_seat.performance_service.performancehall.domain.model.SeatType;
 
+import lombok.RequiredArgsConstructor;
+
+@Component
+@RequiredArgsConstructor
 public class PerformanceCreateHelper {
 
-	public static Performance createPerformance(CreatePerformanceCommand command, UUID createdBy) {
+	private final PerformanceHallFacade performanceHallFacade;
+
+	public Performance createPerformance(CreatePerformanceCommand command, UUID createdBy) {
 		Performance performance = Performance.builder()
 			.title(command.title())
 			.description(command.description())
 			.startAt(command.startAt())
 			.endAt(command.endAt())
-			.status(null)
+			.status(command.status())
 			.posterUrl(command.posterUrl())
 			.ageLimit(command.ageLimit())
 			.maxTicketCount(command.maxTicketCount())
@@ -31,34 +44,34 @@ public class PerformanceCreateHelper {
 		return performance;
 	}
 
-	public static void createPerformanceSchedules(CreatePerformanceCommand command,
-		Performance performance, UUID createdBy) {
-
-		List<PerformanceSchedule> schedules = command.schedules().stream()
-			.map(createPerformanceScheduleCommand -> {
-				PerformanceSchedule schedule = createPerformanceSchedule(createPerformanceScheduleCommand, performance);
+	public List<PerformanceSchedule> createPerformanceSchedules(
+		List<CreatePerformanceScheduleCommand> commands,
+		Performance performance,
+		UUID createdBy
+	) {
+		return commands.stream()
+			.map(command -> {
+				PerformanceSchedule schedule = createPerformanceSchedule(command, performance);
 				schedule.prePersist(createdBy);
 
-				List<PerformanceSeatPrice> seatPrices = createPerformanceSeatPrices(createPerformanceScheduleCommand,
-					schedule);
-				schedule.getSeatPrices().addAll(seatPrices);
+				Map<SeatType, Integer> seatPriceMap = command.scheduleSeats().stream()
+					.collect(Collectors.toMap(
+						CreateScheduleSeatCommand::seatType,
+						CreateScheduleSeatCommand::price
+					));
 
-				seatPrices.forEach(seatPrice -> seatPrice.prePersist(createdBy));
+				List<SeatTemplateInfo> seatTemplates =
+					performanceHallFacade.getSeatTemplate(command.performanceHallId());
+
+				List<ScheduleSeat> scheduleSeats =
+					createScheduleSeats(seatTemplates, schedule, seatPriceMap);
+
+				scheduleSeats.forEach(scheduleSeat -> scheduleSeat.prePersist(createdBy));
+				schedule.addSeats(scheduleSeats);
 
 				return schedule;
 			})
 			.toList();
-
-		performance.getSchedules().addAll(schedules);
-
-		PerformanceStatus status = PerformanceStatus.status(
-			performance.getStartAt(),
-			performance.getEndAt(),
-			performance.getSchedules()
-		);
-
-		performance.updateStatus(status);
-
 	}
 
 	private static PerformanceSchedule createPerformanceSchedule(
@@ -79,14 +92,17 @@ public class PerformanceCreateHelper {
 			.build();
 	}
 
-	private static List<PerformanceSeatPrice> createPerformanceSeatPrices(
-		CreatePerformanceScheduleCommand command, PerformanceSchedule schedule) {
-		return command.seatPrices().stream()
-			.map(seatPriceCommand -> PerformanceSeatPrice.builder()
-				.performanceSchedule(schedule)
-				.seatType(seatPriceCommand.seatType())
-				.price(seatPriceCommand.price())
-				.build())
+	private static List<ScheduleSeat> createScheduleSeats(
+		List<SeatTemplateInfo> seatTemplates,
+		PerformanceSchedule schedule,
+		Map<SeatType, Integer> seatPrice
+	) {
+		return seatTemplates.stream()
+			.map(seatTemplate -> ScheduleSeat.fromSeatTemplate(
+				seatTemplate,
+				schedule,
+				seatPrice.getOrDefault(seatTemplate.seatType(), 0)
+			))
 			.toList();
 	}
 }

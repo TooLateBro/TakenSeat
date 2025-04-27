@@ -17,13 +17,8 @@ public class PerformanceHallExistenceValidator {
 
 	private final PerformanceHallRepository performanceHallRepository;
 
-	public PerformanceHall validateByPerformanceHallId(UUID performanceHallid) {
-		return performanceHallRepository.findById(performanceHallid)
-			.orElseThrow(() -> new PerformanceException(ResponseCode.PERFORMANCE_HALL_NOT_FOUND_EXCEPTION));
-	}
-
-	public PerformanceHall validateBySeatId(UUID seatId) {
-		return performanceHallRepository.findBySeatId(seatId)
+	public PerformanceHall validateByPerformanceHallId(UUID performanceHallId) {
+		return performanceHallRepository.findById(performanceHallId)
 			.orElseThrow(() -> new PerformanceException(ResponseCode.PERFORMANCE_HALL_NOT_FOUND_EXCEPTION));
 	}
 }

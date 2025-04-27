@@ -1,5 +1,6 @@
 package com.taken_seat.performance_service.performance.application.dto.mapper;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -7,13 +8,13 @@ import org.springframework.stereotype.Component;
 
 import com.taken_seat.performance_service.performance.domain.model.Performance;
 import com.taken_seat.performance_service.performance.domain.model.PerformanceSchedule;
-import com.taken_seat.performance_service.performance.domain.model.PerformanceSeatPrice;
+import com.taken_seat.performance_service.performance.domain.model.ScheduleSeat;
 import com.taken_seat.performance_service.performance.presentation.dto.response.CreateResponseDto;
 import com.taken_seat.performance_service.performance.presentation.dto.response.DetailResponseDto;
 import com.taken_seat.performance_service.performance.presentation.dto.response.PageResponseDto;
 import com.taken_seat.performance_service.performance.presentation.dto.response.PerformanceScheduleResponseDto;
+import com.taken_seat.performance_service.performance.presentation.dto.response.ScheduleSeatResponseDto;
 import com.taken_seat.performance_service.performance.presentation.dto.response.SearchResponseDto;
-import com.taken_seat.performance_service.performance.presentation.dto.response.SeatPriceResponseDto;
 import com.taken_seat.performance_service.performance.presentation.dto.response.UpdateResponseDto;
 
 @Component
@@ -45,17 +46,20 @@ public class PerformanceResponseMapper {
 			schedule.getSaleStartAt(),
 			schedule.getSaleEndAt(),
 			schedule.getStatus(),
-			schedule.getSeatPrices().stream()
-				.map(PerformanceResponseMapper::toSeatPriceDto)
+			schedule.getScheduleSeats().stream()
+				.map(PerformanceResponseMapper::toScheduleSeatDto)
 				.collect(Collectors.toList())
 		);
 	}
 
-	private static SeatPriceResponseDto toSeatPriceDto(PerformanceSeatPrice seatPrice) {
-		return new SeatPriceResponseDto(
-			seatPrice.getId(),
-			seatPrice.getSeatType(),
-			seatPrice.getPrice()
+	private static ScheduleSeatResponseDto toScheduleSeatDto(ScheduleSeat scheduleSeat) {
+		return new ScheduleSeatResponseDto(
+			scheduleSeat.getId(),
+			scheduleSeat.getRowNumber(),
+			scheduleSeat.getSeatNumber(),
+			scheduleSeat.getSeatType(),
+			scheduleSeat.getSeatStatus(),
+			scheduleSeat.getPrice()
 		);
 	}
 
@@ -110,15 +114,31 @@ public class PerformanceResponseMapper {
 					schedule.getSaleStartAt(),
 					schedule.getSaleEndAt(),
 					schedule.getStatus(),
-					schedule.getSeatPrices().stream()
-						.map(seatPrice -> new SeatPriceResponseDto(
-							seatPrice.getId(),
-							seatPrice.getSeatType(),
-							seatPrice.getPrice()
+					schedule.getScheduleSeats().stream()
+						.map(scheduleSeat -> new ScheduleSeatResponseDto(
+							scheduleSeat.getId(),
+							scheduleSeat.getRowNumber(),
+							scheduleSeat.getSeatNumber(),
+							scheduleSeat.getSeatType(),
+							scheduleSeat.getSeatStatus(),
+							scheduleSeat.getPrice()
 						))
 						.collect(Collectors.toList())
 				))
 				.collect(Collectors.toList())
 		);
+	}
+
+	public static List<ScheduleSeatResponseDto> toSeatLayout(List<ScheduleSeat> seats) {
+		return seats.stream()
+			.map(seat -> new ScheduleSeatResponseDto(
+				seat.getId(),
+				seat.getRowNumber(),
+				seat.getSeatNumber(),
+				seat.getSeatType(),
+				seat.getSeatStatus(),
+				seat.getPrice()
+			))
+			.collect(Collectors.toList());
 	}
 }

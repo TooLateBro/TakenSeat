@@ -1,4 +1,4 @@
-package com.taken_seat.performance_service.Performanceticket.presentation.controller;
+package com.taken_seat.performance_service.performanceticket.presentation.controller;
 
 import java.util.UUID;
 
@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.taken_seat.common_service.dto.ApiResponseData;
 import com.taken_seat.common_service.dto.request.TicketPerformanceClientRequest;
 import com.taken_seat.common_service.dto.response.TicketPerformanceClientResponse;
-import com.taken_seat.performance_service.Performanceticket.application.dto.mapper.RequestMapper;
-import com.taken_seat.performance_service.Performanceticket.application.service.PerformanceTicketService;
+import com.taken_seat.performance_service.performanceticket.application.dto.mapper.RequestMapper;
+import com.taken_seat.performance_service.performanceticket.application.service.PerformanceTicketService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,17 +21,18 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/performancetickets")
 public class PerformanceTicketController {
 
-	private final PerformanceTicketService performenceTicketService;
+	private final PerformanceTicketService performanceTicketService;
 
-	@GetMapping("/{performanceId}/schedules/{performanceScheduleId}/seats/{seatId}")
+	@GetMapping("/{performanceId}/schedules/{performanceScheduleId}/schedule-seats/{scheduleSeatId}")
 	public ResponseEntity<ApiResponseData<TicketPerformanceClientResponse>> getPerformanceInfo(
 		@PathVariable UUID performanceId,
 		@PathVariable UUID performanceScheduleId,
-		@PathVariable UUID seatId) {
+		@PathVariable UUID scheduleSeatId) {
 
-		TicketPerformanceClientRequest request = RequestMapper.fromParams(performanceId, performanceScheduleId, seatId);
+		TicketPerformanceClientRequest request = RequestMapper.fromParams
+			(performanceId, performanceScheduleId, scheduleSeatId);
 
-		TicketPerformanceClientResponse response = performenceTicketService.getPerformanceInfo(request);
+		TicketPerformanceClientResponse response = performanceTicketService.getPerformanceInfo(request);
 		return ResponseEntity.ok(ApiResponseData.success(response));
 	}
 }

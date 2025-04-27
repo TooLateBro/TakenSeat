@@ -2,6 +2,7 @@ package com.taken_seat.performance_service.performance.application.service;
 
 import static com.taken_seat.performance_service.performance.application.dto.mapper.PerformanceResponseMapper.*;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -10,14 +11,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.taken_seat.common_service.dto.AuthenticatedUser;
-import com.taken_seat.common_service.dto.response.PerformanceEndTimeDto;
-import com.taken_seat.common_service.dto.response.PerformanceStartTimeDto;
 import com.taken_seat.performance_service.performance.application.dto.command.CreatePerformanceCommand;
 import com.taken_seat.performance_service.performance.application.dto.command.UpdatePerformanceCommand;
 import com.taken_seat.performance_service.performance.application.dto.command.UpdatePerformanceScheduleCommand;
 import com.taken_seat.performance_service.performance.application.dto.mapper.PerformanceCreateCommandMapper;
 import com.taken_seat.performance_service.performance.application.dto.mapper.PerformanceResponseMapper;
 import com.taken_seat.performance_service.performance.application.dto.mapper.PerformanceUpdateCommandMapper;
+import com.taken_seat.performance_service.performance.domain.helper.PerformanceCreateHelper;
 import com.taken_seat.performance_service.performance.domain.helper.PerformanceUpdateHelper;
 import com.taken_seat.performance_service.performance.domain.model.Performance;
 import com.taken_seat.performance_service.performance.domain.model.PerformanceSchedule;
@@ -32,7 +32,6 @@ import com.taken_seat.performance_service.performance.presentation.dto.response.
 import com.taken_seat.performance_service.performance.presentation.dto.response.PageResponseDto;
 import com.taken_seat.performance_service.performance.presentation.dto.response.SearchResponseDto;
 import com.taken_seat.performance_service.performance.presentation.dto.response.UpdateResponseDto;
-import com.taken_seat.performance_service.performancehall.domain.facade.PerformanceHallFacade;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,10 +43,10 @@ public class PerformanceService {
 
 	private final PerformanceRepository performanceRepository;
 	private final PerformanceResponseMapper performanceResponseMapper;
-	private final PerformanceHallFacade performanceHallFacade;
 	private final PerformanceExistenceValidator performanceExistenceValidator;
 	private final PerformanceCreateCommandMapper performanceCreateCommandMapper;
 	private final PerformanceUpdateCommandMapper performanceUpdateCommandMapper;
+	private final PerformanceCreateHelper performanceCreateHelper;
 
 	@Transactional
 	public CreateResponseDto create(CreateRequestDto request, AuthenticatedUser authenticatedUser) {
@@ -58,7 +57,13 @@ public class PerformanceService {
 
 		PerformanceValidator.validateDuplicateSchedules(command.schedules());
 
-		Performance performance = Performance.create(command, authenticatedUser.getUserId());
+		Performance performance = performanceCreateHelper.createPerformance(command, authenticatedUser.getUserId());
+
+		List<PerformanceSchedule> schedules = performanceCreateHelper.createPerformanceSchedules(
+			command.schedules(), performance, authenticatedUser.getUserId()
+		);
+
+		performance.addSchedules(schedules);
 
 		Performance saved = performanceRepository.save(performance);
 
@@ -116,34 +121,14 @@ public class PerformanceService {
 	}
 
 	@Transactional
-	public PerformanceEndTimeDto getPerformanceEndTime(UUID performanceId, UUID performanceScheduleId) {
-
-		Performance performance = performanceExistenceValidator.validateByPerformanceId(performanceId);
-
-		PerformanceSchedule schedule = performance.getScheduleById(performanceScheduleId);
-
-		return new PerformanceEndTimeDto(schedule.getEndAt());
-	}
-
-	@Transactional
 	public void updateStatus(UUID id, AuthenticatedUser authenticatedUser) {
 
 		PerformanceValidator.validateAuthorized(authenticatedUser);
 
 		Performance performance = performanceExistenceValidator.validateByPerformanceId(id);
 
-		PerformanceUpdateHelper.updateStatus(performance, authenticatedUser, performanceHallFacade);
+		PerformanceUpdateHelper.updateStatus(performance, authenticatedUser);
 
 		performanceRepository.save(performance);
-	}
-
-	@Transactional
-	public PerformanceStartTimeDto getPerformanceStartTime(UUID performanceId, UUID performanceScheduleId) {
-
-		Performance performance = performanceExistenceValidator.validateByPerformanceId(performanceId);
-
-		PerformanceSchedule schedule = performance.getScheduleById(performanceScheduleId);
-
-		return new PerformanceStartTimeDto(schedule.getStartAt());
 	}
 }

@@ -46,7 +46,7 @@
 // 			.userId(userId)
 // 			.bookingId(UUID.randomUUID())
 // 			.performanceScheduleId(UUID.randomUUID())
-// 			.seatId(UUID.randomUUID())
+// 			.scheduleSeatId(UUID.randomUUID())
 // 			.build();
 //
 // 		Ticket saved = ticketRepository.saveAndFlush(ticket);
@@ -72,14 +72,14 @@
 // 			.userId(userId)
 // 			.bookingId(UUID.randomUUID())
 // 			.performanceScheduleId(UUID.randomUUID())
-// 			.seatId(UUID.randomUUID())
+// 			.scheduleSeatId(UUID.randomUUID())
 // 			.build();
 //
 // 		Ticket ticket2 = Ticket.builder()
 // 			.userId(userId)
 // 			.bookingId(UUID.randomUUID())
 // 			.performanceScheduleId(UUID.randomUUID())
-// 			.seatId(UUID.randomUUID())
+// 			.scheduleSeatId(UUID.randomUUID())
 // 			.build();
 //
 // 		List<Ticket> list = List.of(ticket1, ticket2);

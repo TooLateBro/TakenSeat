@@ -8,6 +8,7 @@ import com.taken_seat.common_service.entity.BaseTimeEntity;
 import com.taken_seat.common_service.exception.customException.PerformanceException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.performance_service.performancehall.application.dto.command.CreatePerformanceHallCommand;
+import com.taken_seat.performance_service.performancehall.application.dto.command.SeatTemplateInfo;
 import com.taken_seat.performance_service.performancehall.application.dto.command.UpdatePerformanceHallCommand;
 import com.taken_seat.performance_service.performancehall.application.dto.command.UpdateSeatCommand;
 import com.taken_seat.performance_service.performancehall.domain.helper.PerformanceHallCreateHelper;
@@ -88,7 +89,10 @@ public class PerformanceHall extends BaseTimeEntity {
 		}
 
 		for (UpdateSeatCommand seatDto : seatDtoList) {
-			Seat existingSeat = this.getSeatById(seatDto.seatId());
+			Seat existingSeat = this.seats.stream()
+				.filter(seat -> seat.getId().equals(seatDto.seatId()))
+				.findFirst()
+				.orElse(null);
 
 			if (existingSeat != null) {
 				existingSeat.update(seatDto);
@@ -106,8 +110,14 @@ public class PerformanceHall extends BaseTimeEntity {
 		this.totalSeats = this.seats.size();
 	}
 
-	public boolean isSoldOut() {
+	public List<SeatTemplateInfo> toSeatTemplateInfos() {
 		return seats.stream()
-			.noneMatch(seat -> seat.getStatus() == SeatStatus.AVAILABLE);
+			.map(seat -> new SeatTemplateInfo(
+				seat.getRowNumber(),
+				seat.getSeatNumber(),
+				seat.getSeatType(),
+				seat.getStatus()
+			))
+			.toList();
 	}
 }

@@ -1,6 +1,5 @@
 package com.taken_seat.performance_service.performancehall.application.dto.mapper;
 
-import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -83,11 +82,5 @@ public class HallResponseMapper {
 				))
 				.collect(Collectors.toList())
 		);
-	}
-
-	public static List<SeatDto> toSeatLayout(List<Seat> seats) {
-		return seats.stream()
-			.map(HallResponseMapper::toSeat)
-			.collect(Collectors.toList());
 	}
 }

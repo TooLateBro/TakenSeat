@@ -33,7 +33,7 @@ public record CreatePerformanceScheduleDto(
 	PerformanceScheduleStatus status,
 
 	@NotEmpty(message = "좌석 가격 정보는 최소 1개 이상이어야 합니다.")
-	List<CreateSeatPriceDto> seatPrices
+	List<CreateScheduleSeatDto> scheduleSeats
 ) {
 }
 
