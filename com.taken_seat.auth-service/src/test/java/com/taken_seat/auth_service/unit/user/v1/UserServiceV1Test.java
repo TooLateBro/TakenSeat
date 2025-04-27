@@ -1,8 +1,9 @@
-package com.taken_seat.auth_service.unit;
+package com.taken_seat.auth_service.unit.user.v1;
 
 import com.taken_seat.auth_service.application.dto.PageResponseDto;
-import com.taken_seat.auth_service.application.dto.user.UserInfoResponseDto;
-import com.taken_seat.auth_service.application.service.user.UserServiceImpl;
+import com.taken_seat.auth_service.application.dto.user.v1.UserInfoResponseDtoV1;
+import com.taken_seat.auth_service.application.dto.user.v1.UserMapper;
+import com.taken_seat.auth_service.application.service.user.v1.UserServiceV1Impl;
 import com.taken_seat.auth_service.domain.entity.user.User;
 import com.taken_seat.auth_service.domain.entity.user.UserCoupon;
 import com.taken_seat.auth_service.domain.repository.user.UserRepository;
@@ -33,7 +34,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class UserServiceTest {
+public class UserServiceV1Test {
 
     @Mock
     private UserRepository userRepository;
@@ -44,8 +45,11 @@ public class UserServiceTest {
     @Mock
     private UserQueryRepositoryImpl userQueryRepository;
 
+    @Mock
+    private UserMapper userMapper;
+
     @InjectMocks
-    private UserServiceImpl userService;
+    private UserServiceV1Impl userServiceV1;
 
     private User user;
 
@@ -64,15 +68,18 @@ public class UserServiceTest {
     @Test
     @DisplayName("유저 단건 조회 성공 테스트")
     public void getUserSuccess() {
-        userId = UUID.randomUUID();
-
         when(userRepository.findByIdAndDeletedAtIsNull(userId)).thenReturn(Optional.of(user));
 
-        UserInfoResponseDto result = userService.getUser(userId);
+        UserInfoResponseDtoV1 mappedDto = new UserInfoResponseDtoV1(
+                user.getId(), user.getUsername(), user.getEmail(), user.getPhone(), user.getRole(), null, null
+        );
+        when(userMapper.userToUserInfoResponseDto(user)).thenReturn(mappedDto);
 
-        assertNotNull(result);
-        assertEquals("testuser1", result.username());
+        UserInfoResponseDtoV1 resultV1 = userServiceV1.getUser(userId);
+
+        assertNotNull(resultV1);
     }
+
 
     @Test
     @DisplayName("유저 단건 조회 실패 테스트")
@@ -81,11 +88,10 @@ public class UserServiceTest {
 
         when(userRepository.findByIdAndDeletedAtIsNull(userId)).thenReturn(Optional.empty());
 
-        AuthException exception = assertThrows(AuthException.class, () -> userService.getUser(userId));
+        AuthException exception = assertThrows(AuthException.class, () -> userServiceV1.getUser(userId));
 
         assertEquals(ResponseCode.USER_NOT_FOUND, exception.getErrorCode());
     }
-
     @Test
     @DisplayName("유저 단건 상세 조회 성공 테스트")
     public void getUserDetailsSuccess() {
@@ -94,24 +100,27 @@ public class UserServiceTest {
         int size = 10;
 
         User mockedUser = Mockito.mock(User.class);
-
         when(mockedUser.getId()).thenReturn(userId);
         when(mockedUser.getUsername()).thenReturn("testuser1");
-        when(mockedUser.getMileages()).thenReturn(List.of());
 
         when(userRepository.findByIdAndDeletedAtIsNull(userId)).thenReturn(Optional.of(mockedUser));
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<UserCoupon> userCouponPage = new PageImpl<>(List.of());
-
         when(userCouponRepository.findCouponIdByUserIdAndIsActiveTrue(any(UUID.class), eq(pageable)))
                 .thenReturn(userCouponPage);
 
-        UserInfoResponseDto result = userService.getUserDetails(userId, page, size);
+        UserInfoResponseDtoV1 mockedDto = new UserInfoResponseDtoV1(
+                mockedUser.getId(), mockedUser.getUsername(), null, null, null, null, null
+        );
+        when(userMapper.userToUserInfoDetailsResponseDto(any(User.class), eq(userCouponPage)))
+                .thenReturn(mockedDto);
+        UserInfoResponseDtoV1 resultV1 = userServiceV1.getUserDetails(userId, page, size);
 
-        assertNotNull(result);
-        assertEquals("testuser1", result.username());
+        assertNotNull(resultV1);
     }
+
+
     @Test
     @DisplayName("유저 단건 상세 조회 실패 테스트")
     public void getUserDetailsFail() {
@@ -122,7 +131,7 @@ public class UserServiceTest {
         when(userRepository.findByIdAndDeletedAtIsNull(userId)).thenReturn(Optional.empty());
 
         AuthException exception = assertThrows(AuthException.class, () ->
-                userService.getUserDetails(userId, page, size)
+                userServiceV1.getUserDetails(userId, page, size)
         );
         assertEquals(ResponseCode.USER_NOT_FOUND, exception.getErrorCode());
     }
@@ -142,10 +151,11 @@ public class UserServiceTest {
         Page<User> userPage = new PageImpl<>(userList, pageable, userList.size());
         when(userQueryRepository.findAllByDeletedAtIsNull(null, null, pageable)).thenReturn(userPage);
 
-        PageResponseDto<UserInfoResponseDto> result = userService.searchUser(null, null, page, size);
+        PageResponseDto<UserInfoResponseDtoV1> resultV1 = userServiceV1.searchUser(null, null, page, size);
 
-        assertNotNull(result);
+        assertNotNull(resultV1);
     }
+
     @Test
     @DisplayName("유저 전체 조회 실패 테스트 - 유저 없음")
     public void searchUserFail_NoUserFound() {
@@ -159,7 +169,7 @@ public class UserServiceTest {
         when(userQueryRepository.findAllByDeletedAtIsNull(username, null, pageable)).thenReturn(emptyUserPage);
 
         AuthException exception = assertThrows(AuthException.class, () ->
-                userService.searchUser(username, null, page, size));
+                userServiceV1.searchUser(username, null, page, size));
 
         assertNotNull(exception);
     }
@@ -176,14 +186,20 @@ public class UserServiceTest {
 
         when(userRepository.findByIdAndDeletedAtIsNull(userId)).thenReturn(Optional.of(user));
 
+        UserInfoResponseDtoV1 mockedResponse = new UserInfoResponseDtoV1(
+                user.getId(), user.getUsername(), user.getPhone(), user.getEmail(), null, null, null
+        );
+        when(userMapper.userToUserInfoResponseDto(user)).thenReturn(mockedResponse);
+
         UserUpdateRequestDto userUpdateRequestDto = new UserUpdateRequestDto(
                 username, password, phone, email, role
         );
 
-        UserInfoResponseDto userInfoResponseDto = userService.updateUser(userId, userUpdateRequestDto.toDto());
+        UserInfoResponseDtoV1 userInfoResponseDtoV1 = userServiceV1.updateUser(userId, userUpdateRequestDto.toDto());
 
-        assertNotNull(userInfoResponseDto);
+        assertNotNull(userInfoResponseDtoV1);
     }
+
     @Test
     @DisplayName("유저 수정 실패 테스트 - 유저 없음")
     public void updateUserFail_NoUserFound() {
@@ -201,7 +217,7 @@ public class UserServiceTest {
         );
 
         AuthException exception = assertThrows(AuthException.class, () ->
-                userService.updateUser(userId, userUpdateRequestDto.toDto()));
+                userServiceV1.updateUser(userId, userUpdateRequestDto.toDto()));
 
         assertEquals(ResponseCode.USER_NOT_FOUND, exception.getErrorCode());
     }
@@ -211,7 +227,7 @@ public class UserServiceTest {
         userId = UUID.randomUUID();
 
         when(userRepository.findByIdAndDeletedAtIsNull(userId)).thenReturn(Optional.of(user));
-        userService.deleteUser(userId);
+        userServiceV1.deleteUser(userId);
 
         assertNotNull(user.getDeletedAt());
     }
@@ -223,7 +239,7 @@ public class UserServiceTest {
         when(userRepository.findByIdAndDeletedAtIsNull(userId)).thenReturn(Optional.empty());
 
         AuthException exception = assertThrows(AuthException.class, ()->
-                userService.deleteUser(userId));
+                userServiceV1.deleteUser(userId));
 
         assertEquals(ResponseCode.USER_NOT_FOUND, exception.getErrorCode());
     }
@@ -235,7 +251,7 @@ public class UserServiceTest {
         UserCoupon mockCoupon = Mockito.mock(UserCoupon.class);
         when(userCouponRepository.findByCouponId(couponId)).thenReturn(Optional.of(mockCoupon));
 
-        String result = userService.getCoupon(couponId);
+        String result = userServiceV1.getCoupon(couponId);
 
         assertTrue(result.contains("축하합니다!"));
         assertTrue(result.contains("수령에 성공했습니다!"));
@@ -248,7 +264,7 @@ public class UserServiceTest {
         when(userCouponRepository.findByCouponId(couponId)).thenReturn(Optional.empty());
 
         CouponException exception = assertThrows(CouponException.class, ()->
-                userService.getCoupon(couponId));
+                userServiceV1.getCoupon(couponId));
 
         assertEquals(ResponseCode.COUPON_QUANTITY_EXCEPTION, exception.getErrorCode());
     }

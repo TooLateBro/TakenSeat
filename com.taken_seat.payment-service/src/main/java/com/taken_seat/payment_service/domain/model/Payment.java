@@ -3,13 +3,12 @@ package com.taken_seat.payment_service.domain.model;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.common_service.entity.BaseTimeEntity;
 import com.taken_seat.common_service.exception.customException.PaymentException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.common_service.message.PaymentMessage;
 import com.taken_seat.common_service.message.PaymentRefundMessage;
-import com.taken_seat.payment_service.application.dto.request.PaymentRegisterReqDto;
+import com.taken_seat.payment_service.application.dto.service.PaymentDto;
 import com.taken_seat.payment_service.domain.enums.PaymentStatus;
 
 import jakarta.persistence.Column;
@@ -57,15 +56,15 @@ public class Payment extends BaseTimeEntity {
 
 	private LocalDateTime refundRequestedAt;
 
-	public static Payment register(PaymentRegisterReqDto paymentRegisterReqDto, AuthenticatedUser authenticatedUser) {
+	public static Payment register(PaymentDto dto) {
 		Payment payment = Payment.builder()
-			.bookingId(paymentRegisterReqDto.getBookingId())
-			.userId(authenticatedUser.getUserId())
-			.price(paymentRegisterReqDto.getPrice())
+			.bookingId(dto.getBookingId())
+			.userId(dto.getUserId())
+			.price(dto.getPrice())
 			.paymentStatus(PaymentStatus.COMPLETED)
 			.build();
 
-		payment.prePersist(authenticatedUser.getUserId());
+		payment.prePersist(dto.getUserId());
 
 		return payment;
 	}
@@ -83,10 +82,10 @@ public class Payment extends BaseTimeEntity {
 		return payment;
 	}
 
-	public void update(Integer price, PaymentStatus status, AuthenticatedUser authenticatedUser) {
-		this.price = price;
-		this.paymentStatus = status;
-		this.preUpdate(authenticatedUser.getUserId());
+	public void update(PaymentDto dto) {
+		this.price = dto.getPrice();
+		this.paymentStatus = dto.getPaymentStatus();
+		this.preUpdate(dto.getUserId());
 	}
 
 	public void markAsCompleted(UUID userId) {

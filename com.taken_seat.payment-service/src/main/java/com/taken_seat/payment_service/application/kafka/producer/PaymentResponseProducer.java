@@ -2,8 +2,8 @@ package com.taken_seat.payment_service.application.kafka.producer;
 
 import com.taken_seat.common_service.message.PaymentMessage;
 
-public interface PaymentResultProducer {
+public interface PaymentResponseProducer {
 
-	void sendPaymentResult(PaymentMessage message);
+	void sendPaymentResponse(PaymentMessage message);
 
 }

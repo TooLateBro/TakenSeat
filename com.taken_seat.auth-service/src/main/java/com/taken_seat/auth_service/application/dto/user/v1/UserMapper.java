@@ -1,40 +1,28 @@
-package com.taken_seat.auth_service.application.dto.user;
+package com.taken_seat.auth_service.application.dto.user.v1;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.taken_seat.auth_service.application.dto.PageResponseDto;
 import com.taken_seat.auth_service.domain.entity.mileage.Mileage;
 import com.taken_seat.auth_service.domain.entity.user.User;
 import com.taken_seat.auth_service.domain.entity.user.UserCoupon;
-import com.taken_seat.common_service.aop.vo.Role;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.springframework.data.domain.Page;
 
 import java.util.Comparator;
 import java.util.UUID;
 
-@JsonInclude(JsonInclude.Include.NON_NULL) // null 필드 제외
-public record UserInfoResponseDto (
-        UUID userId,
-        String username,
-        String email,
-        String phone,
-        Role role,
-        Integer mileage,
-        PageResponseDto<UUID> userCoupons
-){
+@Mapper(componentModel = "spring") // Spring 컨테이너에서 빈으로 등록해줌
+public interface UserMapper {
 
-    public static UserInfoResponseDto of(User user) {
-        return new UserInfoResponseDto(
-                user.getId(),
-                user.getUsername(),
-                user.getEmail(),
-                user.getPhone(),
-                user.getRole(),
-                null,
-                null
-        );
-    }
+    @Mapping(target = "mileage", ignore = true) // mileage 필드는 별도로 처리
+    @Mapping(target = "userCoupons", ignore = true) // userCoupons 필드는 별도로 처리
+    UserInfoResponseDtoV1 userToUserInfoResponseDto(User user);
 
-    public static UserInfoResponseDto detailsOf(User user, Page<UserCoupon> userCoupons) {
+    // 수동 구현이 필요한 매핑은 default 메서드로 작성
+    default UserInfoResponseDtoV1 userToUserInfoDetailsResponseDto(User user, Page<UserCoupon> userCoupons) {
+        if (user == null) {
+            return null;
+        }
         PageResponseDto<UUID> couponsPage = PageResponseDto.of(userCoupons.map(UserCoupon::getCouponId));
 
         Integer latestMileage = user.getMileages().stream()
@@ -42,7 +30,7 @@ public record UserInfoResponseDto (
                 .map(Mileage::getMileage)
                 .orElse(0);
 
-        return new UserInfoResponseDto(
+        return new UserInfoResponseDtoV1(
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),

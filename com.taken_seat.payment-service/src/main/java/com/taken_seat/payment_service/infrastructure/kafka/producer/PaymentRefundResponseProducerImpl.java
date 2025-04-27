@@ -5,13 +5,13 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
 import com.taken_seat.common_service.message.PaymentRefundMessage;
-import com.taken_seat.payment_service.application.kafka.producer.PaymentRefundResultProducer;
+import com.taken_seat.payment_service.application.kafka.producer.PaymentRefundResponseProducer;
 
 import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class PaymentRefundResultProducerImpl implements PaymentRefundResultProducer {
+public class PaymentRefundResponseProducerImpl implements PaymentRefundResponseProducer {
 
 	private final KafkaTemplate<String, Object> kafkaTemplate;
 
@@ -19,7 +19,7 @@ public class PaymentRefundResultProducerImpl implements PaymentRefundResultProdu
 	private String SEND_PAYMENT_REFUND_RESPONSE_TOPIC;
 
 	@Override
-	public void sendPaymentRefundResult(PaymentRefundMessage message) {
+	public void sendPaymentRefundResponse(PaymentRefundMessage message) {
 		kafkaTemplate.send(SEND_PAYMENT_REFUND_RESPONSE_TOPIC, message);
 	}
 }
