@@ -45,7 +45,7 @@ public class BookingRepositoryImpl implements BookingRepository {
 
 	@Override
 	public boolean isUniqueBooking(UUID userId, UUID performanceId, UUID performanceScheduleId, UUID seatId) {
-		return bookingJpaRepository.existsByUserIdAndPerformanceIdAndPerformanceScheduleIdAndSeatIdAndDeletedAtIsNull(
+		return bookingJpaRepository.existsByUserIdAndPerformanceIdAndPerformanceScheduleIdAndScheduleSeatIdAndDeletedAtIsNull(
 			userId, performanceId, performanceScheduleId, seatId);
 	}
 }
