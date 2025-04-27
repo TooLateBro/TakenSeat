@@ -5,13 +5,13 @@ import java.util.UUID;
 
 import jakarta.validation.Valid;
 
-public record UpdateRequestDto(
+public record HallUpdateRequestDto(
 	UUID performanceHallId,
 	String name,
 	String address,
 	String description,
 
 	@Valid
-	List<UpdateSeatDto> seats
+	List<HallUpdateSeatDto> seats
 ) {
 }

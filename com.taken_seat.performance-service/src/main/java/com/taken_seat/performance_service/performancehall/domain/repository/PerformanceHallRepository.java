@@ -7,8 +7,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import com.taken_seat.performance_service.performancehall.domain.model.PerformanceHall;
-import com.taken_seat.performance_service.performancehall.presentation.dto.request.SearchFilterParam;
-import com.taken_seat.performance_service.performancehall.presentation.dto.response.SearchResponseDto;
+import com.taken_seat.performance_service.performancehall.presentation.dto.request.HallSearchFilterParam;
+import com.taken_seat.performance_service.performancehall.presentation.dto.response.HallSearchResponseDto;
 
 public interface PerformanceHallRepository {
 
@@ -18,7 +18,7 @@ public interface PerformanceHallRepository {
 
 	Optional<PerformanceHall> findById(UUID id);
 
-	Page<SearchResponseDto> findAll(SearchFilterParam filterParam, Pageable pageable);
+	Page<HallSearchResponseDto> findAll(HallSearchFilterParam filterParam, Pageable pageable);
 
 	boolean existsByNameAndAddressAndIdNot(String name, String address, UUID id);
 }

@@ -7,7 +7,7 @@ import com.taken_seat.performance_service.performancehall.domain.model.SeatType;
 
 import jakarta.validation.constraints.Pattern;
 
-public record UpdateSeatDto(
+public record HallUpdateSeatDto(
 	UUID seatId,
 
 	@Pattern(regexp = "^[A-Z]{1,2}$", message = "좌석 열(rowNumber)은 A~Z 또는 AA~ZZ 형식이어야 합니다.")

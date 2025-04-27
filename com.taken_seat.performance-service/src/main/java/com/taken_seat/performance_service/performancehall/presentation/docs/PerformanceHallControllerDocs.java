@@ -9,13 +9,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import com.taken_seat.common_service.dto.ApiResponseData;
 import com.taken_seat.common_service.dto.AuthenticatedUser;
-import com.taken_seat.performance_service.performancehall.presentation.dto.request.CreateRequestDto;
-import com.taken_seat.performance_service.performancehall.presentation.dto.request.SearchFilterParam;
-import com.taken_seat.performance_service.performancehall.presentation.dto.request.UpdateRequestDto;
-import com.taken_seat.performance_service.performancehall.presentation.dto.response.CreateResponseDto;
-import com.taken_seat.performance_service.performancehall.presentation.dto.response.DetailResponseDto;
-import com.taken_seat.performance_service.performancehall.presentation.dto.response.PageResponseDto;
-import com.taken_seat.performance_service.performancehall.presentation.dto.response.UpdateResponseDto;
+import com.taken_seat.performance_service.performancehall.presentation.dto.request.HallCreateRequestDto;
+import com.taken_seat.performance_service.performancehall.presentation.dto.request.HallSearchFilterParam;
+import com.taken_seat.performance_service.performancehall.presentation.dto.request.HallUpdateRequestDto;
+import com.taken_seat.performance_service.performancehall.presentation.dto.response.HallCreateResponseDto;
+import com.taken_seat.performance_service.performancehall.presentation.dto.response.HallDetailResponseDto;
+import com.taken_seat.performance_service.performancehall.presentation.dto.response.HallPageResponseDto;
+import com.taken_seat.performance_service.performancehall.presentation.dto.response.HallUpdateResponseDto;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -27,8 +27,8 @@ import jakarta.validation.Valid;
 public interface PerformanceHallControllerDocs {
 
 	@Operation(summary = "공연장 등록", description = "공연장을 등록합니다.")
-	ResponseEntity<ApiResponseData<CreateResponseDto>> create(
-		@Valid @RequestBody CreateRequestDto request,
+	ResponseEntity<ApiResponseData<HallCreateResponseDto>> create(
+		@Valid @RequestBody HallCreateRequestDto request,
 		AuthenticatedUser authenticatedUser
 	);
 
@@ -42,20 +42,20 @@ public interface PerformanceHallControllerDocs {
 		@Parameter(name = "size", description = "페이지 크기", example = "10"),
 		@Parameter(name = "sort", description = "정렬 기준 필드", example = "name,asc")
 	})
-	ResponseEntity<ApiResponseData<PageResponseDto>> getList(
-		@ModelAttribute SearchFilterParam filterParam,
+	ResponseEntity<ApiResponseData<HallPageResponseDto>> getList(
+		@ModelAttribute HallSearchFilterParam filterParam,
 		Pageable pageable
 	);
 
 	@Operation(summary = "공연장 상세 조회", description = "공연장 ID를 기반으로 상세 정보를 조회합니다.")
-	ResponseEntity<ApiResponseData<DetailResponseDto>> getDetail(
+	ResponseEntity<ApiResponseData<HallDetailResponseDto>> getDetail(
 		@Parameter(description = "공연장 ID") UUID id
 	);
 
 	@Operation(summary = "공연장 정보 수정", description = "공연장 정보를 수정합니다.")
-	ResponseEntity<ApiResponseData<UpdateResponseDto>> update(
+	ResponseEntity<ApiResponseData<HallUpdateResponseDto>> update(
 		@Parameter(description = "공연장 ID") UUID id,
-		@Valid @RequestBody UpdateRequestDto request,
+		@Valid @RequestBody HallUpdateRequestDto request,
 		AuthenticatedUser authenticatedUser
 	);
 

@@ -14,8 +14,8 @@ import com.taken_seat.performance_service.common.support.QueryDslOrderUtil;
 import com.taken_seat.performance_service.performancehall.domain.model.PerformanceHall;
 import com.taken_seat.performance_service.performancehall.domain.model.QPerformanceHall;
 import com.taken_seat.performance_service.performancehall.domain.repository.PerformanceHallQueryRepository;
-import com.taken_seat.performance_service.performancehall.presentation.dto.request.SearchFilterParam;
-import com.taken_seat.performance_service.performancehall.presentation.dto.response.SearchResponseDto;
+import com.taken_seat.performance_service.performancehall.presentation.dto.request.HallSearchFilterParam;
+import com.taken_seat.performance_service.performancehall.presentation.dto.response.HallSearchResponseDto;
 
 import lombok.RequiredArgsConstructor;
 
@@ -29,31 +29,31 @@ public class PerformanceHallQueryRepositoryImpl implements PerformanceHallQueryR
 	private static final String PERFORMANCE_HALL = "performanceHall";
 
 	@Override
-	public Page<SearchResponseDto> searchByFilter(SearchFilterParam searchFilterParam, Pageable pageable) {
+	public Page<HallSearchResponseDto> searchByFilter(HallSearchFilterParam hallSearchFilterParam, Pageable pageable) {
 
-		BooleanBuilder builder = buildConditions(searchFilterParam);
+		BooleanBuilder builder = buildConditions(hallSearchFilterParam);
 
-		List<SearchResponseDto> content = fetchContent(pageable, builder);
+		List<HallSearchResponseDto> content = fetchContent(pageable, builder);
 		long total = fetchTotal(builder);
 
 		return new PageImpl<>(content, pageable, total);
 	}
 
-	private BooleanBuilder buildConditions(SearchFilterParam searchFilterParam) {
+	private BooleanBuilder buildConditions(HallSearchFilterParam hallSearchFilterParam) {
 
 		BooleanBuilder builder = new BooleanBuilder();
 		builder.and(performanceHall.deletedAt.isNull());
 
-		if (searchFilterParam.name() != null && !searchFilterParam.name().isBlank()) {
-			builder.and(performanceHall.name.containsIgnoreCase(searchFilterParam.name()));
+		if (hallSearchFilterParam.name() != null && !hallSearchFilterParam.name().isBlank()) {
+			builder.and(performanceHall.name.containsIgnoreCase(hallSearchFilterParam.name()));
 		}
 
-		if (searchFilterParam.address() != null && !searchFilterParam.address().isBlank()) {
-			builder.and(performanceHall.address.containsIgnoreCase(searchFilterParam.address()));
+		if (hallSearchFilterParam.address() != null && !hallSearchFilterParam.address().isBlank()) {
+			builder.and(performanceHall.address.containsIgnoreCase(hallSearchFilterParam.address()));
 		}
 
-		Integer min = searchFilterParam.minSeats();
-		Integer max = searchFilterParam.maxSeats();
+		Integer min = hallSearchFilterParam.minSeats();
+		Integer max = hallSearchFilterParam.maxSeats();
 
 		if (min != null && max != null) {
 			builder.and(performanceHall.totalSeats.between(min, max));
@@ -66,13 +66,13 @@ public class PerformanceHallQueryRepositoryImpl implements PerformanceHallQueryR
 		return builder;
 	}
 
-	private List<SearchResponseDto> fetchContent(
+	private List<HallSearchResponseDto> fetchContent(
 		Pageable pageable,
 		BooleanBuilder builder
 	) {
 		return jpaQueryFactory
 			.select(Projections.constructor(
-				SearchResponseDto.class,
+				HallSearchResponseDto.class,
 				performanceHall.id,
 				performanceHall.name,
 				performanceHall.totalSeats

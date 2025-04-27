@@ -3,12 +3,12 @@ package com.taken_seat.performance_service.performancehall.presentation.dto.resp
 import java.util.List;
 import java.util.UUID;
 
-public record UpdateResponseDto(
+public record HallCreateResponseDto(
 	UUID performanceHallId,
 	String name,
 	String address,
 	Integer totalSeats,
 	String description,
-	List<SeatDto> seats
+	List<HallSeatDto> seats
 ) {
 }
