@@ -6,7 +6,7 @@ import com.taken_seat.performance_service.performancehall.domain.model.SeatStatu
 import com.taken_seat.performance_service.performancehall.domain.model.SeatType;
 
 public record ScheduleSeatResponseDto(
-	UUID id,
+	UUID scheduleSeatId,
 	String rowNumber,
 	String seatNumber,
 	SeatType seatType,
