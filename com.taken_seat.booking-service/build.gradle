@@ -28,28 +28,50 @@ ext {
 }
 
 dependencies {
+    // 공통 모듈
     implementation project(':com.taken_seat.common-service')
     annotationProcessor project(':com.taken_seat.common-service')
 
+    // 환경 변수 관리
     implementation 'me.paulschwarz:spring-dotenv:4.0.0'
 
+    // JSON 직렬화
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+
+    // 로깅 & 모니터링
     implementation 'com.github.loki4j:loki-logback-appender:1.5.1'
     implementation 'io.micrometer:micrometer-registry-prometheus'
     implementation 'io.micrometer:micrometer-tracing-bridge-brave'
     implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
-    implementation 'org.redisson:redisson-spring-boot-starter:3.23.4'
+
+    // Spring Boot 기본 구성
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    // Spring Cloud 구성
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+
+    // Kafka
     implementation 'org.springframework.kafka:spring-kafka'
-    compileOnly 'org.projectlombok:lombok'
+
+    // Redisson
+    implementation 'org.redisson:redisson-spring-boot-starter:3.23.4'
+
+    // DB
     runtimeOnly 'com.mysql:mysql-connector-j'
+
+    // 개발 도구
+    compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
+
+    implementation 'org.mapstruct:mapstruct:1.5.5.Final'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
+
+    // 테스트
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'io.projectreactor:reactor-test'
     testImplementation 'org.springframework.kafka:spring-kafka-test'
