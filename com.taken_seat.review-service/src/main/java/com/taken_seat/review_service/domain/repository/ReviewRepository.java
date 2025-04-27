@@ -15,7 +15,7 @@ public interface ReviewRepository {
 
 	Review save(Review review);
 
-	Boolean existsByAuthorIdAndPerformanceId(UUID authorId, UUID performanceId);
+	Boolean existsByAuthorIdAndPerformanceIdAndDeletedAtIsNull(UUID authorId, UUID performanceId);
 
 	Optional<Review> findByIdAndDeletedAtIsNull(UUID id);
 

@@ -18,12 +18,14 @@ import com.taken_seat.common_service.aop.annotation.RoleCheck;
 import com.taken_seat.common_service.aop.vo.Role;
 import com.taken_seat.common_service.dto.ApiResponseData;
 import com.taken_seat.common_service.dto.AuthenticatedUser;
-import com.taken_seat.review_service.application.dto.request.ReviewRegisterReqDto;
-import com.taken_seat.review_service.application.dto.request.ReviewUpdateReqDto;
-import com.taken_seat.review_service.application.dto.response.PageReviewResponseDto;
-import com.taken_seat.review_service.application.dto.response.ReviewDetailResDto;
+import com.taken_seat.review_service.application.dto.controller.request.ReviewRegisterReqDto;
+import com.taken_seat.review_service.application.dto.controller.request.ReviewUpdateReqDto;
+import com.taken_seat.review_service.application.dto.controller.response.PageReviewResponseDto;
+import com.taken_seat.review_service.application.dto.controller.response.ReviewDetailResDto;
+import com.taken_seat.review_service.application.dto.service.ReviewDto;
 import com.taken_seat.review_service.application.service.ReviewLikeService;
 import com.taken_seat.review_service.application.service.ReviewService;
+import com.taken_seat.review_service.infrastructure.mapper.ReviewMapper;
 import com.taken_seat.review_service.infrastructure.swagger.ReviewSwaggerDocs;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -38,6 +40,7 @@ public class ReviewController {
 
 	private final ReviewService reviewServices;
 	private final ReviewLikeService reviewLikeService;
+	private final ReviewMapper reviewMapper;
 
 	@PostMapping
 	@RoleCheck(allowedRoles = {Role.ADMIN, Role.MANAGER, Role.CUSTOMER})
@@ -46,8 +49,10 @@ public class ReviewController {
 		@Valid @RequestBody ReviewRegisterReqDto reviewRegisterReqDto,
 		AuthenticatedUser authenticatedUser) {
 
+		ReviewDto dto = reviewMapper.toDto(reviewRegisterReqDto, authenticatedUser);
+
 		return ResponseEntity.status(HttpStatus.OK)
-			.body(ApiResponseData.success(reviewServices.registerReview(reviewRegisterReqDto, authenticatedUser)));
+			.body(ApiResponseData.success(reviewServices.registerReview(dto)));
 
 	}
 
@@ -81,9 +86,12 @@ public class ReviewController {
 	public ResponseEntity<ApiResponseData<ReviewDetailResDto>> updateReview(@PathVariable("reviewId") UUID reviewId,
 		@Valid @RequestBody ReviewUpdateReqDto reviewUpdateReqDto,
 		AuthenticatedUser authenticatedUser) {
+
+		ReviewDto dto = reviewMapper.toDto(reviewId, reviewUpdateReqDto, authenticatedUser);
+
 		return ResponseEntity.status(HttpStatus.OK)
 			.body(
-				ApiResponseData.success(reviewServices.updateReview(reviewId, reviewUpdateReqDto, authenticatedUser)));
+				ApiResponseData.success(reviewServices.updateReview(dto)));
 	}
 
 	@DeleteMapping("/{reviewId}")
@@ -91,7 +99,10 @@ public class ReviewController {
 	@ReviewSwaggerDocs.DeleteReview
 	public ResponseEntity<ApiResponseData<Void>> deleteReview(@PathVariable("reviewId") UUID reviewId,
 		AuthenticatedUser authenticatedUser) {
-		reviewServices.deleteReview(reviewId, authenticatedUser);
+
+		ReviewDto dto = reviewMapper.toDto(reviewId, authenticatedUser);
+
+		reviewServices.deleteReview(dto);
 		return ResponseEntity.status(HttpStatus.OK)
 			.body(ApiResponseData.success());
 	}
