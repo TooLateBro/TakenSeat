@@ -17,6 +17,7 @@ import com.taken_seat.review_service.application.client.ReviewClient;
 import com.taken_seat.review_service.application.dto.controller.response.PageReviewResponseDto;
 import com.taken_seat.review_service.application.dto.controller.response.ReviewDetailResDto;
 import com.taken_seat.review_service.application.dto.service.ReviewDto;
+import com.taken_seat.review_service.application.dto.service.ReviewSearchDto;
 import com.taken_seat.review_service.domain.model.Review;
 import com.taken_seat.review_service.domain.repository.RedisRatingRepository;
 import com.taken_seat.review_service.domain.repository.ReviewQuerydslRepository;
@@ -91,21 +92,14 @@ public class ReviewServiceImpl implements ReviewService {
 	@Override
 	@Transactional(readOnly = true)
 	@Cacheable(cacheNames = "reviewSearchCache", key = "#performance_id + '-' + #q + '-' + #category + '-' + #page + '-' + #size")
-	public PageReviewResponseDto searchReview(UUID performance_id,
-		String q,
-		String category,
-		int page,
-		int size,
-		String sort,
-		String order) {
+	public PageReviewResponseDto searchReview(ReviewSearchDto dto) {
 
-		Page<Review> reviewPages = reviewQuerydslRepository.search(performance_id, q, category, page, size, sort,
-			order);
+		Page<Review> reviewPages = reviewQuerydslRepository.search(dto);
 
 		Page<ReviewDetailResDto> reviewDetailResDtoPages = reviewPages.map(reviewMapper::toResponse);
 
 		return PageReviewResponseDto.toResponse(reviewDetailResDtoPages,
-			redisRatingRepository.getAvgRating(performance_id));
+			redisRatingRepository.getAvgRating(dto.getPerformance_id()));
 	}
 
 	@Override

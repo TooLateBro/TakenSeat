@@ -5,6 +5,7 @@ import java.util.UUID;
 import com.taken_seat.review_service.application.dto.controller.response.PageReviewResponseDto;
 import com.taken_seat.review_service.application.dto.controller.response.ReviewDetailResDto;
 import com.taken_seat.review_service.application.dto.service.ReviewDto;
+import com.taken_seat.review_service.application.dto.service.ReviewSearchDto;
 
 public interface ReviewService {
 
@@ -12,9 +13,7 @@ public interface ReviewService {
 
 	ReviewDetailResDto getReviewDetail(UUID id);
 
-	PageReviewResponseDto searchReview(UUID performance_id, String q, String category, int page, int size,
-		String sort,
-		String order);
+	PageReviewResponseDto searchReview(ReviewSearchDto dto);
 
 	ReviewDetailResDto updateReview(ReviewDto dto);
 

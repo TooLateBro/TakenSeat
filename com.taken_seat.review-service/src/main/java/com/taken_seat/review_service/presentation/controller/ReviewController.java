@@ -23,6 +23,7 @@ import com.taken_seat.review_service.application.dto.controller.request.ReviewUp
 import com.taken_seat.review_service.application.dto.controller.response.PageReviewResponseDto;
 import com.taken_seat.review_service.application.dto.controller.response.ReviewDetailResDto;
 import com.taken_seat.review_service.application.dto.service.ReviewDto;
+import com.taken_seat.review_service.application.dto.service.ReviewSearchDto;
 import com.taken_seat.review_service.application.service.ReviewLikeService;
 import com.taken_seat.review_service.application.service.ReviewService;
 import com.taken_seat.review_service.infrastructure.mapper.ReviewMapper;
@@ -74,10 +75,13 @@ public class ReviewController {
 		@RequestParam(defaultValue = "10") int size,
 		@RequestParam(defaultValue = "createdAt") String sort,
 		@RequestParam(defaultValue = "desc") String order) {
+
+		ReviewSearchDto dto = reviewMapper.toDto(performance_id, q, category, page, size, sort, order);
+
 		return ResponseEntity.status(HttpStatus.OK)
 			.body(
 				ApiResponseData.success(
-					reviewServices.searchReview(performance_id, q, category, page, size, sort, order)));
+					reviewServices.searchReview(dto)));
 	}
 
 	@PatchMapping("/{reviewId}")

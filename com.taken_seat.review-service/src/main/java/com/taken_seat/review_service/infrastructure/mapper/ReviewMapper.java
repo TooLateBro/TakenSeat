@@ -10,6 +10,7 @@ import com.taken_seat.review_service.application.dto.controller.request.ReviewRe
 import com.taken_seat.review_service.application.dto.controller.request.ReviewUpdateReqDto;
 import com.taken_seat.review_service.application.dto.controller.response.ReviewDetailResDto;
 import com.taken_seat.review_service.application.dto.service.ReviewDto;
+import com.taken_seat.review_service.application.dto.service.ReviewSearchDto;
 import com.taken_seat.review_service.domain.model.Review;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
@@ -27,4 +28,6 @@ public interface ReviewMapper {
 	// 결과 반환용
 	ReviewDetailResDto toResponse(Review review);
 
+	ReviewSearchDto toDto(UUID performance_id, String q, String category, int page, int size, String sort,
+		String order);
 }
