@@ -33,7 +33,7 @@ public class PerformanceCreateHelper {
 			.description(command.description())
 			.startAt(command.startAt())
 			.endAt(command.endAt())
-			.status(null)
+			.status(command.status())
 			.posterUrl(command.posterUrl())
 			.ageLimit(command.ageLimit())
 			.maxTicketCount(command.maxTicketCount())
@@ -66,6 +66,7 @@ public class PerformanceCreateHelper {
 				List<ScheduleSeat> scheduleSeats =
 					createScheduleSeats(seatTemplates, schedule, seatPriceMap);
 
+				scheduleSeats.forEach(scheduleSeat -> scheduleSeat.prePersist(createdBy));
 				schedule.addSeats(scheduleSeats);
 
 				return schedule;
