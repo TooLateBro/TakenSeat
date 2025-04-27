@@ -22,10 +22,10 @@ import org.springframework.data.domain.PageRequest;
 
 import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.common_service.exception.customException.PaymentException;
-import com.taken_seat.payment_service.application.dto.request.PaymentRegisterReqDto;
-import com.taken_seat.payment_service.application.dto.request.PaymentUpdateReqDto;
-import com.taken_seat.payment_service.application.dto.response.PagePaymentResponseDto;
-import com.taken_seat.payment_service.application.dto.response.PaymentDetailResDto;
+import com.taken_seat.payment_service.application.dto.controller.request.PaymentSearchReqDto;
+import com.taken_seat.payment_service.application.dto.controller.response.PagePaymentResponseDto;
+import com.taken_seat.payment_service.application.dto.controller.response.PaymentDetailResDto;
+import com.taken_seat.payment_service.application.dto.service.PaymentDto;
 import com.taken_seat.payment_service.application.service.PaymentServiceImpl;
 import com.taken_seat.payment_service.domain.enums.PaymentStatus;
 import com.taken_seat.payment_service.domain.model.Payment;
@@ -33,6 +33,7 @@ import com.taken_seat.payment_service.domain.model.PaymentHistory;
 import com.taken_seat.payment_service.domain.repository.PaymentHistoryRepository;
 import com.taken_seat.payment_service.domain.repository.PaymentQuerydslRepository;
 import com.taken_seat.payment_service.domain.repository.PaymentRepository;
+import com.taken_seat.payment_service.infrastructure.mapper.PaymentMapper;
 
 @ExtendWith(MockitoExtension.class)
 public class PaymentServiceTest {
@@ -45,6 +46,9 @@ public class PaymentServiceTest {
 
 	@Mock
 	private PaymentQuerydslRepository paymentQuerydslRepository;
+
+	@Mock
+	private PaymentMapper paymentMapper;
 
 	@InjectMocks
 	private PaymentServiceImpl paymentService;
@@ -61,6 +65,8 @@ public class PaymentServiceTest {
 
 	private PaymentHistory testPaymentHistory;
 
+	private PaymentDto testPaymentDto;
+
 	private AuthenticatedUser authenticatedUser;
 
 	@BeforeEach
@@ -69,6 +75,13 @@ public class PaymentServiceTest {
 		testBookingId = UUID.randomUUID();
 		testPaymentId = UUID.randomUUID();
 		testPaymentHistoryId = UUID.randomUUID();
+
+		// PaymentDto 초기화
+		testPaymentDto = PaymentDto.builder()
+			.bookingId(testBookingId)
+			.price(1000)
+			.userId(UUID.randomUUID())  // 실제 사용자 ID로 설정
+			.build();
 
 		testPayment = Payment.builder()
 			.id(testPaymentId)
@@ -79,7 +92,6 @@ public class PaymentServiceTest {
 			.build();
 
 		testPayment.prePersist(UUID.randomUUID());
-		paymentRepository.save(testPayment);
 
 		testPaymentHistory = PaymentHistory.builder()
 			.id(testPaymentHistoryId)
@@ -90,7 +102,6 @@ public class PaymentServiceTest {
 			.build();
 
 		testPaymentHistory.prePersist(UUID.randomUUID());
-		paymentHistoryRepository.save(testPaymentHistory);
 
 		authenticatedUser = new AuthenticatedUser(testUserId, "test@gmail.com", "MASTER");
 	}
@@ -99,34 +110,40 @@ public class PaymentServiceTest {
 	@DisplayName("결제 수동 등록 - SUCCESS")
 	void testRegisterPayment_success() {
 		// Given
-		UUID registerTestPaymentId = UUID.randomUUID();
-		UUID createdBy = UUID.randomUUID();
-		PaymentRegisterReqDto paymentRegisterReqDto = new PaymentRegisterReqDto(registerTestPaymentId, 1000);
-
 		when(paymentRepository.save(any(Payment.class))).thenReturn(testPayment);
 		when(paymentHistoryRepository.save(any(PaymentHistory.class))).thenReturn(testPaymentHistory);
 
+		PaymentDetailResDto paymentDetailResDto = PaymentDetailResDto.builder()
+			.id(testPaymentDto.getPaymentId())
+			.bookingId(testPaymentDto.getBookingId())
+			.price(testPaymentDto.getPrice())
+			.paymentStatus(testPaymentDto.getPaymentStatus())
+			.build();
+
+		when(paymentMapper.toResponse(any(Payment.class))).thenReturn(paymentDetailResDto);
+
 		// When
-		PaymentDetailResDto result = paymentService.registerPayment(paymentRegisterReqDto, authenticatedUser);
+		PaymentDetailResDto result = paymentService.registerPayment(testPaymentDto);
 
 		// Then
 		assertNotNull(result);
-		assertEquals(registerTestPaymentId, result.getBookingId());
 		assertEquals(1000, result.getPrice());
+		assertEquals(testBookingId, result.getBookingId());
 	}
 
 	@Test
 	@DisplayName("결제 수동 등록 - 결제 금액이 1원 이하  - FAIL ")
 	void testRegisterPayment_fail_zeroOrNegativePrice() {
 		// Given
-		UUID registerTestPaymentId = UUID.randomUUID();
-		UUID createdBy = UUID.randomUUID();
-
-		PaymentRegisterReqDto paymentRegisterReqDto = new PaymentRegisterReqDto(registerTestPaymentId, 0);
+		testPaymentDto = PaymentDto.builder()
+			.bookingId(testBookingId)
+			.price(0)
+			.userId(UUID.randomUUID())  // 실제 사용자 ID로 설정
+			.build();
 
 		// When & Then
 		PaymentException exception = assertThrows(PaymentException.class, () -> {
-			paymentService.registerPayment(paymentRegisterReqDto, authenticatedUser);
+			paymentService.registerPayment(testPaymentDto);
 		});
 
 		assertEquals("결제 금액은 1원 미만일 수 없습니다. 요청 금액 : 0", exception.getMessage());
@@ -137,6 +154,18 @@ public class PaymentServiceTest {
 	void testGetPaymentDetail_success() {
 		// Given
 		when(paymentRepository.findByIdAndDeletedAtIsNull(testPaymentId)).thenReturn(Optional.of(testPayment));
+
+		PaymentDetailResDto paymentDetailResDto = PaymentDetailResDto.builder()
+			.id(testPayment.getId())
+			.bookingId(testPayment.getBookingId())
+			.price(testPayment.getPrice())
+			.paymentStatus(testPayment.getPaymentStatus())
+			.approvedAt(null)
+			.refundAmount(null)
+			.refundRequestedAt(null)
+			.build();
+
+		when(paymentMapper.toResponse(any(Payment.class))).thenReturn(paymentDetailResDto);
 
 		// When
 		PaymentDetailResDto result = paymentService.getPaymentDetail(testPaymentId);
@@ -166,19 +195,32 @@ public class PaymentServiceTest {
 	@DisplayName("결제 리스트 검색 - 상태(status) 필터 적용 - SUCCESS")
 	void testSearchPayment_success_withStatusFilter() {
 		// Given
-		String query = "COMPLETED";
-		String category = "status";
-		int page = 0;
-		int size = 10;
-		String sort = "createdAt";
-		String order = "desc";
+		PaymentSearchReqDto searchReqDto = PaymentSearchReqDto.builder()
+			.q("REFUNDED")
+			.category("status")
+			.page(0)
+			.size(10)
+			.sort("createdAt")
+			.order("desc")
+			.build();
 
-		Page<Payment> mockPage = new PageImpl<>(Collections.singletonList(testPayment), PageRequest.of(page, size), 1);
+		Page<Payment> mockPage = new PageImpl<>(Collections.singletonList(testPayment), PageRequest.of(0, 10), 1);
 
-		when(paymentQuerydslRepository.search(query, category, page, size, sort, order)).thenReturn(mockPage);
+		PaymentDetailResDto paymentDetailResDto = PaymentDetailResDto.builder()
+			.id(testPayment.getId())
+			.bookingId(testPayment.getBookingId())
+			.price(testPayment.getPrice())
+			.paymentStatus(testPayment.getPaymentStatus())
+			.approvedAt(null)
+			.refundAmount(null)
+			.refundRequestedAt(null)
+			.build();
+
+		when(paymentQuerydslRepository.search(searchReqDto)).thenReturn(mockPage);
+		when(paymentMapper.toResponse(testPayment)).thenReturn(paymentDetailResDto);
 
 		// When
-		PagePaymentResponseDto result = paymentService.searchPayment(query, category, page, size, sort, order);
+		PagePaymentResponseDto result = paymentService.searchPayment(searchReqDto);
 
 		// Then
 		assertNotNull(result);
@@ -194,11 +236,19 @@ public class PaymentServiceTest {
 	@DisplayName("결제 리스트 검색 - 비어있는 결과 - SUCCESS")
 	void testSearchPayment_success_emptyResult() {
 		// Given
-		when(paymentQuerydslRepository.search(anyString(), anyString(), anyInt(), anyInt(), anyString(), anyString()))
-			.thenReturn(Page.empty());
+		PaymentSearchReqDto searchReqDto = PaymentSearchReqDto.builder()
+			.q("REFUNDED")
+			.category("status")
+			.page(0)
+			.size(10)
+			.sort("createdAt")
+			.order("desc")
+			.build();
+
+		when(paymentQuerydslRepository.search(searchReqDto)).thenReturn(Page.empty());
 
 		// When
-		PagePaymentResponseDto result = paymentService.searchPayment("REFUNDED", "status", 0, 10, "createdAt", "desc");
+		PagePaymentResponseDto result = paymentService.searchPayment(searchReqDto);
 
 		// Then
 		assertNotNull(result);
@@ -211,15 +261,32 @@ public class PaymentServiceTest {
 	@DisplayName("결제 정보 수정 - SUCCESS")
 	void testUpdatePayment_success() {
 		// Given
-		PaymentUpdateReqDto paymentUpdateReqDto = new PaymentUpdateReqDto(3000, PaymentStatus.FAILED);
-		UUID updatedBy = UUID.randomUUID();
+		testPaymentDto = PaymentDto.builder()
+			.bookingId(testBookingId)
+			.paymentId(testPaymentId)
+			.price(3000)
+			.userId(UUID.randomUUID())  // 실제 사용자 ID로 설정
+			.paymentStatus(PaymentStatus.FAILED)
+			.build();
 
-		when(paymentRepository.findByIdAndDeletedAtIsNull(testPaymentId)).thenReturn(Optional.of(testPayment));
+		PaymentDetailResDto paymentDetailResDto = PaymentDetailResDto.builder()
+			.id(testPayment.getId())
+			.bookingId(testPaymentDto.getBookingId())
+			.price(testPaymentDto.getPrice())
+			.paymentStatus(testPaymentDto.getPaymentStatus())
+			.approvedAt(null)
+			.refundAmount(null)
+			.refundRequestedAt(null)
+			.build();
+
+		when(paymentRepository.findByIdAndDeletedAtIsNull(testPaymentDto.getPaymentId())).thenReturn(
+			Optional.of(testPayment));
 		when(paymentHistoryRepository.findByPayment(testPayment)).thenReturn(Optional.of(testPaymentHistory));
 
+		when(paymentMapper.toResponse(any(Payment.class))).thenReturn(paymentDetailResDto);
+
 		// When
-		PaymentDetailResDto result = paymentService.updatePayment(testPaymentId, paymentUpdateReqDto,
-			authenticatedUser);
+		PaymentDetailResDto result = paymentService.updatePayment(testPaymentDto);
 
 		// Then
 		assertNotNull(result);
@@ -232,12 +299,17 @@ public class PaymentServiceTest {
 	@DisplayName("결제 정보 수정 실패 - 결제 금액이 0원 이하 - FAIL")
 	void testUpdatePayment_fail_zeroOrNegativePrice() {
 		// Given
-		PaymentUpdateReqDto reqDto = new PaymentUpdateReqDto(0, PaymentStatus.FAILED);
-		UUID updatedBy = UUID.randomUUID();
+		testPaymentDto = PaymentDto.builder()
+			.bookingId(testBookingId)
+			.paymentId(testPaymentId)
+			.price(0)
+			.userId(UUID.randomUUID())  // 실제 사용자 ID로 설정
+			.paymentStatus(PaymentStatus.FAILED)
+			.build();
 
 		// When & Then
 		PaymentException exception = assertThrows(PaymentException.class, () -> {
-			paymentService.updatePayment(testPaymentId, reqDto, authenticatedUser);
+			paymentService.updatePayment(testPaymentDto);
 		});
 
 		assertEquals("결제 금액은 1원 미만일 수 없습니다. 요청 금액 : 0", exception.getMessage());
@@ -248,14 +320,20 @@ public class PaymentServiceTest {
 	void testUpdatePayment_fail_paymentNotFound() {
 		// Given
 		UUID notExistId = UUID.randomUUID();
-		UUID updatedBy = UUID.randomUUID();
-		PaymentUpdateReqDto reqDto = new PaymentUpdateReqDto(3000, PaymentStatus.FAILED);
 
-		when(paymentRepository.findByIdAndDeletedAtIsNull(notExistId)).thenReturn(Optional.empty());
+		testPaymentDto = PaymentDto.builder()
+			.bookingId(testBookingId)
+			.paymentId(notExistId)
+			.price(1000)
+			.userId(UUID.randomUUID())  // 실제 사용자 ID로 설정
+			.paymentStatus(PaymentStatus.FAILED)
+			.build();
+
+		when(paymentRepository.findByIdAndDeletedAtIsNull(testPaymentDto.getPaymentId())).thenReturn(Optional.empty());
 
 		// When & Then
 		PaymentException exception = assertThrows(PaymentException.class, () -> {
-			paymentService.updatePayment(notExistId, reqDto, authenticatedUser);
+			paymentService.updatePayment(testPaymentDto);
 		});
 
 		assertEquals("해당 ID 에 대한 결제 정보를 찾을 수 없습니다 : " + notExistId, exception.getMessage());
@@ -265,15 +343,20 @@ public class PaymentServiceTest {
 	@DisplayName("결제 정보 수정 - PaymentHistory 없음 - FAIL")
 	void testUpdatePayment_fail_paymentHistoryNotFound() {
 		// Given
-		UUID updatedBy = UUID.randomUUID();
-		PaymentUpdateReqDto updateDto = new PaymentUpdateReqDto(2000, PaymentStatus.COMPLETED);
+		testPaymentDto = PaymentDto.builder()
+			.bookingId(testBookingId)
+			.paymentId(testPaymentId)
+			.price(1000)
+			.userId(UUID.randomUUID())  // 실제 사용자 ID로 설정
+			.paymentStatus(PaymentStatus.FAILED)
+			.build();
 
 		when(paymentRepository.findByIdAndDeletedAtIsNull(testPaymentId)).thenReturn(Optional.of(testPayment));
 		when(paymentHistoryRepository.findByPayment(testPayment)).thenReturn(Optional.empty());
 
 		// When & Then
 		RuntimeException exception = assertThrows(RuntimeException.class, () ->
-			paymentService.updatePayment(testPaymentId, updateDto, authenticatedUser)
+			paymentService.updatePayment(testPaymentDto)
 		);
 
 		assertTrue(exception.getMessage().contains("해당 결제의 내역이 존재하지않습니다."));

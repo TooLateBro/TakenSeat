@@ -1,4 +1,4 @@
-package com.taken_seat.payment_service.application.dto.request;
+package com.taken_seat.payment_service.application.dto.controller.request;
 
 import com.taken_seat.payment_service.domain.enums.PaymentStatus;
 
