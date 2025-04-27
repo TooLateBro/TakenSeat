@@ -24,13 +24,16 @@ import com.taken_seat.review_service.application.dto.response.PageReviewResponse
 import com.taken_seat.review_service.application.dto.response.ReviewDetailResDto;
 import com.taken_seat.review_service.application.service.ReviewLikeService;
 import com.taken_seat.review_service.application.service.ReviewService;
+import com.taken_seat.review_service.infrastructure.swagger.ReviewSwaggerDocs;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/reviews")
+@Tag(name = "Review API", description = "리뷰 관련 API")
 public class ReviewController {
 
 	private final ReviewService reviewServices;
@@ -38,6 +41,7 @@ public class ReviewController {
 
 	@PostMapping
 	@RoleCheck(allowedRoles = {Role.ADMIN, Role.MANAGER, Role.CUSTOMER})
+	@ReviewSwaggerDocs.RegisterReview
 	public ResponseEntity<ApiResponseData<ReviewDetailResDto>> registerReview(
 		@Valid @RequestBody ReviewRegisterReqDto reviewRegisterReqDto,
 		AuthenticatedUser authenticatedUser) {
@@ -48,6 +52,7 @@ public class ReviewController {
 	}
 
 	@GetMapping("/{reviewId}")
+	@ReviewSwaggerDocs.GetPaymentDetail
 	public ResponseEntity<ApiResponseData<ReviewDetailResDto>> getReviewDetail(
 		@PathVariable("reviewId") UUID reviewId) {
 		return ResponseEntity.status(HttpStatus.OK)
@@ -55,6 +60,7 @@ public class ReviewController {
 	}
 
 	@GetMapping("/search")
+	@ReviewSwaggerDocs.SearchReview
 	public ResponseEntity<ApiResponseData<PageReviewResponseDto>> searchReview(
 		@RequestParam(required = true) UUID performance_id,
 		@RequestParam(required = false) String q,
@@ -71,6 +77,7 @@ public class ReviewController {
 
 	@PatchMapping("/{reviewId}")
 	@RoleCheck(allowedRoles = {Role.ADMIN, Role.MANAGER, Role.CUSTOMER})
+	@ReviewSwaggerDocs.UpdateReview
 	public ResponseEntity<ApiResponseData<ReviewDetailResDto>> updateReview(@PathVariable("reviewId") UUID reviewId,
 		@Valid @RequestBody ReviewUpdateReqDto reviewUpdateReqDto,
 		AuthenticatedUser authenticatedUser) {
@@ -81,6 +88,7 @@ public class ReviewController {
 
 	@DeleteMapping("/{reviewId}")
 	@RoleCheck(allowedRoles = {Role.ADMIN, Role.MANAGER, Role.CUSTOMER})
+	@ReviewSwaggerDocs.DeleteReview
 	public ResponseEntity<ApiResponseData<Void>> deleteReview(@PathVariable("reviewId") UUID reviewId,
 		AuthenticatedUser authenticatedUser) {
 		reviewServices.deleteReview(reviewId, authenticatedUser);
@@ -89,6 +97,7 @@ public class ReviewController {
 	}
 
 	@PostMapping("/{reviewId}/like")
+	@ReviewSwaggerDocs.ToggleReviewLike
 	public ResponseEntity<ApiResponseData<Void>> toggleReviewLike(@PathVariable("reviewId") UUID reviewId,
 		AuthenticatedUser authenticatedUser) {
 		reviewLikeService.toggleReviewLike(reviewId, authenticatedUser);
