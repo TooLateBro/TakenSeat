@@ -47,6 +47,7 @@ public class PerformanceResponseMapper {
 			schedule.getSaleEndAt(),
 			schedule.getStatus(),
 			schedule.getScheduleSeats().stream()
+				.filter(scheduleSeat -> scheduleSeat.getDeletedAt() == null)
 				.map(PerformanceResponseMapper::toScheduleSeatDto)
 				.collect(Collectors.toList())
 		);
@@ -76,6 +77,7 @@ public class PerformanceResponseMapper {
 			performance.getMaxTicketCount(),
 			performance.getDiscountInfo(),
 			performance.getSchedules().stream()
+				.filter(schedule -> schedule.getDeletedAt() == null)
 				.map(PerformanceResponseMapper::toScheduleDto)
 				.collect(Collectors.toList())
 		);
