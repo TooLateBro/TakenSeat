@@ -1,4 +1,4 @@
-package com.taken_seat.performance_service.Performanceticket.presentation.controller;
+package com.taken_seat.performance_service.performanceticket.presentation.controller;
 
 import java.util.UUID;
 
@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.taken_seat.common_service.dto.ApiResponseData;
 import com.taken_seat.common_service.dto.request.TicketPerformanceClientRequest;
 import com.taken_seat.common_service.dto.response.TicketPerformanceClientResponse;
-import com.taken_seat.performance_service.Performanceticket.application.dto.mapper.RequestMapper;
-import com.taken_seat.performance_service.Performanceticket.application.service.PerformanceTicketService;
+import com.taken_seat.performance_service.performanceticket.application.dto.mapper.RequestMapper;
+import com.taken_seat.performance_service.performanceticket.application.service.PerformanceTicketService;
 
 import lombok.RequiredArgsConstructor;
 

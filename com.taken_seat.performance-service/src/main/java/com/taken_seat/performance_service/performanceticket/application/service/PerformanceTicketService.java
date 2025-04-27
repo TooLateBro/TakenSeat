@@ -1,4 +1,4 @@
-package com.taken_seat.performance_service.Performanceticket.application.service;
+package com.taken_seat.performance_service.performanceticket.application.service;
 
 import org.springframework.stereotype.Service;
 
