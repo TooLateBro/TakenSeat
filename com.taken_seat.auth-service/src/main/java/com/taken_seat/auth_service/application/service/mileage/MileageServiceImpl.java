@@ -1,6 +1,7 @@
 package com.taken_seat.auth_service.application.service.mileage;
 
 import com.taken_seat.auth_service.application.dto.PageResponseDto;
+import com.taken_seat.auth_service.application.dto.mileage.MileageMapper;
 import com.taken_seat.auth_service.application.dto.mileage.UserMileageDto;
 import com.taken_seat.auth_service.application.dto.mileage.UserMileageResponseDto;
 import com.taken_seat.auth_service.domain.entity.mileage.Mileage;
@@ -28,11 +29,14 @@ import java.util.UUID;
 @Service
 public class MileageServiceImpl implements MileageService {
 
+    private final MileageMapper mileageMapper;
     private final UserRepository userRepository;
     private final MileageRepository mileageRepository;
     private final MileageQueryRepository mileageQueryRepository;
 
-    public MileageServiceImpl(UserRepository userRepository, MileageRepository mileageRepository, MileageQueryRepository mileageQueryRepository) {
+    public MileageServiceImpl(MileageMapper mileageMapper, UserRepository userRepository,
+                              MileageRepository mileageRepository, MileageQueryRepository mileageQueryRepository) {
+        this.mileageMapper = mileageMapper;
         this.userRepository = userRepository;
         this.mileageRepository = mileageRepository;
         this.mileageQueryRepository = mileageQueryRepository;
@@ -56,7 +60,7 @@ public class MileageServiceImpl implements MileageService {
 
         mileageRepository.save(mileage);
 
-        return UserMileageResponseDto.of(mileage);
+        return mileageMapper.userToUserMileageResponseDto(mileage);
     }
 
     @Transactional(readOnly = true)
@@ -65,7 +69,7 @@ public class MileageServiceImpl implements MileageService {
         Mileage mileage = mileageRepository.findByIdAndDeletedAtIsNull(mileageId)
                 .orElseThrow(()-> new AuthException(ResponseCode.MILEAGE_NOT_FOUND));
 
-        return UserMileageResponseDto.of(mileage);
+        return mileageMapper.userToUserMileageResponseDto(mileage);
     }
 
     @Transactional(readOnly = true)
@@ -77,7 +81,7 @@ public class MileageServiceImpl implements MileageService {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "updatedAt"));
         Page<Mileage> mileage = mileageRepository.findMileageByUserIdAndDeletedAtIsNull(user.getId(), pageable);
 
-        Page<UserMileageResponseDto> mileageInfo = mileage.map(UserMileageResponseDto::of);
+        Page<UserMileageResponseDto> mileageInfo = mileage.map(mileageMapper::userToUserMileageResponseDto);
 
         return PageResponseDto.of(mileageInfo);
     }
@@ -94,7 +98,7 @@ public class MileageServiceImpl implements MileageService {
             throw new MileageException(ResponseCode.MILEAGE_NOT_FOUND);
         }
 
-        Page<UserMileageResponseDto> userMileages = mileageInfo.map(UserMileageResponseDto::of);
+        Page<UserMileageResponseDto> userMileages = mileageInfo.map(mileageMapper::userToUserMileageResponseDto);
         return PageResponseDto.of(userMileages);
     }
 
@@ -108,7 +112,7 @@ public class MileageServiceImpl implements MileageService {
 
         mileage.update(dto.mileage(), authenticatedUser.getUserId());
 
-        return UserMileageResponseDto.of(mileage);
+        return mileageMapper.userToUserMileageResponseDto(mileage);
     }
 
     @Transactional
