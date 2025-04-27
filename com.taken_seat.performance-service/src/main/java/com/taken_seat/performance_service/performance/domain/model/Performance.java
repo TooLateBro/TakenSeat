@@ -91,7 +91,8 @@ public class Performance extends BaseTimeEntity {
 
 	public PerformanceSchedule getScheduleById(UUID performanceScheduleId) {
 		return schedules.stream()
-			.filter(performanceSchedule -> performanceSchedule.getId().equals(performanceScheduleId))
+			.filter(performanceSchedule -> performanceSchedule.getId().equals(performanceScheduleId)
+				&& performanceSchedule.getDeletedAt() == null)
 			.findFirst()
 			.orElseThrow(() -> new PerformanceException(ResponseCode.PERFORMANCE_SCHEDULE_NOT_FOUND_EXCEPTION));
 	}
