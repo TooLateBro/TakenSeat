@@ -39,7 +39,7 @@ public class AuthServiceImpl implements AuthService{
     @Override
     public UserInfoResponseDtoV1 signUp(AuthSignUpDto dto) {
         if(userRepository.findByEmail(dto.email()).isPresent()){
-            throw new AuthException(ResponseCode.USER_BAD_EMAIL);
+            throw new AuthException(ResponseCode.USER_CONFLICT_EMAIL);
         }
         User user = User.create(
                 dto.username(), dto.email(),
