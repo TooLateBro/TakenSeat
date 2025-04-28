@@ -6,13 +6,11 @@ import java.util.UUID;
 
 import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.performance_service.performance.application.dto.command.UpdatePerformanceScheduleCommand;
-import com.taken_seat.performance_service.performance.application.dto.command.UpdateSeatPriceCommand;
+import com.taken_seat.performance_service.performance.application.dto.command.UpdateScheduleSeatCommand;
 import com.taken_seat.performance_service.performance.domain.model.Performance;
 import com.taken_seat.performance_service.performance.domain.model.PerformanceSchedule;
 import com.taken_seat.performance_service.performance.domain.model.PerformanceScheduleStatus;
-import com.taken_seat.performance_service.performance.domain.model.PerformanceSeatPrice;
 import com.taken_seat.performance_service.performance.domain.model.PerformanceStatus;
-import com.taken_seat.performance_service.performancehall.domain.facade.PerformanceHallFacade;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -42,7 +40,7 @@ public class PerformanceUpdateHelper {
 		schedule.preUpdate(updatedBy);
 		schedule.update(command);
 
-		updateSeatPrices(schedule, command.seatPrices(), updatedBy);
+		updateScheduleSeats(schedule, command.scheduleSeats(), updatedBy);
 	}
 
 	private static PerformanceSchedule createNewSchedule(UpdatePerformanceScheduleCommand command,
@@ -60,37 +58,34 @@ public class PerformanceUpdateHelper {
 			.build();
 
 		schedule.prePersist(updatedBy);
-		updateSeatPrices(schedule, command.seatPrices(), updatedBy);
+		updateScheduleSeats(schedule, command.scheduleSeats(), updatedBy);
 		return schedule;
 	}
 
-	private static void updateSeatPrices(PerformanceSchedule schedule, List<UpdateSeatPriceCommand> seatPrices,
-		UUID updatedBy) {
+	private static void updateScheduleSeats(
+		PerformanceSchedule schedule,
+		List<UpdateScheduleSeatCommand> scheduleSeatCommands,
+		UUID updatedBy
+	) {
 
-		if (seatPrices == null)
+		if (scheduleSeatCommands == null)
 			return;
 
-		for (UpdateSeatPriceCommand seatPrice : seatPrices) {
-			Optional<PerformanceSeatPrice> matched = schedule.getSeatPrices().stream()
-				.filter(p -> p.getId().equals(seatPrice.performanceSeatPriceId()))
-				.findFirst();
-
-			if (matched.isPresent()) {
-				matched.get().update(seatPrice);
-			} else {
-				PerformanceSeatPrice newPrice = PerformanceSeatPrice.builder()
-					.performanceSchedule(schedule)
-					.seatType(seatPrice.seatType())
-					.price(seatPrice.price())
-					.build();
-				newPrice.prePersist(updatedBy);
-				schedule.getSeatPrices().add(newPrice);
-			}
+		for (UpdateScheduleSeatCommand command : scheduleSeatCommands) {
+			schedule.getScheduleSeats().stream()
+				.filter(scheduleSeat -> scheduleSeat.getId().equals(command.scheduleSeatId()))
+				.findFirst()
+				.ifPresent(scheduleSeat -> {
+					scheduleSeat.preUpdate(updatedBy);
+					scheduleSeat.update(command);
+				});
 		}
+
 	}
 
-	public static void updateStatus(Performance performance, AuthenticatedUser authenticatedUser,
-		PerformanceHallFacade performanceHallFacade) {
+	public static void updateStatus(
+		Performance performance,
+		AuthenticatedUser authenticatedUser) {
 
 		PerformanceStatus oldPerformanceStatus = performance.getStatus();
 		PerformanceStatus newPerformanceStatus = PerformanceStatus.status(
@@ -111,22 +106,21 @@ public class PerformanceUpdateHelper {
 
 		for (PerformanceSchedule schedule : performance.getSchedules()) {
 
-			UUID performanceHallId = schedule.getPerformanceHallId();
-
-			boolean isSoldOut = performanceHallFacade.isSoldOut(performanceHallId);
-
 			PerformanceScheduleStatus oldScheduleStatus = schedule.getStatus();
-			PerformanceScheduleStatus newPerformanceScheduleStatus =
-				PerformanceScheduleStatus.status(schedule.getSaleStartAt(), schedule.getSaleEndAt(), isSoldOut);
+			PerformanceScheduleStatus newScheduleStatus =
+				PerformanceScheduleStatus.status(
+					schedule.getSaleStartAt(),
+					schedule.getSaleEndAt(),
+					schedule.isSoldOut());
 
-			if (!schedule.getStatus().equals(newPerformanceScheduleStatus)) {
-				schedule.updateStatus(newPerformanceScheduleStatus);
+			if (!schedule.getStatus().equals(newScheduleStatus)) {
+				schedule.updateStatus(newScheduleStatus);
 				schedule.preUpdate(authenticatedUser.getUserId());
 
 				log.info("[Performance] 회차 상태 변경 - 성공 - 공연회차 ID={}, oldStatus={}, newStatus={}, 공연 ID={}, 변경자={}",
 					schedule.getId(),
 					oldScheduleStatus,
-					newPerformanceScheduleStatus,
+					newScheduleStatus,
 					performance.getId(),
 					authenticatedUser.getUserId());
 			}

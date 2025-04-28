@@ -72,7 +72,7 @@
 // 					.endAt(LocalDateTime.of(2025, 6, 10, 21, 0))
 // 					.saleStartAt(LocalDateTime.of(2025, 5, 1, 10, 0))
 // 					.saleEndAt(LocalDateTime.of(2025, 6, 9, 23, 59, 59))
-// 					.seatPrices(List.of(
+// 					.scheduleSeats(List.of(
 // 						CreateSeatPriceDto.builder()
 // 							.seatType(SeatType.VIP)
 // 							.price(150000)
@@ -103,7 +103,7 @@
 // 			.endAt(LocalDateTime.of(2025, 6, 10, 21, 0))
 // 			.saleStartAt(LocalDateTime.of(2025, 5, 1, 10, 0))
 // 			.saleEndAt(LocalDateTime.of(2025, 6, 9, 23, 59))
-// 			.seatPrices(List.of(seatPrice1, seatPrice2))
+// 			.scheduleSeats(List.of(seatPrice1, seatPrice2))
 // 			.build();
 //
 // 		CreateRequestDto requestDto = CreateRequestDto.builder()
@@ -176,17 +176,17 @@
 // 		assertThat(schedule.getPerformanceHallId().toString()).isEqualTo("11111111-2222-3333-4444-555555555555");
 //
 // 		// 좌석 가격 정보 검증
-// 		List<SeatPriceResponseDto> seatPrices = schedule.getSeatPrices();
-// 		assertThat(seatPrices).hasSize(2);
+// 		List<SeatPriceResponseDto> scheduleSeats = schedule.getSeatPrices();
+// 		assertThat(scheduleSeats).hasSize(2);
 //
 // 		// 첫 번째 좌석의 값 비교
-// 		SeatPriceResponseDto vipSeat = seatPrices.get(0);
+// 		SeatPriceResponseDto vipSeat = scheduleSeats.get(0);
 // 		assertThat(vipSeat.getPerformanceSeatPriceId()).isNotNull();
 // 		assertThat(vipSeat.getSeatType().name()).isEqualTo(SeatType.VIP.name());
 // 		assertThat(vipSeat.getPrice()).isEqualTo(150000);
 //
 // 		// 두 번째 좌석의 값 비교
-// 		SeatPriceResponseDto rSeat = seatPrices.get(1);
+// 		SeatPriceResponseDto rSeat = scheduleSeats.get(1);
 // 		assertThat(rSeat.getPerformanceSeatPriceId()).isNotNull();
 // 		assertThat(rSeat.getSeatType().name()).isEqualTo(SeatType.R.name());
 // 		assertThat(rSeat.getPrice()).isEqualTo(120000);
