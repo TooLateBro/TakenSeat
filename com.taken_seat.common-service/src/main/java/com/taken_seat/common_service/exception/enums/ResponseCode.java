@@ -63,7 +63,7 @@ public enum ResponseCode {
 	// User
 	USER_NOT_FOUND(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "해당 유저 정보를 찾을 수 없습니다."),
 	USER_BAD_PASSWORD(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), "비밀번호가 일치하지 않습니다."),
-	USER_BAD_EMAIL(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), "이미 존재하는 이메일 입니다."),
+	USER_CONFLICT_EMAIL(HttpStatus.CONFLICT, HttpStatus.CONFLICT.value(), "이미 존재하는 이메일 입니다."),
 
 	// Mileage
 	MILEAGE_NOT_FOUND(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "마일리지가 존재하지 않습니다."),
@@ -71,7 +71,7 @@ public enum ResponseCode {
 	// Coupon
 	COUPON_QUANTITY_EXCEPTION(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), "쿠폰의 수량이 모두 소진 되었습니다."),
 	COUPON_NOT_FOUND(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "쿠폰이 존재하지 않습니다."),
-	COUPON_EXISTS(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), "이미 존재하는 쿠폰 입니다."),
+	COUPON_EXISTS(HttpStatus.CONFLICT, HttpStatus.CONFLICT.value(), "이미 존재하는 쿠폰 입니다."),
 	COUPON_HAS_USER(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), "이미 보유한 쿠폰 입니다."),
 
 	// Booking

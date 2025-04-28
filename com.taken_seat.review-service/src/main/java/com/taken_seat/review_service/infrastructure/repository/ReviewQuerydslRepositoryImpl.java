@@ -17,6 +17,7 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.taken_seat.review_service.application.dto.service.ReviewSearchDto;
 import com.taken_seat.review_service.domain.model.QReview;
 import com.taken_seat.review_service.domain.model.Review;
 import com.taken_seat.review_service.domain.repository.ReviewQuerydslRepository;
@@ -33,25 +34,24 @@ public class ReviewQuerydslRepositoryImpl implements ReviewQuerydslRepository {
 	private static final List<String> VALID_SORT_BY = Arrays.asList("createdAt", "updatedAt", "deletedAt");
 
 	@Override
-	public Page<Review> search(UUID performance_id, String query, String category, int page, int size, String sortBy,
-		String order) {
-		size = validateSize(size);
-		Sort sort = getSortOrder(sortBy, order);
-		Pageable pageable = PageRequest.of(page, size, sort);
+	public Page<Review> search(ReviewSearchDto dto) {
+		int size = validateSize(dto.getSize());
+		Sort sort = getSortOrder(dto.getSort(), dto.getOrder());
+		Pageable pageable = PageRequest.of(dto.getPage(), size, sort);
 
 		QReview review = QReview.review;
 
 		// 항상 performance_id로 필터링
-		BooleanExpression condition = review.performanceId.eq(performance_id)
+		BooleanExpression condition = review.performanceId.eq(dto.getPerformance_id())
 			.and(review.deletedAt.isNull())
-			.and(buildSearchCondition(query, category));
+			.and(buildSearchCondition(dto.getQ(), dto.getCategory()));
 
 		List<Review> contents = queryFactory
 			.selectFrom(review)
 			.where(condition)
 			.offset(pageable.getOffset())
 			.limit(pageable.getPageSize())
-			.orderBy(toOrderSpecifier(sortBy, order))
+			.orderBy(toOrderSpecifier(dto.getSort(), dto.getOrder()))
 			.fetch();
 
 		Long total = queryFactory

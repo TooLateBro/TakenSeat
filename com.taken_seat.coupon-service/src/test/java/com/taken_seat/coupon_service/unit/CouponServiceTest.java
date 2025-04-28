@@ -3,6 +3,7 @@ package com.taken_seat.coupon_service.unit;
 import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.common_service.exception.customException.CouponException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
+import com.taken_seat.coupon_service.application.dto.CouponMapper;
 import com.taken_seat.coupon_service.application.dto.CouponResponseDto;
 import com.taken_seat.coupon_service.application.dto.PageResponseDto;
 import com.taken_seat.coupon_service.application.service.CouponServiceImpl;
@@ -26,8 +27,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.mock;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 
@@ -39,6 +39,9 @@ public class CouponServiceTest {
 
     @Mock
     private CouponQueryRepository couponQueryRepository;
+
+    @Mock
+    private CouponMapper couponMapper;
 
     @InjectMocks
     private CouponServiceImpl couponService;
@@ -63,16 +66,24 @@ public class CouponServiceTest {
     @Test
     @DisplayName("쿠폰 생성 성공 테스트")
     public void createCouponSuccess() {
+        couponId = UUID.randomUUID();
         LocalDateTime expiredAt = LocalDateTime.parse("2025-12-31T23:59:59");
         CreateCouponRequestDto requestDto = new CreateCouponRequestDto(
                 "testCoupon", "testCode", 20L,
                 30, expiredAt);
 
-        when(couponRepository.findByCode(coupon.getCode())).thenReturn(Optional.empty());
+        when(couponRepository.findByCode(requestDto.code())).thenReturn(Optional.empty());
+        CouponResponseDto mappedDto = new CouponResponseDto(
+                couponId, "testCoupon", "testCode", 20L,
+                30, expiredAt
+        );
+        when(couponMapper.couponToCouponResponseDto(any(Coupon.class))).thenReturn(mappedDto);
+
         CouponResponseDto responseDto = couponService.createCoupon(requestDto.toDto(), authenticatedUser);
 
         assertNotNull(responseDto);
     }
+
     @Test
     @DisplayName("쿠폰 생성 실패 테스트 - 존재하는 코드")
     public void createCouponFail_CouponCodeExists() {
@@ -95,9 +106,15 @@ public class CouponServiceTest {
         couponId = UUID.randomUUID();
 
         when(couponRepository.findByIdAndDeletedAtIsNull(couponId)).thenReturn(Optional.of(coupon));
+        CouponResponseDto mappedDto = new CouponResponseDto(
+                couponId, "testCoupon", "testCode", 20L,
+                30, expiredAt
+        );
+        when(couponMapper.couponToCouponResponseDto(any(Coupon.class))).thenReturn(mappedDto);
 
         CouponResponseDto responseDto = couponService.getCoupon(couponId);
         assertNotNull(responseDto);
+        assertNotNull(mappedDto);
     }
     @Test
     @DisplayName("쿠폰 단건 조회 실패 테스트 - 쿠폰 없음")
@@ -154,9 +171,14 @@ public class CouponServiceTest {
         UpdateCouponRequestDto requestDto = new UpdateCouponRequestDto(
                 "updateCoupon", "updateCode", 40L,
                 350, expiredAt);
-
+        CouponResponseDto mappedDto = new CouponResponseDto(
+                couponId, "updateCoupon", "updateCode", 40L,
+                350, expiredAt
+        );
+        when(couponMapper.couponToCouponResponseDto(any(Coupon.class))).thenReturn(mappedDto);
         CouponResponseDto responseDto = couponService.updateCoupon(couponId, authenticatedUser, requestDto.toDto());
         assertNotNull(responseDto);
+        assertNotNull(mappedDto);
     }
     @Test
     @DisplayName("쿠폰 수정 실패 테스트 - 쿠폰 없음")

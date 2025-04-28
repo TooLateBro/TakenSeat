@@ -1,7 +1,8 @@
 package com.taken_seat.auth_service.unit.auth;
 
 import com.taken_seat.auth_service.application.dto.auth.AuthLoginResponseDto;
-import com.taken_seat.auth_service.application.dto.auth.AuthSignUpResponseDto;
+import com.taken_seat.auth_service.application.dto.user.v1.UserInfoResponseDtoV1;
+import com.taken_seat.auth_service.application.dto.user.v1.UserMapper;
 import com.taken_seat.auth_service.application.service.auth.AuthServiceImpl;
 import com.taken_seat.auth_service.domain.entity.user.User;
 import com.taken_seat.auth_service.domain.repository.user.UserRepository;
@@ -31,6 +32,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -54,6 +56,9 @@ public class AuthServiceTest {
 
     @Mock
     private Claims claims;
+
+    @Mock
+    private UserMapper userMapper;
 
     @InjectMocks
     private AuthServiceImpl authService;
@@ -93,7 +98,12 @@ public class AuthServiceTest {
         when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
         when(bCryptPasswordEncoder.encode(password)).thenReturn("encodedPassword");
 
-        AuthSignUpResponseDto result = authService.signUp(requestDto.toDto());
+        UserInfoResponseDtoV1 mappedDto = new UserInfoResponseDtoV1(
+                user.getId(), user.getUsername(), user.getEmail(), user.getPhone(), user.getRole(), null, null
+        );
+        when(userMapper.userToUserInfoResponseDto(any(User.class))).thenReturn(mappedDto);
+
+        UserInfoResponseDtoV1 result = authService.signUp(requestDto.toDto());
 
         assertNotNull(result);
         // 유효성 검사에서 위반 사항이 없는지 확인
@@ -116,8 +126,11 @@ public class AuthServiceTest {
 
         when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
         when(bCryptPasswordEncoder.encode(password)).thenReturn("encodedPassword");
-
-        AuthSignUpResponseDto result = authService.signUp(requestDto.toDto());
+        UserInfoResponseDtoV1 mappedDto = new UserInfoResponseDtoV1(
+                user.getId(), username, email, phone, role, null, null
+        );
+        when(userMapper.userToUserInfoResponseDto(any(User.class))).thenReturn(mappedDto);
+        UserInfoResponseDtoV1 result = authService.signUp(requestDto.toDto());
 
         assertNotNull(result);
         assertFalse(constraintViolations.isEmpty());

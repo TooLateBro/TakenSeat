@@ -2,10 +2,8 @@ package com.taken_seat.auth_service.unit.user.v1;
 
 import com.taken_seat.auth_service.application.dto.PageResponseDto;
 import com.taken_seat.auth_service.application.dto.user.v1.UserInfoResponseDtoV1;
-import com.taken_seat.auth_service.application.dto.user.v2.UserMapper;
-import com.taken_seat.auth_service.application.dto.user.v2.UserInfoResponseDtoV2;
+import com.taken_seat.auth_service.application.dto.user.v1.UserMapper;
 import com.taken_seat.auth_service.application.service.user.v1.UserServiceV1Impl;
-import com.taken_seat.auth_service.application.service.user.v2.UserServiceV2Impl;
 import com.taken_seat.auth_service.domain.entity.user.User;
 import com.taken_seat.auth_service.domain.entity.user.UserCoupon;
 import com.taken_seat.auth_service.domain.repository.user.UserRepository;
@@ -53,9 +51,6 @@ public class UserServiceV1Test {
     @InjectMocks
     private UserServiceV1Impl userServiceV1;
 
-    @InjectMocks
-    private UserServiceV2Impl userServiceV2;
-
     private User user;
 
     private UUID userId;
@@ -71,32 +66,20 @@ public class UserServiceV1Test {
     }
 
     @Test
-    @DisplayName("유저 단건 조회 V1 vs V2 성능 비교 테스트")
-    void compareV1AndV2Performance() {
+    @DisplayName("유저 단건 조회 성공 테스트")
+    public void getUserSuccess() {
         when(userRepository.findByIdAndDeletedAtIsNull(userId)).thenReturn(Optional.of(user));
 
-        long startV1 = System.nanoTime();
-        UserInfoResponseDtoV1 resultV1 = userServiceV1.getUser(userId);
-        long endV1 = System.nanoTime();
-
-        UserInfoResponseDtoV2 mappedDto = new UserInfoResponseDtoV2(
+        UserInfoResponseDtoV1 mappedDto = new UserInfoResponseDtoV1(
                 user.getId(), user.getUsername(), user.getEmail(), user.getPhone(), user.getRole(), null, null
         );
         when(userMapper.userToUserInfoResponseDto(user)).thenReturn(mappedDto);
 
-        long startV2 = System.nanoTime();
-        UserInfoResponseDtoV2 resultV2 = userServiceV2.getUser(userId);
-        long endV2 = System.nanoTime();
-
-        long durationV1 = endV1 - startV1;
-        long durationV2 = endV2 - startV2;
-
-        System.out.println("V1 (직접 매핑) 단건 조회 : " + durationV1 + "ns");
-        System.out.println("V2 (MapStruct) 단건 조회 : " + durationV2 + "ns");
+        UserInfoResponseDtoV1 resultV1 = userServiceV1.getUser(userId);
 
         assertNotNull(resultV1);
-        assertNotNull(resultV2);
     }
+
 
     @Test
     @DisplayName("유저 단건 조회 실패 테스트")
@@ -110,8 +93,8 @@ public class UserServiceV1Test {
         assertEquals(ResponseCode.USER_NOT_FOUND, exception.getErrorCode());
     }
     @Test
-    @DisplayName("유저 단건 상세 조회 V1 vs V2 성능 비교 테스트")
-    public void compareV1AndV2UserDetailsPerformance() {
+    @DisplayName("유저 단건 상세 조회 성공 테스트")
+    public void getUserDetailsSuccess() {
         userId = UUID.randomUUID();
         int page = 0;
         int size = 10;
@@ -119,36 +102,24 @@ public class UserServiceV1Test {
         User mockedUser = Mockito.mock(User.class);
         when(mockedUser.getId()).thenReturn(userId);
         when(mockedUser.getUsername()).thenReturn("testuser1");
-        when(mockedUser.getMileages()).thenReturn(List.of());
 
         when(userRepository.findByIdAndDeletedAtIsNull(userId)).thenReturn(Optional.of(mockedUser));
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<UserCoupon> userCouponPage = new PageImpl<>(List.of());
-
         when(userCouponRepository.findCouponIdByUserIdAndIsActiveTrue(any(UUID.class), eq(pageable)))
                 .thenReturn(userCouponPage);
 
-        long startV1 = System.nanoTime();
-        UserInfoResponseDtoV1 resultV1 = userServiceV1.getUserDetails(userId, page, size);
-        long endV1 = System.nanoTime();
-        long durationV1 = endV1 - startV1;
-
-        UserInfoResponseDtoV2 mappedDto = new UserInfoResponseDtoV2(
-                mockedUser.getId(), mockedUser.getUsername(), mockedUser.getEmail(), mockedUser.getPhone(), mockedUser.getRole(), null, null
+        UserInfoResponseDtoV1 mockedDto = new UserInfoResponseDtoV1(
+                mockedUser.getId(), mockedUser.getUsername(), null, null, null, null, null
         );
-        when(userMapper.userToUserInfoDetailsResponseDto(mockedUser, userCouponPage)).thenReturn(mappedDto);
+        when(userMapper.userToUserInfoDetailsResponseDto(any(User.class), eq(userCouponPage)))
+                .thenReturn(mockedDto);
+        UserInfoResponseDtoV1 resultV1 = userServiceV1.getUserDetails(userId, page, size);
 
-        long startV2 = System.nanoTime();
-        UserInfoResponseDtoV2 resultV2 = userServiceV2.getUserDetails(userId, page, size);
-        long endV2 = System.nanoTime();
-        long durationV2 = endV2 - startV2;
-
-        System.out.println("V1 (직접 매핑) 단건 상세 조회 : " + durationV1 + "ns");
-        System.out.println("V2 (MapStruct) 단건 상세 조회 : " + durationV2 + "ns");
         assertNotNull(resultV1);
-        assertNotNull(resultV2);
     }
+
 
     @Test
     @DisplayName("유저 단건 상세 조회 실패 테스트")
@@ -166,14 +137,13 @@ public class UserServiceV1Test {
     }
 
     @Test
-    @DisplayName("유저 전체 조회 V1 vs V2 성능 비교 테스트")
-    public void compareV1AndV2SearchUserPerformance() {
+    @DisplayName("유저 전체 조회 성공 테스트")
+    public void searchUserSuccess() {
         int page = 0;
         int size = 10;
 
         User mockedUser = Mockito.mock(User.class);
         when(mockedUser.getUserCoupons()).thenReturn(List.of());
-        when(mockedUser.getId()).thenReturn(UUID.randomUUID());
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
 
@@ -181,28 +151,9 @@ public class UserServiceV1Test {
         Page<User> userPage = new PageImpl<>(userList, pageable, userList.size());
         when(userQueryRepository.findAllByDeletedAtIsNull(null, null, pageable)).thenReturn(userPage);
 
-        long startV1 = System.nanoTime();
         PageResponseDto<UserInfoResponseDtoV1> resultV1 = userServiceV1.searchUser(null, null, page, size);
-        long endV1 = System.nanoTime();
-        long durationV1 = endV1 - startV1;
-
-        UserInfoResponseDtoV2 mappedDto = new UserInfoResponseDtoV2(
-                mockedUser.getId(), mockedUser.getUsername(), mockedUser.getEmail(), mockedUser.getPhone(), mockedUser.getRole(), null, null
-        );
-
-        when(userMapper.userToUserInfoDetailsResponseDto(mockedUser, new PageImpl<>(List.of(), pageable, 0)))
-                .thenReturn(mappedDto);
-
-        long startV2 = System.nanoTime();
-        PageResponseDto<UserInfoResponseDtoV2> resultV2 = userServiceV2.searchUser(null, null, page, size);
-        long endV2 = System.nanoTime();
-        long durationV2 = endV2 - startV2;
-
-        System.out.println("V1 (직접 매핑) 전체 조회 : " + durationV1 + "ns");
-        System.out.println("V2 (MapStruct) 전체 조회 : " + durationV2 + "ns");
 
         assertNotNull(resultV1);
-        assertNotNull(resultV2);
     }
 
     @Test
@@ -235,6 +186,11 @@ public class UserServiceV1Test {
 
         when(userRepository.findByIdAndDeletedAtIsNull(userId)).thenReturn(Optional.of(user));
 
+        UserInfoResponseDtoV1 mockedResponse = new UserInfoResponseDtoV1(
+                user.getId(), user.getUsername(), user.getPhone(), user.getEmail(), null, null, null
+        );
+        when(userMapper.userToUserInfoResponseDto(user)).thenReturn(mockedResponse);
+
         UserUpdateRequestDto userUpdateRequestDto = new UserUpdateRequestDto(
                 username, password, phone, email, role
         );
@@ -243,6 +199,7 @@ public class UserServiceV1Test {
 
         assertNotNull(userInfoResponseDtoV1);
     }
+
     @Test
     @DisplayName("유저 수정 실패 테스트 - 유저 없음")
     public void updateUserFail_NoUserFound() {

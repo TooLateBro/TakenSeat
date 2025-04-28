@@ -1,4 +1,4 @@
-package com.taken_seat.auth_service.application.dto.user.v2;
+package com.taken_seat.auth_service.application.dto.user.v1;
 
 import com.taken_seat.auth_service.application.dto.PageResponseDto;
 import com.taken_seat.auth_service.domain.entity.mileage.Mileage;
@@ -16,10 +16,10 @@ public interface UserMapper {
 
     @Mapping(target = "mileage", ignore = true) // mileage 필드는 별도로 처리
     @Mapping(target = "userCoupons", ignore = true) // userCoupons 필드는 별도로 처리
-    UserInfoResponseDtoV2 userToUserInfoResponseDto(User user);
+    UserInfoResponseDtoV1 userToUserInfoResponseDto(User user);
 
     // 수동 구현이 필요한 매핑은 default 메서드로 작성
-    default UserInfoResponseDtoV2 userToUserInfoDetailsResponseDto(User user, Page<UserCoupon> userCoupons) {
+    default UserInfoResponseDtoV1 userToUserInfoDetailsResponseDto(User user, Page<UserCoupon> userCoupons) {
         if (user == null) {
             return null;
         }
@@ -30,7 +30,7 @@ public interface UserMapper {
                 .map(Mileage::getMileage)
                 .orElse(0);
 
-        return new UserInfoResponseDtoV2(
+        return new UserInfoResponseDtoV1(
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),

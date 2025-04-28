@@ -3,6 +3,7 @@ package com.taken_seat.auth_service.application.service.user.v1;
 import com.taken_seat.auth_service.application.dto.PageResponseDto;
 import com.taken_seat.auth_service.application.dto.user.v1.UserInfoResponseDtoV1;
 import com.taken_seat.auth_service.application.dto.user.UserUpdateDto;
+import com.taken_seat.auth_service.application.dto.user.v1.UserMapper;
 import com.taken_seat.auth_service.domain.entity.user.User;
 import com.taken_seat.auth_service.domain.entity.user.UserCoupon;
 import com.taken_seat.auth_service.domain.repository.user.UserQueryRepository;
@@ -24,15 +25,18 @@ import java.util.UUID;
 
 @Service
 public class UserServiceV1Impl implements UserServiceV1 {
-    
+
     private final UserRepository userRepository;
     private final UserCouponRepository userCouponRepository;
     private final UserQueryRepository userQueryRepository;
+    private final UserMapper userMapper;
 
-    public UserServiceV1Impl(UserRepository userRepository, UserCouponRepository userCouponRepository, UserQueryRepository userQueryRepository) {
+    public UserServiceV1Impl(UserRepository userRepository, UserCouponRepository userCouponRepository,
+                             UserQueryRepository userQueryRepository, UserMapper userMapper) {
         this.userRepository = userRepository;
         this.userCouponRepository = userCouponRepository;
         this.userQueryRepository = userQueryRepository;
+        this.userMapper = userMapper;
     }
 
     @Transactional(readOnly = true)
@@ -41,7 +45,7 @@ public class UserServiceV1Impl implements UserServiceV1 {
         User user = userRepository.findByIdAndDeletedAtIsNull(userId)
                 .orElseThrow(()-> new AuthException(ResponseCode.USER_NOT_FOUND));
 
-        return UserInfoResponseDtoV1.of(user);
+        return userMapper.userToUserInfoResponseDto(user);
     }
 
     @Transactional(readOnly = true)
@@ -54,7 +58,7 @@ public class UserServiceV1Impl implements UserServiceV1 {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<UserCoupon> userCoupons = userCouponRepository.findCouponIdByUserIdAndIsActiveTrue(userId, pageable);
 
-        return UserInfoResponseDtoV1.detailsOf(user, userCoupons);
+        return userMapper.userToUserInfoDetailsResponseDto(user, userCoupons);
     }
 
     @Transactional(readOnly = true)
@@ -71,7 +75,7 @@ public class UserServiceV1Impl implements UserServiceV1 {
         Page<UserInfoResponseDtoV1> userInfoPage = userInfos.map(user -> {
             List<UserCoupon> coupons = user.getUserCoupons();
             Page<UserCoupon> userCouponsPage = new PageImpl<>(coupons, pageable, coupons.size());
-            return UserInfoResponseDtoV1.detailsOf(user, userCouponsPage);
+            return userMapper.userToUserInfoDetailsResponseDto(user, userCouponsPage);
         });
 
         return PageResponseDto.of(userInfoPage);
@@ -86,7 +90,7 @@ public class UserServiceV1Impl implements UserServiceV1 {
                 .orElseThrow(()-> new AuthException(ResponseCode.USER_NOT_FOUND));
 
         if(userRepository.findByEmail(String.valueOf(dto.email())).isPresent()){
-            throw new AuthException(ResponseCode.USER_BAD_EMAIL);
+            throw new AuthException(ResponseCode.USER_CONFLICT_EMAIL);
         }
         user.update(
                 dto.username(),
@@ -96,7 +100,7 @@ public class UserServiceV1Impl implements UserServiceV1 {
                 dto.role(),
                 userId
         );
-        return UserInfoResponseDtoV1.of(user);
+        return userMapper.userToUserInfoResponseDto(user);
     }
 
     @Transactional

@@ -4,8 +4,8 @@ import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.common_service.exception.customException.CouponException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.coupon_service.application.dto.CouponDto;
+import com.taken_seat.coupon_service.application.dto.CouponMapper;
 import com.taken_seat.coupon_service.application.dto.CouponResponseDto;
-import com.taken_seat.coupon_service.application.dto.CouponUpdateDto;
 import com.taken_seat.coupon_service.application.dto.PageResponseDto;
 import com.taken_seat.coupon_service.domain.entity.Coupon;
 import com.taken_seat.coupon_service.domain.repository.CouponQueryRepository;
@@ -26,10 +26,12 @@ import java.util.UUID;
 @Service
 public class CouponServiceImpl implements CouponService {
 
+    private final CouponMapper couponMapper;
     private final CouponRepository couponRepository;
     private final CouponQueryRepository couponQueryRepository;
 
-    public CouponServiceImpl(CouponRepository couponRepository, CouponQueryRepository couponQueryRepository) {
+    public CouponServiceImpl(CouponMapper couponMapper, CouponRepository couponRepository, CouponQueryRepository couponQueryRepository) {
+        this.couponMapper = couponMapper;
         this.couponRepository = couponRepository;
         this.couponQueryRepository = couponQueryRepository;
     }
@@ -47,7 +49,7 @@ public class CouponServiceImpl implements CouponService {
         );
         couponRepository.save(coupon);
 
-        return CouponResponseDto.of(coupon);
+        return couponMapper.couponToCouponResponseDto(coupon);
     }
 
     @Transactional(readOnly = true)
@@ -56,7 +58,7 @@ public class CouponServiceImpl implements CouponService {
         Coupon coupon = couponRepository.findByIdAndDeletedAtIsNull(couponId)
                 .orElseThrow(()-> new CouponException(ResponseCode.COUPON_NOT_FOUND));
 
-        return CouponResponseDto.of(coupon);
+        return couponMapper.couponToCouponResponseDto(coupon);
     }
 
     @Transactional(readOnly = true)
@@ -70,7 +72,7 @@ public class CouponServiceImpl implements CouponService {
             throw new CouponException(ResponseCode.COUPON_NOT_FOUND);
         }
 
-        Page<CouponResponseDto> couponsInfo = coupons.map(CouponResponseDto::of);
+        Page<CouponResponseDto> couponsInfo = coupons.map(couponMapper::couponToCouponResponseDto);
 
         return PageResponseDto.of(couponsInfo);
     }
@@ -81,7 +83,7 @@ public class CouponServiceImpl implements CouponService {
     @Caching(evict = {
             @CacheEvict(cacheNames = "searchCache", allEntries = true)
     })
-    public CouponResponseDto updateCoupon(UUID couponId, AuthenticatedUser authenticatedUser, CouponUpdateDto dto) {
+    public CouponResponseDto updateCoupon(UUID couponId, AuthenticatedUser authenticatedUser, CouponDto dto) {
         Coupon coupon = couponRepository.findByIdAndDeletedAtIsNull(couponId)
                 .orElseThrow(()-> new CouponException(ResponseCode.COUPON_NOT_FOUND));
 
@@ -93,7 +95,7 @@ public class CouponServiceImpl implements CouponService {
                 dto.expiredAt() != null ? dto.expiredAt() : coupon.getExpiredAt(),
                 authenticatedUser.getUserId()
         );
-        return CouponResponseDto.of(coupon);
+        return couponMapper.couponToCouponResponseDto(coupon);
     }
 
     @Transactional

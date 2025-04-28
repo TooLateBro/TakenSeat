@@ -2,12 +2,10 @@ package com.taken_seat.review_service.domain.model;
 
 import java.util.UUID;
 
-import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.common_service.entity.BaseTimeEntity;
 import com.taken_seat.common_service.exception.customException.ReviewException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
-import com.taken_seat.review_service.application.dto.request.ReviewRegisterReqDto;
-import com.taken_seat.review_service.application.dto.request.ReviewUpdateReqDto;
+import com.taken_seat.review_service.application.dto.service.ReviewDto;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -57,29 +55,29 @@ public class Review extends BaseTimeEntity {
 	@Column(nullable = false)
 	private Integer likeCount;
 
-	public static Review create(ReviewRegisterReqDto reviewRegisterReqDto, AuthenticatedUser authenticatedUser) {
+	public static Review create(ReviewDto reviewDto) {
 
 		Review review = Review.builder()
-			.performanceId(reviewRegisterReqDto.getPerformanceId())
-			.performanceScheduleId(reviewRegisterReqDto.getPerformanceScheduleId())
-			.authorId(authenticatedUser.getUserId())
-			.authorEmail(authenticatedUser.getEmail())
-			.title(reviewRegisterReqDto.getTitle())
-			.content(reviewRegisterReqDto.getContent())
-			.rating(reviewRegisterReqDto.getRating())
+			.performanceId(reviewDto.getPerformanceId())
+			.performanceScheduleId(reviewDto.getPerformanceScheduleId())
+			.authorId(reviewDto.getUserId())
+			.authorEmail(reviewDto.getEmail())
+			.title(reviewDto.getTitle())
+			.content(reviewDto.getContent())
+			.rating(reviewDto.getRating())
 			.likeCount(0)
 			.build();
 
-		review.prePersist(authenticatedUser.getUserId());
+		review.prePersist(reviewDto.getUserId());
 
 		return review;
 	}
 
-	public void update(ReviewUpdateReqDto reviewUpdateReqDto, AuthenticatedUser authenticatedUser) {
-		this.title = reviewUpdateReqDto.getTitle();
-		this.content = reviewUpdateReqDto.getContent();
-		this.rating = reviewUpdateReqDto.getRating();
-		this.preUpdate(authenticatedUser.getUserId());
+	public void update(ReviewDto reviewDto) {
+		this.title = reviewDto.getTitle();
+		this.content = reviewDto.getContent();
+		this.rating = reviewDto.getRating();
+		this.preUpdate(reviewDto.getUserId());
 	}
 
 	public void updateLikeCount(int i) {
