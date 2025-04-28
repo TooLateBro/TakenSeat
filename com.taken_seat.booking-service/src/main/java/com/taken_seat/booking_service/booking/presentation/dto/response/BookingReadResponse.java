@@ -1,4 +1,4 @@
-package com.taken_seat.booking_service.booking.application.dto.response;
+package com.taken_seat.booking_service.booking.presentation.dto.response;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -20,7 +20,7 @@ public class BookingReadResponse {
 	private UUID id;
 	private UUID performanceId;
 	private UUID performanceScheduleId;
-	private UUID seatId;
+	private UUID scheduleSeatId;
 	private UUID paymentId;
 	private int price;
 	private int discountedPrice;
@@ -34,39 +34,24 @@ public class BookingReadResponse {
 	private String seatNumber;
 	private String seatType;
 
-	public static BookingReadResponse toDto(Booking booking) {
-		return BookingReadResponse.builder()
-			.id(booking.getId())
-			.performanceId(booking.getPerformanceId())
-			.performanceScheduleId(booking.getPerformanceScheduleId())
-			.seatId(booking.getSeatId())
-			.paymentId(booking.getPaymentId())
-			.price(booking.getPrice())
-			.discountedPrice(booking.getDiscountedPrice())
-			.bookingStatus(booking.getBookingStatus())
-			.bookedAt(booking.getBookedAt())
-			.canceledAt(booking.getCanceledAt())
-			.build();
-	}
-
 	public static BookingReadResponse toDto(Booking booking, TicketPerformanceClientResponse response) {
 		return BookingReadResponse.builder()
 			.id(booking.getId())
 			.performanceId(booking.getPerformanceId())
 			.performanceScheduleId(booking.getPerformanceScheduleId())
-			.seatId(booking.getSeatId())
+			.scheduleSeatId(booking.getScheduleSeatId())
 			.paymentId(booking.getPaymentId())
 			.price(booking.getPrice())
 			.discountedPrice(booking.getDiscountedPrice())
 			.bookingStatus(booking.getBookingStatus())
 			.bookedAt(booking.getBookedAt())
 			.canceledAt(booking.getCanceledAt())
-			.title(response.getTitle())
-			.name(response.getName())
-			.address(response.getAddress())
-			.seatRowNumber(response.getSeatRowNumber())
-			.seatNumber(response.getSeatNumber())
-			.seatType(response.getSeatType())
+			.title(response.title())
+			.name(response.name())
+			.address(response.address())
+			.seatRowNumber(response.rowNumber())
+			.seatNumber(response.seatNumber())
+			.seatType(response.seatType())
 			.build();
 	}
 }

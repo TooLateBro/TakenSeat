@@ -13,7 +13,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,15 +24,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor
-@Table(
-	name = "p_booking",
-	uniqueConstraints = {
-		@UniqueConstraint(
-			name = "uk_upps",
-			columnNames = {"userId", "performanceId", "performanceScheduleId", "seatId"}
-		)
-	}
-)
+@Table(name = "p_booking")
 public class Booking extends BaseTimeEntity {
 
 	@Id
@@ -50,7 +41,7 @@ public class Booking extends BaseTimeEntity {
 	private UUID performanceScheduleId;
 
 	@Column(nullable = false)
-	private UUID seatId;
+	private UUID scheduleSeatId;
 
 	private UUID paymentId;
 

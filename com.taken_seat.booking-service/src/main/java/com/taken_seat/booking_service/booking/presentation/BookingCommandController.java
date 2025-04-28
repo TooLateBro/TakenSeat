@@ -2,11 +2,9 @@ package com.taken_seat.booking_service.booking.presentation;
 
 import java.util.UUID;
 
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,12 +12,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.taken_seat.booking_service.booking.application.dto.request.BookingCreateRequest;
-import com.taken_seat.booking_service.booking.application.dto.request.BookingPayRequest;
-import com.taken_seat.booking_service.booking.application.dto.response.BookingCreateResponse;
-import com.taken_seat.booking_service.booking.application.dto.response.BookingPageResponse;
-import com.taken_seat.booking_service.booking.application.dto.response.BookingReadResponse;
-import com.taken_seat.booking_service.booking.application.service.BookingService;
+import com.taken_seat.booking_service.booking.application.dto.command.BookingCreateCommand;
+import com.taken_seat.booking_service.booking.application.dto.command.BookingPaymentCommand;
+import com.taken_seat.booking_service.booking.application.dto.command.BookingSingleTargetCommand;
+import com.taken_seat.booking_service.booking.application.dto.mapper.BookingMapper;
+import com.taken_seat.booking_service.booking.application.service.BookingCommandService;
+import com.taken_seat.booking_service.booking.presentation.dto.request.BookingCreateRequest;
+import com.taken_seat.booking_service.booking.presentation.dto.request.BookingPayRequest;
+import com.taken_seat.booking_service.booking.presentation.dto.response.BookingCreateResponse;
 import com.taken_seat.common_service.dto.ApiResponseData;
 import com.taken_seat.common_service.dto.AuthenticatedUser;
 
@@ -29,30 +29,17 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/bookings")
-public class BookingController {
+public class BookingCommandController {
 
-	private final BookingService bookingService;
+	private final BookingCommandService bookingCommandService;
+	private final BookingMapper commandMapper;
 
 	@PostMapping
 	public ResponseEntity<ApiResponseData<BookingCreateResponse>> createBooking(AuthenticatedUser authenticatedUser,
 		@RequestBody @Valid BookingCreateRequest request) {
-		BookingCreateResponse response = bookingService.createBooking(authenticatedUser, request);
 
-		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
-	}
-
-	@GetMapping("/{id}")
-	public ResponseEntity<ApiResponseData<BookingReadResponse>> readBooking(AuthenticatedUser authenticatedUser,
-		@PathVariable("id") UUID id) {
-		BookingReadResponse response = bookingService.readBooking(authenticatedUser, id);
-
-		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
-	}
-
-	@GetMapping
-	public ResponseEntity<ApiResponseData<BookingPageResponse>> readBookings(AuthenticatedUser authenticatedUser,
-		Pageable pageable) {
-		BookingPageResponse response = bookingService.readBookings(authenticatedUser, pageable);
+		BookingCreateCommand command = commandMapper.toCommand(authenticatedUser, request);
+		BookingCreateResponse response = bookingCommandService.createBooking(command);
 
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
 	}
@@ -60,7 +47,9 @@ public class BookingController {
 	@PatchMapping("/{id}")
 	public ResponseEntity<ApiResponseData<Void>> cancelBooking(AuthenticatedUser authenticatedUser,
 		@PathVariable("id") UUID id) {
-		bookingService.cancelBooking(authenticatedUser, id);
+
+		BookingSingleTargetCommand command = commandMapper.toCommand(authenticatedUser, id);
+		bookingCommandService.cancelBooking(command);
 
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseData.success());
 	}
@@ -68,7 +57,9 @@ public class BookingController {
 	@DeleteMapping("/{id}")
 	public ResponseEntity<ApiResponseData<Void>> deleteBooking(AuthenticatedUser authenticatedUser,
 		@PathVariable("id") UUID id) {
-		bookingService.deleteBooking(authenticatedUser, id);
+
+		BookingSingleTargetCommand command = commandMapper.toCommand(authenticatedUser, id);
+		bookingCommandService.deleteBooking(command);
 
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseData.success());
 	}
@@ -76,8 +67,10 @@ public class BookingController {
 	@PostMapping("/{id}/payment")
 	public ResponseEntity<ApiResponseData<Void>> createPayment(AuthenticatedUser authenticatedUser,
 		@PathVariable("id") UUID id,
-		@RequestBody BookingPayRequest request) {
-		bookingService.createPayment(authenticatedUser, id, request);
+		@RequestBody(required = false) BookingPayRequest request) {
+
+		BookingPaymentCommand command = commandMapper.toCommand(authenticatedUser, id, request);
+		bookingCommandService.createPayment(command);
 
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseData.success());
 	}
