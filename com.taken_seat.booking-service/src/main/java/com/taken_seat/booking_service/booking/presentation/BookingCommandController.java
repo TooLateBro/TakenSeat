@@ -67,7 +67,7 @@ public class BookingCommandController {
 	@PostMapping("/{id}/payment")
 	public ResponseEntity<ApiResponseData<Void>> createPayment(AuthenticatedUser authenticatedUser,
 		@PathVariable("id") UUID id,
-		@RequestBody BookingPayRequest request) {
+		@RequestBody(required = false) BookingPayRequest request) {
 
 		BookingPaymentCommand command = commandMapper.toCommand(authenticatedUser, id, request);
 		bookingCommandService.createPayment(command);

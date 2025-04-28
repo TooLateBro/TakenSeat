@@ -58,11 +58,16 @@ public class BookingQueryServiceImpl implements BookingQueryService {
 	public BookingPageResponse readBookings(BookingListQuery query) {
 
 		log.info("[Booking] 조회 - 시도: | userId={}", query.userId());
+
 		Page<Booking> page = bookingRepository.findAllByUserId(query.pageable(), query.userId());
 		List<TicketPerformanceClientResponse> responses = page.getContent().stream()
-			.map(e -> bookingClientService.getPerformanceInfo(e.getPerformanceId(), e.getPerformanceScheduleId(),
-				e.getScheduleSeatId()))
+			.map(e -> bookingClientService.getPerformanceInfo(
+				e.getPerformanceId(),
+				e.getPerformanceScheduleId(),
+				e.getScheduleSeatId()
+			))
 			.toList();
+
 		log.info("[Booking] 조회 - 성공: | userId={}", query.userId());
 
 		return BookingPageResponse.toDto(page, responses);

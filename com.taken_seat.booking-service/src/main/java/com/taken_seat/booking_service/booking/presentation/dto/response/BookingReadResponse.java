@@ -46,12 +46,12 @@ public class BookingReadResponse {
 			.bookingStatus(booking.getBookingStatus())
 			.bookedAt(booking.getBookedAt())
 			.canceledAt(booking.getCanceledAt())
-			.title(response.getTitle())
-			.name(response.getName())
-			.address(response.getAddress())
-			.seatRowNumber(response.getSeatRowNumber())
-			.seatNumber(response.getSeatNumber())
-			.seatType(response.getSeatType())
+			.title(response.title())
+			.name(response.name())
+			.address(response.address())
+			.seatRowNumber(response.rowNumber())
+			.seatNumber(response.seatNumber())
+			.seatType(response.seatType())
 			.build();
 	}
 }

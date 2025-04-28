@@ -66,9 +66,9 @@ public class BookingClientServiceImpl implements BookingClientService {
 
 	@Override
 	public TicketPerformanceClientResponse getPerformanceInfo(UUID performanceId, UUID performanceScheduleId,
-		UUID seatId) {
+		UUID scheduleSeatId) {
 		ApiResponseData<TicketPerformanceClientResponse> response = performanceClient.getPerformanceInfo(performanceId,
-			performanceScheduleId, seatId);
+			performanceScheduleId, scheduleSeatId);
 
 		return response.body();
 	}
