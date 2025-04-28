@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.taken_seat.common_service.aop.annotation.RoleCheck;
+import com.taken_seat.common_service.aop.vo.Role;
 import com.taken_seat.common_service.dto.ApiResponseData;
 import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.performance_service.performance.application.service.PerformanceService;
@@ -40,6 +42,7 @@ public class PerformanceController implements PerformanceControllerDocs {
 
 	private final PerformanceService performanceService;
 
+	@RoleCheck(allowedRoles = {Role.ADMIN, Role.MANAGER, Role.PRODUCER})
 	@PostMapping
 	public ResponseEntity<ApiResponseData<CreateResponseDto>> create(
 		@Valid @RequestBody CreateRequestDto request,
@@ -66,6 +69,7 @@ public class PerformanceController implements PerformanceControllerDocs {
 		return ResponseEntity.ok(ApiResponseData.success(response));
 	}
 
+	@RoleCheck(allowedRoles = {Role.ADMIN, Role.MANAGER, Role.PRODUCER})
 	@PatchMapping("/{id}")
 	public ResponseEntity<ApiResponseData<UpdateResponseDto>> update(@PathVariable("id") UUID id,
 		@Valid @RequestBody UpdateRequestDto request,
@@ -75,6 +79,7 @@ public class PerformanceController implements PerformanceControllerDocs {
 		return ResponseEntity.ok(ApiResponseData.success(response));
 	}
 
+	@RoleCheck(allowedRoles = {Role.ADMIN, Role.MANAGER, Role.PRODUCER})
 	@DeleteMapping("/{id}")
 	public ResponseEntity<ApiResponseData<Void>> delete(@PathVariable("id") UUID id,
 		AuthenticatedUser authenticatedUser) {
@@ -83,6 +88,7 @@ public class PerformanceController implements PerformanceControllerDocs {
 		return ResponseEntity.noContent().build();
 	}
 
+	@RoleCheck(allowedRoles = {Role.ADMIN, Role.MANAGER, Role.PRODUCER})
 	@PatchMapping("/{id}/status")
 	public ResponseEntity<ApiResponseData<Void>> updateStatus(
 		@PathVariable("id") UUID id,
@@ -92,6 +98,7 @@ public class PerformanceController implements PerformanceControllerDocs {
 		return ResponseEntity.noContent().build();
 	}
 
+	@RoleCheck(allowedRoles = {Role.ADMIN, Role.MANAGER, Role.PRODUCER})
 	@DeleteMapping("/{performanceId}/schedules/{performanceScheduleId}")
 	public ResponseEntity<ApiResponseData<Void>> deletePerformanceSchedule(
 		@PathVariable("performanceId") UUID performanceId,
