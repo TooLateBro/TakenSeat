@@ -5,23 +5,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.common_service.exception.customException.PerformanceException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.performance_service.performancehall.domain.repository.PerformanceHallRepository;
 import com.taken_seat.performance_service.performancehall.presentation.dto.request.BaseSeatDto;
 
 public class PerformanceHallValidator {
-
-	/**
-	 * 권한 검사 로직
-	 */
-	public static void validateAuthorized(AuthenticatedUser authenticatedUser) {
-		String role = authenticatedUser.getRole();
-		if (!(role.equals("ADMIN") || role.equals("MANAGER"))) {
-			throw new PerformanceException(ResponseCode.ACCESS_DENIED_EXCEPTION, "접근 권한이 없습니다.");
-		}
-	}
 
 	/**
 	 * 공연장 생성 시, 공연장 이름 & 주소 중복 확인

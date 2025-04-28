@@ -47,8 +47,6 @@ public class PerformanceHallService {
 	@Transactional
 	public HallCreateResponseDto create(HallCreateRequestDto request, AuthenticatedUser authenticatedUser) {
 
-		PerformanceHallValidator.validateAuthorized(authenticatedUser);
-
 		CreatePerformanceHallCommand command = hallCreateCommandMapper.toCommand(request);
 
 		PerformanceHallValidator.createValidateDuplicateHall(
@@ -96,8 +94,6 @@ public class PerformanceHallService {
 	@Transactional
 	public HallUpdateResponseDto update(UUID id, HallUpdateRequestDto request, AuthenticatedUser authenticatedUser) {
 
-		PerformanceHallValidator.validateAuthorized(authenticatedUser);
-
 		PerformanceHall performanceHall =
 			performanceHallExistenceValidator.validateByPerformanceHallId(id);
 
@@ -110,15 +106,15 @@ public class PerformanceHallService {
 
 		performanceHall.update(command);
 
-		performanceHallRepository.save(performanceHall);
+		performanceHall.preUpdate(authenticatedUser.getUserId());
 
-		return toUpdate(performanceHall);
+		PerformanceHall saved = performanceHallRepository.save(performanceHall);
+
+		return toUpdate(saved);
 	}
 
 	@Transactional
 	public void delete(UUID id, AuthenticatedUser authenticatedUser) {
-
-		PerformanceHallValidator.validateAuthorized(authenticatedUser);
 
 		PerformanceHall performanceHall =
 			performanceHallExistenceValidator.validateByPerformanceHallId(id);
