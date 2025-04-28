@@ -12,6 +12,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,7 +24,12 @@ import lombok.NoArgsConstructor;
 @Builder(toBuilder = true)
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "p_review")
+@Table(name = "p_review",
+	indexes = {
+		@Index(name = "idx_performance_deleted_at", columnList = "performance_id, deleted_at"),
+		@Index(name = "idx_deleted_at", columnList = "deleted_at")
+	})
+
 public class Review extends BaseTimeEntity {
 
 	@Id
