@@ -53,8 +53,6 @@ public class PerformanceService {
 	@Transactional
 	public CreateResponseDto create(CreateRequestDto request, AuthenticatedUser authenticatedUser) {
 
-		PerformanceValidator.validateAuthorized(authenticatedUser);
-
 		CreatePerformanceCommand command = performanceCreateCommandMapper.toCommand(request);
 
 		PerformanceValidator.validateDuplicateSchedules(command.schedules());
@@ -101,8 +99,6 @@ public class PerformanceService {
 	@Transactional
 	public UpdateResponseDto update(UUID id, UpdateRequestDto request, AuthenticatedUser authenticatedUser) {
 
-		PerformanceValidator.validateAuthorized(authenticatedUser);
-
 		Performance performance = performanceExistenceValidator.validateByPerformanceId(id);
 
 		UpdatePerformanceCommand command = performanceUpdateCommandMapper.toCommand(request);
@@ -123,8 +119,6 @@ public class PerformanceService {
 	@Transactional
 	public void delete(UUID id, AuthenticatedUser authenticatedUser) {
 
-		PerformanceValidator.validateAuthorized(authenticatedUser);
-
 		Performance performance = performanceExistenceValidator.validateByPerformanceId(id);
 
 		performance.delete(authenticatedUser.getUserId());
@@ -134,8 +128,6 @@ public class PerformanceService {
 
 	@Transactional
 	public void updateStatus(UUID id, AuthenticatedUser authenticatedUser) {
-
-		PerformanceValidator.validateAuthorized(authenticatedUser);
 
 		Performance performance = performanceExistenceValidator.validateByPerformanceId(id);
 
@@ -149,8 +141,6 @@ public class PerformanceService {
 		UUID performanceId,
 		UUID performanceScheduleId,
 		AuthenticatedUser authenticatedUser) {
-
-		PerformanceValidator.validateAuthorized(authenticatedUser);
 
 		Performance performance = performanceExistenceValidator.validateByPerformanceId(performanceId);
 
