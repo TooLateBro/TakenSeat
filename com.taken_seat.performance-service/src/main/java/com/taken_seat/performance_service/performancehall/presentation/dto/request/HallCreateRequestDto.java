@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
-public record CreateRequestDto(
+public record HallCreateRequestDto(
 	@NotBlank(message = "공연장 이름은 필수입니다.")
 	String name,
 
@@ -21,6 +21,6 @@ public record CreateRequestDto(
 
 	@Valid
 	@NotEmpty(message = "공연 좌석 정보는 필수입니다")
-	List<CreateSeatDto> seats
+	List<HallCreateSeatDto> seats
 ) {
 }

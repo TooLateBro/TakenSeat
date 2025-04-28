@@ -21,13 +21,13 @@ import com.taken_seat.common_service.dto.ApiResponseData;
 import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.performance_service.performancehall.application.service.PerformanceHallService;
 import com.taken_seat.performance_service.performancehall.presentation.docs.PerformanceHallControllerDocs;
-import com.taken_seat.performance_service.performancehall.presentation.dto.request.CreateRequestDto;
-import com.taken_seat.performance_service.performancehall.presentation.dto.request.SearchFilterParam;
-import com.taken_seat.performance_service.performancehall.presentation.dto.request.UpdateRequestDto;
-import com.taken_seat.performance_service.performancehall.presentation.dto.response.CreateResponseDto;
-import com.taken_seat.performance_service.performancehall.presentation.dto.response.DetailResponseDto;
-import com.taken_seat.performance_service.performancehall.presentation.dto.response.PageResponseDto;
-import com.taken_seat.performance_service.performancehall.presentation.dto.response.UpdateResponseDto;
+import com.taken_seat.performance_service.performancehall.presentation.dto.request.HallCreateRequestDto;
+import com.taken_seat.performance_service.performancehall.presentation.dto.request.HallSearchFilterParam;
+import com.taken_seat.performance_service.performancehall.presentation.dto.request.HallUpdateRequestDto;
+import com.taken_seat.performance_service.performancehall.presentation.dto.response.HallCreateResponseDto;
+import com.taken_seat.performance_service.performancehall.presentation.dto.response.HallDetailResponseDto;
+import com.taken_seat.performance_service.performancehall.presentation.dto.response.HallPageResponseDto;
+import com.taken_seat.performance_service.performancehall.presentation.dto.response.HallUpdateResponseDto;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -40,37 +40,38 @@ public class PerformanceHallController implements PerformanceHallControllerDocs 
 	private final PerformanceHallService performanceHallService;
 
 	@PostMapping
-	public ResponseEntity<ApiResponseData<CreateResponseDto>> create(@Valid @RequestBody CreateRequestDto request,
+	public ResponseEntity<ApiResponseData<HallCreateResponseDto>> create(
+		@Valid @RequestBody HallCreateRequestDto request,
 		AuthenticatedUser authenticatedUser) {
 
-		CreateResponseDto response = performanceHallService.create(request, authenticatedUser);
+		HallCreateResponseDto response = performanceHallService.create(request, authenticatedUser);
 		URI location = URI.create("/api/v1/performancehalls/" + response.performanceHallId());
 		return ResponseEntity.created(location).body(ApiResponseData.success(response));
 	}
 
 	@GetMapping("/search")
-	public ResponseEntity<ApiResponseData<PageResponseDto>> getList(
-		@ModelAttribute SearchFilterParam filterParam,
+	public ResponseEntity<ApiResponseData<HallPageResponseDto>> getList(
+		@ModelAttribute HallSearchFilterParam filterParam,
 		@PageableDefault(page = 0, size = 10, sort = "name", direction = Sort.Direction.ASC) Pageable pageable) {
 
-		PageResponseDto response = performanceHallService.search(filterParam, pageable);
+		HallPageResponseDto response = performanceHallService.search(filterParam, pageable);
 		return ResponseEntity.ok(ApiResponseData.success(response));
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<ApiResponseData<DetailResponseDto>> getDetail(@PathVariable("id") UUID id) {
+	public ResponseEntity<ApiResponseData<HallDetailResponseDto>> getDetail(@PathVariable("id") UUID id) {
 
-		DetailResponseDto response = performanceHallService.getDetail(id);
+		HallDetailResponseDto response = performanceHallService.getDetail(id);
 		return ResponseEntity.ok(ApiResponseData.success(response));
 	}
 
 	@PatchMapping("/{id}")
-	public ResponseEntity<ApiResponseData<UpdateResponseDto>> update(
+	public ResponseEntity<ApiResponseData<HallUpdateResponseDto>> update(
 		@PathVariable("id") UUID id,
-		@Valid @RequestBody UpdateRequestDto request,
+		@Valid @RequestBody HallUpdateRequestDto request,
 		AuthenticatedUser authenticatedUser) {
 
-		UpdateResponseDto response = performanceHallService.update(id, request, authenticatedUser);
+		HallUpdateResponseDto response = performanceHallService.update(id, request, authenticatedUser);
 		return ResponseEntity.ok(ApiResponseData.success(response));
 	}
 

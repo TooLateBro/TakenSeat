@@ -1,9 +1,11 @@
 package com.taken_seat.performance_service.performancehall.application.service;
 
+import static com.taken_seat.performance_service.common.config.RedisCacheConfig.*;
 import static com.taken_seat.performance_service.performancehall.application.dto.mapper.HallResponseMapper.*;
 
 import java.util.UUID;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -19,14 +21,14 @@ import com.taken_seat.performance_service.performancehall.domain.model.Performan
 import com.taken_seat.performance_service.performancehall.domain.repository.PerformanceHallRepository;
 import com.taken_seat.performance_service.performancehall.domain.validation.PerformanceHallExistenceValidator;
 import com.taken_seat.performance_service.performancehall.domain.validation.PerformanceHallValidator;
-import com.taken_seat.performance_service.performancehall.presentation.dto.request.CreateRequestDto;
-import com.taken_seat.performance_service.performancehall.presentation.dto.request.SearchFilterParam;
-import com.taken_seat.performance_service.performancehall.presentation.dto.request.UpdateRequestDto;
-import com.taken_seat.performance_service.performancehall.presentation.dto.response.CreateResponseDto;
-import com.taken_seat.performance_service.performancehall.presentation.dto.response.DetailResponseDto;
-import com.taken_seat.performance_service.performancehall.presentation.dto.response.PageResponseDto;
-import com.taken_seat.performance_service.performancehall.presentation.dto.response.SearchResponseDto;
-import com.taken_seat.performance_service.performancehall.presentation.dto.response.UpdateResponseDto;
+import com.taken_seat.performance_service.performancehall.presentation.dto.request.HallCreateRequestDto;
+import com.taken_seat.performance_service.performancehall.presentation.dto.request.HallSearchFilterParam;
+import com.taken_seat.performance_service.performancehall.presentation.dto.request.HallUpdateRequestDto;
+import com.taken_seat.performance_service.performancehall.presentation.dto.response.HallCreateResponseDto;
+import com.taken_seat.performance_service.performancehall.presentation.dto.response.HallDetailResponseDto;
+import com.taken_seat.performance_service.performancehall.presentation.dto.response.HallPageResponseDto;
+import com.taken_seat.performance_service.performancehall.presentation.dto.response.HallSearchResponseDto;
+import com.taken_seat.performance_service.performancehall.presentation.dto.response.HallUpdateResponseDto;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,7 +45,7 @@ public class PerformanceHallService {
 	private final HallUpdateCommandMapper hallUpdateCommandMapper;
 
 	@Transactional
-	public CreateResponseDto create(CreateRequestDto request, AuthenticatedUser authenticatedUser) {
+	public HallCreateResponseDto create(HallCreateRequestDto request, AuthenticatedUser authenticatedUser) {
 
 		PerformanceHallValidator.validateAuthorized(authenticatedUser);
 
@@ -63,17 +65,27 @@ public class PerformanceHallService {
 		return createHallToDto(saved);
 	}
 
+	@Cacheable(
+		cacheNames = PERFORMANCE_HALL_SEARCH,
+		key = "#filterParam.toString() + ':' + #pageable.pageNumber + ':' + #pageable.pageSize",
+		unless = "#result == null"
+	)
 	@Transactional(readOnly = true)
-	public PageResponseDto search(SearchFilterParam filterParam, Pageable pageable) {
+	public HallPageResponseDto search(HallSearchFilterParam filterParam, Pageable pageable) {
 
-		Page<SearchResponseDto> pages =
+		Page<HallSearchResponseDto> pages =
 			performanceHallRepository.findAll(filterParam, pageable);
 
 		return hallResponseMapper.toPage(pages);
 	}
 
+	@Cacheable(
+		cacheNames = PERFORMANCE_HALL_DETAIL,
+		key = "#id",
+		unless = "#result == null"
+	)
 	@Transactional(readOnly = true)
-	public DetailResponseDto getDetail(UUID id) {
+	public HallDetailResponseDto getDetail(UUID id) {
 
 		PerformanceHall performanceHall =
 			performanceHallExistenceValidator.validateByPerformanceHallId(id);
@@ -82,7 +94,7 @@ public class PerformanceHallService {
 	}
 
 	@Transactional
-	public UpdateResponseDto update(UUID id, UpdateRequestDto request, AuthenticatedUser authenticatedUser) {
+	public HallUpdateResponseDto update(UUID id, HallUpdateRequestDto request, AuthenticatedUser authenticatedUser) {
 
 		PerformanceHallValidator.validateAuthorized(authenticatedUser);
 

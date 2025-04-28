@@ -2,8 +2,8 @@ package com.taken_seat.performance_service.performancehall.presentation.dto.resp
 
 import java.util.List;
 
-public record PageResponseDto(
-	List<SearchResponseDto> content,
+public record HallPageResponseDto(
+	List<HallSearchResponseDto> content,
 	int pageSize,
 	int pageNumber,
 	int totalPages,

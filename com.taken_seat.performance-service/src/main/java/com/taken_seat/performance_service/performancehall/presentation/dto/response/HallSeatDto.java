@@ -5,7 +5,7 @@ import java.util.UUID;
 import com.taken_seat.performance_service.performancehall.domain.model.SeatStatus;
 import com.taken_seat.performance_service.performancehall.domain.model.SeatType;
 
-public record SeatDto(
+public record HallSeatDto(
 	UUID seatId,
 	String rowNumber,
 	String seatNumber,

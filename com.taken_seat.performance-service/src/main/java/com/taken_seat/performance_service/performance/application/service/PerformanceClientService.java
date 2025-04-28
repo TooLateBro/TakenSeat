@@ -1,8 +1,11 @@
 package com.taken_seat.performance_service.performance.application.service;
 
+import static com.taken_seat.performance_service.common.config.RedisCacheConfig.*;
+
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,7 +33,6 @@ import lombok.extern.slf4j.Slf4j;
 public class PerformanceClientService {
 
 	private final PerformanceExistenceValidator performanceExistenceValidator;
-	private final PerformanceResponseMapper performanceResponseMapper;
 
 	@Transactional
 	public BookingSeatClientResponseDto updateSeatStatus(BookingSeatClientRequestDto request) {
@@ -94,6 +96,11 @@ public class PerformanceClientService {
 		return new SeatLayoutResponseDto(seatLayout);
 	}
 
+	@Cacheable(
+		cacheNames = SCHEDULE_END_TIME,
+		key = "#performanceScheduleId",
+		unless = "#result == null"
+	)
 	@Transactional
 	public PerformanceEndTimeDto getPerformanceEndTime(UUID performanceId, UUID performanceScheduleId) {
 
@@ -104,6 +111,11 @@ public class PerformanceClientService {
 		return new PerformanceEndTimeDto(schedule.getEndAt());
 	}
 
+	@Cacheable(
+		cacheNames = SCHEDULE_START_TIME,
+		key = "#performanceScheduleId",
+		unless = "#result == null"
+	)
 	@Transactional
 	public PerformanceStartTimeDto getPerformanceStartTime(UUID performanceId, UUID performanceScheduleId) {
 
