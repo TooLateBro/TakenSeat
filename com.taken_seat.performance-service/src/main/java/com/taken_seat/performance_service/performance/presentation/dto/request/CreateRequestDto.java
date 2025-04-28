@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import com.taken_seat.performance_service.performance.domain.model.PerformanceStatus;
+import com.taken_seat.performance_service.performance.presentation.dto.request.schema.CreateRequestSchema;
 
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.FutureOrPresent;
@@ -33,5 +34,5 @@ public record CreateRequestDto(
 
 	@NotEmpty(message = "공연 회차 정보는 최소 1개 이상이어야 합니다.")
 	List<CreatePerformanceScheduleDto> schedules
-) {
+) implements CreateRequestSchema {
 }

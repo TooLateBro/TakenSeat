@@ -20,27 +20,26 @@ services:
       - ZIPKIN_HTTP_PORT=9411
     restart: always
 
-  zookeeper:
-    image: wurstmeister/zookeeper:latest
-    platform: linux/amd64
-    ports:
-      - "2181:2181"
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
-
   kafka:
-    image: wurstmeister/kafka:latest
+    image: bitnami/kafka:latest
     ports:
       - "9092:9092"
     environment:
-      KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka:29092,OUTSIDE://localhost:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
-      KAFKA_LISTENERS: INSIDE://0.0.0.0:29092,OUTSIDE://0.0.0.0:9092
-      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-    depends_on:
-      - zookeeper
+      # KRaft 모드 설정 (Kafka의 새로운 자체 관리 클러스터 모드)
+      KAFKA_CFG_NODE_ID: 1  # 클러스터에서 이 브로커의 노드 ID 설정
+      KAFKA_CFG_PROCESS_ROLES: broker,controller  # 이 브로커의 역할을 broker와 controller로 설정
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093  # KRaft 모드에서 사용할 컨트롤러의 퀴럼 설정 (kafka 브로커가 controller 역할 수행)
+      # 리스너 구성 - INSIDE(내부), OUTSIDE(외부), CONTROLLER(컨트롤러) 리스너 설정
+      KAFKA_CFG_LISTENERS: INSIDE://:29092,OUTSIDE://:9092,CONTROLLER://:9093
+      KAFKA_CFG_ADVERTISED_LISTENERS: INSIDE://kafka:29092,OUTSIDE://localhost:9092  # 외부에 노출될 리스너 정보
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT,CONTROLLER:PLAINTEXT  # 보안 프로토콜 설정
+      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER  # 컨트롤러 리스너 이름 설정
+      KAFKA_CFG_INTER_BROKER_LISTENER_NAME: INSIDE  # 브로커 간 통신에 사용할 리스너 이름 설정
+      # 토픽 자동 생성 활성화
+      KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: "true"
+      # 클러스터 ID 설정 (KRaft 모드에서 클러스터를 식별하는 ID. ex) Zookeeper 없이 kafka 자체에서 관리하는 모드로 설정)
+      KAFKA_KRAFT_CLUSTER_ID: "toolatebro"
+      ALLOW_PLAINTEXT_LISTENER: "yes"  # 플레인텍스트 리스너를 허용
     restart: always
 
   kafka-ui:
@@ -51,8 +50,9 @@ services:
     environment:
       KAFKA_CLUSTERS_0_NAME: local
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
-      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
       KAFKA_CLUSTERS_0_READONLY: "false"
+    depends_on:
+      - kafka
 
   prometheus:
     image: prom/prometheus

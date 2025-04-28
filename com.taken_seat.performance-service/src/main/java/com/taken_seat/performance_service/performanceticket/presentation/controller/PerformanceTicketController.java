@@ -13,13 +13,14 @@ import com.taken_seat.common_service.dto.request.TicketPerformanceClientRequest;
 import com.taken_seat.common_service.dto.response.TicketPerformanceClientResponse;
 import com.taken_seat.performance_service.performanceticket.application.dto.mapper.RequestMapper;
 import com.taken_seat.performance_service.performanceticket.application.service.PerformanceTicketService;
+import com.taken_seat.performance_service.performanceticket.presentation.controller.docs.PerformanceTicketControllerDocs;
 
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/performancetickets")
-public class PerformanceTicketController {
+public class PerformanceTicketController implements PerformanceTicketControllerDocs {
 
 	private final PerformanceTicketService performanceTicketService;
 

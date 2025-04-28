@@ -19,8 +19,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.taken_seat.review_service.application.dto.response.PageReviewResponseDto;
-import com.taken_seat.review_service.application.dto.response.ReviewDetailResDto;
+import com.taken_seat.review_service.application.dto.controller.response.PageReviewResponseDto;
+import com.taken_seat.review_service.application.dto.controller.response.ReviewDetailResDto;
 
 @Configuration
 @EnableCaching

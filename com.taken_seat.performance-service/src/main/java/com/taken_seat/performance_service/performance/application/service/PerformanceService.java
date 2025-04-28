@@ -1,10 +1,12 @@
 package com.taken_seat.performance_service.performance.application.service;
 
+import static com.taken_seat.performance_service.common.config.RedisCacheConfig.*;
 import static com.taken_seat.performance_service.performance.application.dto.mapper.PerformanceResponseMapper.*;
 
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -70,6 +72,11 @@ public class PerformanceService {
 		return createToDto(saved);
 	}
 
+	@Cacheable(
+		cacheNames = PERFORMANCE_SEARCH,
+		key = "#filterParam.toString() + ':' + #pageable.pageNumber + ':' + #pageable.pageSize",
+		unless = "#result == null"
+	)
 	@Transactional(readOnly = true)
 	public PageResponseDto search(SearchFilterParam filterParam, Pageable pageable) {
 
@@ -78,6 +85,11 @@ public class PerformanceService {
 		return performanceResponseMapper.toPage(pages);
 	}
 
+	@Cacheable(
+		cacheNames = PERFORMANCE_DETAIL,
+		key = "#id",
+		unless = "#result == null"
+	)
 	@Transactional(readOnly = true)
 	public DetailResponseDto getDetail(UUID id) {
 
@@ -128,6 +140,23 @@ public class PerformanceService {
 		Performance performance = performanceExistenceValidator.validateByPerformanceId(id);
 
 		PerformanceUpdateHelper.updateStatus(performance, authenticatedUser);
+
+		performanceRepository.save(performance);
+	}
+
+	@Transactional
+	public void deletePerformanceSchedule(
+		UUID performanceId,
+		UUID performanceScheduleId,
+		AuthenticatedUser authenticatedUser) {
+
+		PerformanceValidator.validateAuthorized(authenticatedUser);
+
+		Performance performance = performanceExistenceValidator.validateByPerformanceId(performanceId);
+
+		PerformanceSchedule schedule = performance.getScheduleById(performanceScheduleId);
+
+		schedule.delete(authenticatedUser.getUserId());
 
 		performanceRepository.save(performance);
 	}

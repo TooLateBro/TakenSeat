@@ -23,10 +23,10 @@ import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.common_service.exception.customException.ReviewException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.review_service.application.client.ReviewClient;
-import com.taken_seat.review_service.application.dto.request.ReviewRegisterReqDto;
-import com.taken_seat.review_service.application.dto.request.ReviewUpdateReqDto;
-import com.taken_seat.review_service.application.dto.response.PageReviewResponseDto;
-import com.taken_seat.review_service.application.dto.response.ReviewDetailResDto;
+import com.taken_seat.review_service.application.dto.controller.response.PageReviewResponseDto;
+import com.taken_seat.review_service.application.dto.controller.response.ReviewDetailResDto;
+import com.taken_seat.review_service.application.dto.service.ReviewDto;
+import com.taken_seat.review_service.application.dto.service.ReviewSearchDto;
 import com.taken_seat.review_service.application.service.ReviewServiceImpl;
 import com.taken_seat.review_service.domain.model.Review;
 import com.taken_seat.review_service.domain.repository.RedisRatingRepository;
@@ -34,6 +34,7 @@ import com.taken_seat.review_service.domain.repository.ReviewQuerydslRepository;
 import com.taken_seat.review_service.domain.repository.ReviewRepository;
 import com.taken_seat.review_service.infrastructure.client.dto.BookingStatusDto;
 import com.taken_seat.review_service.infrastructure.client.dto.PerformanceEndTimeDto;
+import com.taken_seat.review_service.infrastructure.mapper.ReviewMapper;
 
 @ExtendWith(MockitoExtension.class)
 public class ReviewServicesTest {
@@ -46,7 +47,10 @@ public class ReviewServicesTest {
 
 	@Mock
 	private ReviewClient reviewClient;
-	
+
+	@Mock
+	private ReviewMapper reviewMapper;
+
 	@Mock
 	private RedisRatingRepository redisRatingRepository;
 
@@ -65,6 +69,10 @@ public class ReviewServicesTest {
 
 	private Review testReview;
 
+	private ReviewDto testReviewDto;
+
+	private ReviewSearchDto testReviewSearchDto;
+
 	private AuthenticatedUser authenticatedUser;
 
 	@BeforeEach
@@ -75,6 +83,26 @@ public class ReviewServicesTest {
 		testReviewId = UUID.randomUUID();
 		testAuthorId = UUID.randomUUID();
 		testAuthorEmail = "test@gmail.com";
+
+		testReviewDto = ReviewDto.builder()
+			.performanceId(testPerformanceId)
+			.performanceScheduleId(testPerformanceScheduleId)
+			.title("testTitle")
+			.content("testContent")
+			.rating((short)4)
+			.userId(UUID.randomUUID())
+			.email("test@gmail.com")
+			.build();
+
+		testReviewSearchDto = ReviewSearchDto.builder()
+			.performance_id(UUID.randomUUID())
+			.q("testTitle")
+			.category("title")
+			.page(0)
+			.size(10)
+			.sort("createdAt")
+			.order("desc")
+			.build();
 
 		testReview = Review.builder()
 			.id(testReviewId)
@@ -89,7 +117,6 @@ public class ReviewServicesTest {
 			.build();
 
 		testReview.prePersist(UUID.randomUUID());
-		reviewRepository.save(testReview);
 
 		authenticatedUser = new AuthenticatedUser(testAuthorId, "test@gmail.com", "MASTER");
 	}
@@ -98,24 +125,41 @@ public class ReviewServicesTest {
 	@DisplayName("리뷰 등록 - SUCCESS")
 	void testRegisterReview_success() {
 		// Given
-		ReviewRegisterReqDto requestDto = new ReviewRegisterReqDto(testPerformanceId, testPerformanceScheduleId,
-			"testRegister", "testContent", (short)5);
+		when(reviewRepository.existsByAuthorIdAndPerformanceIdAndDeletedAtIsNull(testReviewDto.getUserId(),
+			testReviewDto.getPerformanceId()))
+			.thenReturn(false);
 
-		when(reviewRepository.existsByAuthorIdAndPerformanceId(testAuthorId, testPerformanceId)).thenReturn(false);
-		when(reviewClient.getBookingStatus(testAuthorId, testPerformanceId)).thenReturn(
+		when(reviewClient.getBookingStatus(testReviewDto.getUserId(),
+			testReviewDto.getPerformanceId())).thenReturn(
 			new BookingStatusDto("COMPLETED"));
-		when(reviewClient.getPerformanceEndTime(testPerformanceId, testPerformanceScheduleId)).thenReturn(
+
+		when(reviewClient.getPerformanceEndTime(testReviewDto.getPerformanceId(),
+			testReviewDto.getPerformanceScheduleId())).thenReturn(
 			new PerformanceEndTimeDto(LocalDateTime.now().minusDays(1)));
-		when(reviewRepository.save(any(Review.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+		when(reviewRepository.save(any(Review.class)))
+			.thenReturn(testReview);
+
+		ReviewDetailResDto reviewDetailResDto = ReviewDetailResDto.builder()
+			.id(testReviewDto.getReviewId())
+			.performanceId(testReviewDto.getPerformanceId())
+			.performanceScheduleId(testReviewDto.getPerformanceScheduleId())
+			.title(testReviewDto.getTitle())
+			.content(testReviewDto.getContent())
+			.rating(testReviewDto.getRating())
+			.build();
+
+		when(reviewMapper.toResponse(any(Review.class)))
+			.thenReturn(reviewDetailResDto);
 
 		// When
-		ReviewDetailResDto result = reviewServices.registerReview(requestDto, authenticatedUser);
+		ReviewDetailResDto result = reviewServices.registerReview(testReviewDto);
 
 		// Then
 		assertNotNull(result);
-		assertEquals("testRegister", result.getTitle());
+		assertEquals("testTitle", result.getTitle());
 		assertEquals("testContent", result.getContent());
-		assertEquals("test@gmail.com", result.getAuthorEmail());
+		assertEquals(((short)4), result.getRating());
 
 	}
 
@@ -123,14 +167,23 @@ public class ReviewServicesTest {
 	@DisplayName("리뷰 등록 실패 - 해당 공연에 이미 작성된 리뷰가 존재하는 경우 - FAIL")
 	void testRegisterReview_fail_alreadyWritten() {
 		// Given
-		ReviewRegisterReqDto requestDto = new ReviewRegisterReqDto(testPerformanceId, testPerformanceScheduleId, "중복",
-			"중복내용", (short)5);
+		testReviewDto = ReviewDto.builder()
+			.performanceId(testPerformanceId)
+			.performanceScheduleId(testPerformanceScheduleId)
+			.title("testTitle")
+			.content("testContent")
+			.rating((short)4)
+			.userId(UUID.randomUUID())
+			.email("test@gmail.com")
+			.build();
 
-		when(reviewRepository.existsByAuthorIdAndPerformanceId(testAuthorId, testPerformanceId)).thenReturn(true);
+		when(reviewRepository.existsByAuthorIdAndPerformanceIdAndDeletedAtIsNull(testReviewDto.getUserId(),
+			testReviewDto.getPerformanceId()))
+			.thenReturn(true);
 
 		// When & Then
 		ReviewException ex = assertThrows(ReviewException.class, () -> {
-			reviewServices.registerReview(requestDto, authenticatedUser);
+			reviewServices.registerReview(testReviewDto);
 		});
 
 		assertEquals(ResponseCode.REVIEW_ALREADY_WRITTEN.getMessage(), ex.getMessage());
@@ -140,16 +193,27 @@ public class ReviewServicesTest {
 	@DisplayName("리뷰 등록 실패 - 예매 상태가 완료되지 않음 - FAIL")
 	void testRegisterReview_fail_bookingNotCompleted() {
 		// Given
-		ReviewRegisterReqDto requestDto = new ReviewRegisterReqDto(testPerformanceId, testPerformanceScheduleId, "test",
-			"내용", (short)5);
+		testReviewDto = ReviewDto.builder()
+			.performanceId(testPerformanceId)
+			.performanceScheduleId(testPerformanceScheduleId)
+			.title("testTitle")
+			.content("testContent")
+			.rating((short)4)
+			.userId(UUID.randomUUID())
+			.email("test@gmail.com")
+			.build();
 
-		when(reviewRepository.existsByAuthorIdAndPerformanceId(testAuthorId, testPerformanceId)).thenReturn(false);
-		when(reviewClient.getBookingStatus(testAuthorId, testPerformanceId)).thenReturn(
-			new BookingStatusDto("CANCELED"));
+		when(reviewRepository.existsByAuthorIdAndPerformanceIdAndDeletedAtIsNull(testReviewDto.getUserId(),
+			testReviewDto.getPerformanceId()))
+			.thenReturn(false);
+
+		when(reviewClient.getBookingStatus(testReviewDto.getUserId(),
+			testReviewDto.getPerformanceId())).thenReturn(
+			new BookingStatusDto("FAIL"));
 
 		// When & Then
 		ReviewException ex = assertThrows(ReviewException.class, () -> {
-			reviewServices.registerReview(requestDto, authenticatedUser);
+			reviewServices.registerReview(testReviewDto);
 		});
 
 		assertEquals(ResponseCode.BOOKING_NOT_COMPLETED.getMessage(), ex.getMessage());
@@ -159,18 +223,31 @@ public class ReviewServicesTest {
 	@DisplayName("리뷰 등록 실패 - 종료되지 않은 공연에 리뷰를 작성하려는 경우")
 	void testRegisterReview_fail_earlyReview() {
 		// Given
-		ReviewRegisterReqDto requestDto = new ReviewRegisterReqDto(testPerformanceId, testPerformanceScheduleId,
-			"early", "내용", (short)5);
+		testReviewDto = ReviewDto.builder()
+			.performanceId(testPerformanceId)
+			.performanceScheduleId(testPerformanceScheduleId)
+			.title("testTitle")
+			.content("testContent")
+			.rating((short)4)
+			.userId(UUID.randomUUID())
+			.email("test@gmail.com")
+			.build();
 
-		when(reviewRepository.existsByAuthorIdAndPerformanceId(testAuthorId, testPerformanceId)).thenReturn(false);
-		when(reviewClient.getBookingStatus(testAuthorId, testPerformanceId)).thenReturn(
+		when(reviewRepository.existsByAuthorIdAndPerformanceIdAndDeletedAtIsNull(testReviewDto.getUserId(),
+			testReviewDto.getPerformanceId()))
+			.thenReturn(false);
+
+		when(reviewClient.getBookingStatus(testReviewDto.getUserId(),
+			testReviewDto.getPerformanceId())).thenReturn(
 			new BookingStatusDto("COMPLETED"));
-		when(reviewClient.getPerformanceEndTime(testPerformanceId, testPerformanceScheduleId)).thenReturn(
-			new PerformanceEndTimeDto(LocalDateTime.now().plusDays(1))); // 종료되지 않음
+
+		when(reviewClient.getPerformanceEndTime(testReviewDto.getPerformanceId(),
+			testReviewDto.getPerformanceScheduleId())).thenReturn(
+			new PerformanceEndTimeDto(LocalDateTime.now().plusDays(1)));
 
 		// When & Then
 		ReviewException ex = assertThrows(ReviewException.class, () -> {
-			reviewServices.registerReview(requestDto, authenticatedUser);
+			reviewServices.registerReview(testReviewDto);
 		});
 
 		assertEquals(ResponseCode.EARLY_REVIEW.getMessage(), ex.getMessage());
@@ -181,6 +258,19 @@ public class ReviewServicesTest {
 	void testGetReviewDetail_success() {
 		// Given
 		when(reviewRepository.findByIdAndDeletedAtIsNull(testReviewId)).thenReturn(Optional.of(testReview));
+
+		ReviewDetailResDto reviewDetailResDto = ReviewDetailResDto.builder()
+			.id(testReview.getId())
+			.performanceId(testReview.getPerformanceId())
+			.performanceScheduleId(testReview.getPerformanceScheduleId())
+			.title(testReview.getTitle())
+			.content(testReview.getContent())
+			.rating(testReview.getRating())
+			.authorEmail(testReview.getAuthorEmail())
+			.build();
+
+		when(reviewMapper.toResponse(any(Review.class)))
+			.thenReturn(reviewDetailResDto);
 
 		// When
 		ReviewDetailResDto result = reviewServices.getReviewDetail(testReviewId);
@@ -213,45 +303,31 @@ public class ReviewServicesTest {
 	void testSearchReview_success_withTitleFilter() {
 
 		// Given
-		UUID performance_id = UUID.randomUUID();
-		String query = "testTitle";
-		String category = "title";
-		int page = 0;
-		int size = 10;
-		String sort = "createdAt";
-		String order = "desc";
+		Page<Review> mockPage = new PageImpl<>(Collections.singletonList(testReview),
+			PageRequest.of(testReviewSearchDto.getPage(), testReviewSearchDto.getSize()), 1);
 
-		Page<Review> mockPage = new PageImpl<>(Collections.singletonList(testReview), PageRequest.of(page, size), 1);
-
-		when(reviewQuerydslRepository.search(performance_id, query, category, page, size, sort, order)).thenReturn(
+		when(reviewQuerydslRepository.search(testReviewSearchDto)).thenReturn(
 			mockPage);
 
 		// When
-		PageReviewResponseDto result = reviewServices.searchReview(performance_id, query, category, page, size, sort,
-			order);
+		PageReviewResponseDto result = reviewServices.searchReview(testReviewSearchDto);
 
 		// Then
-		assertNotNull(result);
+		assertNotNull(result); // result가 null이 아님을 확인
+		assertNotNull(result.getContent()); // content 리스트가 null이 아님을 확인
 		assertEquals(1, result.getTotalElements());
 		assertEquals(1, result.getContent().size());
-
-		ReviewDetailResDto detail = result.getContent().get(0);
-		assertEquals(testReview.getTitle(), detail.getTitle());
-		assertEquals(testReview.getContent(), detail.getContent());
-		assertEquals(testReview.getAuthorEmail(), detail.getAuthorEmail());
 	}
 
 	@Test
 	@DisplayName("리뷰 리스트 검색 - 비어있는 결과 - SUCCESS")
 	void testSearchReview_success_emptyResult() {
 		// Given
-		when(reviewQuerydslRepository.search(any(), anyString(), anyString(), anyInt(), anyInt(),
-			anyString(), anyString()))
+		when(reviewQuerydslRepository.search(any()))
 			.thenReturn(Page.empty());
 
 		// When
-		PageReviewResponseDto result = reviewServices.searchReview(UUID.randomUUID(), "emptyTitle", "title", 0, 10,
-			"createdAt", "desc");
+		PageReviewResponseDto result = reviewServices.searchReview(testReviewSearchDto);
 
 		// Then
 		assertNotNull(result);
@@ -264,12 +340,33 @@ public class ReviewServicesTest {
 	@DisplayName("리뷰 수정 - SUCCESS")
 	void testUpdateReview_success() {
 		// Given
-		ReviewUpdateReqDto reqDto = new ReviewUpdateReqDto("updateTitle", "updateContent", (short)4);
+		testReviewDto = ReviewDto.builder()
+			.reviewId(testReviewId)
+			.performanceId(testPerformanceId)
+			.performanceScheduleId(testPerformanceScheduleId)
+			.title("updateTitle")
+			.content("updateContent")
+			.rating((short)4)
+			.userId(UUID.randomUUID())
+			.email("test@gmail.com")
+			.role("ADMIN")
+			.build();
+
+		ReviewDetailResDto reviewDetailResDto = ReviewDetailResDto.builder()
+			.id(testReview.getId())
+			.performanceId(testReview.getPerformanceId())
+			.performanceScheduleId(testReview.getPerformanceScheduleId())
+			.title("updateTitle")
+			.content("updateContent")
+			.rating(testReview.getRating())
+			.authorEmail(testReview.getAuthorEmail())
+			.build();
 
 		when(reviewRepository.findByIdAndDeletedAtIsNull(testReviewId)).thenReturn(Optional.of(testReview));
 
+		when(reviewMapper.toResponse(any(Review.class))).thenReturn(reviewDetailResDto);
 		// When
-		ReviewDetailResDto result = reviewServices.updateReview(testReviewId, reqDto, authenticatedUser);
+		ReviewDetailResDto result = reviewServices.updateReview(testReviewDto);
 
 		// Then
 		assertNotNull(result);
@@ -283,13 +380,23 @@ public class ReviewServicesTest {
 	void testUpdateReview__fail_reviewNotFound() {
 		// Given
 		UUID notExistId = UUID.randomUUID();
-		ReviewUpdateReqDto reqDto = new ReviewUpdateReqDto("updateTitle", "updateContent", (short)4);
+		testReviewDto = ReviewDto.builder()
+			.reviewId(notExistId)
+			.performanceId(testPerformanceId)
+			.performanceScheduleId(testPerformanceScheduleId)
+			.title("updateTitle")
+			.content("updateContent")
+			.rating((short)4)
+			.userId(UUID.randomUUID())
+			.email("test@gmail.com")
+			.role("ADMIN")
+			.build();
 
 		when(reviewRepository.findByIdAndDeletedAtIsNull(notExistId)).thenReturn(Optional.empty());
 
 		// When & Then
 		ReviewException exception = assertThrows(ReviewException.class, () -> {
-			reviewServices.updateReview(notExistId, reqDto, authenticatedUser);
+			reviewServices.updateReview(testReviewDto);
 		});
 
 		assertEquals("해당 리뷰가 존재하지않습니다.", exception.getMessage());
@@ -299,15 +406,23 @@ public class ReviewServicesTest {
 	@DisplayName("리뷰 수정 실패 - 작성자도 아니고 마스터도 아님 - FAIL")
 	void testUpdateReview_fail_forbiddenAccess() {
 		// Given
-		ReviewUpdateReqDto reqDto = new ReviewUpdateReqDto("updateTitle", "updateContent", (short)4);
+		testReviewDto = ReviewDto.builder()
+			.reviewId(testReviewId)
+			.performanceId(testPerformanceId)
+			.performanceScheduleId(testPerformanceScheduleId)
+			.title("updateTitle")
+			.content("updateContent")
+			.rating((short)4)
+			.userId(UUID.randomUUID())
+			.email("test@gmail.com")
+			.role("CONSUMER")
+			.build();
 
-		UUID notAuthorId = UUID.randomUUID();
-		AuthenticatedUser anotherUser = new AuthenticatedUser(notAuthorId, "other@gmail.com", "other@gmail.com");
 		when(reviewRepository.findByIdAndDeletedAtIsNull(testReviewId)).thenReturn(Optional.of(testReview));
 
 		// When & Then
 		ReviewException exception = assertThrows(ReviewException.class, () -> {
-			reviewServices.updateReview(testReviewId, reqDto, anotherUser);
+			reviewServices.updateReview(testReviewDto);
 		});
 
 		assertEquals("해당 리뷰에 접근할 권한이 없습니다.", exception.getMessage()); // FORBIDDEN_REVIEW_ACCESS 메시지
@@ -317,10 +432,18 @@ public class ReviewServicesTest {
 	@DisplayName("리뷰 논리적 삭제 성공 - SUCCESS")
 	void testDeleteReview_success() {
 		// Given
-		when(reviewRepository.findByIdAndDeletedAtIsNull(testReviewId)).thenReturn(Optional.of(testReview));
+		testReviewDto = ReviewDto.builder()
+			.reviewId(testReviewId)
+			.userId(UUID.randomUUID())
+			.email("test@gmail.com")
+			.role("ADMIN")
+			.build();
+
+		when(reviewRepository.findByIdAndDeletedAtIsNull(testReviewDto.getReviewId())).thenReturn(
+			Optional.of(testReview));
 
 		// When
-		assertDoesNotThrow(() -> reviewServices.deleteReview(testReviewId, authenticatedUser));
+		assertDoesNotThrow(() -> reviewServices.deleteReview(testReviewDto));
 
 		// Then
 		assertNotNull(testReview.getDeletedAt());
@@ -330,13 +453,20 @@ public class ReviewServicesTest {
 	@DisplayName("리뷰 논리적 삭제 실패 - 존재하지않는 결제 ID - FAIL")
 	void testDeletePayment_fail_paymentNotFound() {
 		// Given
-		when(reviewRepository.findByIdAndDeletedAtIsNull(any(UUID.class))).thenReturn(Optional.empty());
+		testReviewDto = ReviewDto.builder()
+			.reviewId(UUID.randomUUID())
+			.userId(authenticatedUser.getUserId())
+			.email("test@gmail.com")
+			.role("ADMIN")
+			.build();
+
+		when(reviewRepository.findByIdAndDeletedAtIsNull(testReviewDto.getReviewId())).thenReturn(Optional.empty());
 
 		UUID notAuthorId = UUID.randomUUID();
 		AuthenticatedUser anotherUser = new AuthenticatedUser(notAuthorId, "other@gmail.com", "other@gmail.com");
 		// When & Then
 		ReviewException exception = assertThrows(ReviewException.class, () ->
-			reviewServices.deleteReview(UUID.randomUUID(), anotherUser)
+			reviewServices.deleteReview(testReviewDto)
 		);
 
 		assertEquals("해당 리뷰가 존재하지않습니다.", exception.getMessage());
@@ -347,13 +477,20 @@ public class ReviewServicesTest {
 	@DisplayName("리뷰 수정 실패 - 작성자도 아니고 마스터도 아님 - FAIL")
 	void testDeleteReview_fail_forbiddenAccess() {
 		// Given
-		UUID notAuthorId = UUID.randomUUID();
-		AuthenticatedUser anotherUser = new AuthenticatedUser(notAuthorId, "other@gmail.com", "other@gmail.com");
-		when(reviewRepository.findByIdAndDeletedAtIsNull(testReviewId)).thenReturn(Optional.of(testReview));
+
+		testReviewDto = ReviewDto.builder()
+			.reviewId(testReviewId)
+			.userId(UUID.randomUUID())
+			.email("test@gmail.com")
+			.role("CONSUMER")
+			.build();
+
+		when(reviewRepository.findByIdAndDeletedAtIsNull(testReviewDto.getReviewId())).thenReturn(
+			Optional.of(testReview));
 
 		// When & Then
 		ReviewException exception = assertThrows(ReviewException.class, () -> {
-			reviewServices.deleteReview(testReviewId, anotherUser);
+			reviewServices.deleteReview(testReviewDto);
 		});
 
 		assertEquals("해당 리뷰에 접근할 권한이 없습니다.", exception.getMessage()); // FORBIDDEN_REVIEW_ACCESS 메시지

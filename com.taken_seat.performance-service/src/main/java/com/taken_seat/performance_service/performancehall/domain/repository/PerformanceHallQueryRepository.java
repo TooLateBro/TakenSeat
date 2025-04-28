@@ -3,10 +3,10 @@ package com.taken_seat.performance_service.performancehall.domain.repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import com.taken_seat.performance_service.performancehall.presentation.dto.request.SearchFilterParam;
-import com.taken_seat.performance_service.performancehall.presentation.dto.response.SearchResponseDto;
+import com.taken_seat.performance_service.performancehall.presentation.dto.request.HallSearchFilterParam;
+import com.taken_seat.performance_service.performancehall.presentation.dto.response.HallSearchResponseDto;
 
 public interface PerformanceHallQueryRepository {
 
-	Page<SearchResponseDto> searchByFilter(SearchFilterParam searchFilterParam, Pageable pageable);
+	Page<HallSearchResponseDto> searchByFilter(HallSearchFilterParam hallSearchFilterParam, Pageable pageable);
 }

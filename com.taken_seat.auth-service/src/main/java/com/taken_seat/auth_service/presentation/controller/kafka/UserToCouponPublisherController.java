@@ -1,6 +1,7 @@
 package com.taken_seat.auth_service.presentation.controller.kafka;
 
 import com.taken_seat.auth_service.application.kafka.coupon.UserToCouponPublisher;
+import com.taken_seat.auth_service.presentation.docs.UserToCouponPublisherControllerDocs;
 import com.taken_seat.common_service.exception.customException.CouponException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.common_service.message.KafkaUserInfoMessage;
@@ -11,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/users")
-public class UserToCouponPublisherController {
+public class UserToCouponPublisherController implements UserToCouponPublisherControllerDocs {
 
     private final UserToCouponPublisher userToCouponPublisher;
 

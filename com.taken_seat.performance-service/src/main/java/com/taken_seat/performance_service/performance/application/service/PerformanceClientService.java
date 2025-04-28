@@ -1,8 +1,14 @@
 package com.taken_seat.performance_service.performance.application.service;
 
+import static com.taken_seat.performance_service.common.config.RedisCacheConfig.*;
+
+import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,6 +18,7 @@ import com.taken_seat.common_service.dto.response.PerformanceEndTimeDto;
 import com.taken_seat.common_service.dto.response.PerformanceStartTimeDto;
 import com.taken_seat.common_service.exception.customException.PerformanceException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
+import com.taken_seat.performance_service.common.context.CurrentUserContext;
 import com.taken_seat.performance_service.performance.application.dto.mapper.PerformanceResponseMapper;
 import com.taken_seat.performance_service.performance.domain.model.Performance;
 import com.taken_seat.performance_service.performance.domain.model.PerformanceSchedule;
@@ -30,10 +37,19 @@ import lombok.extern.slf4j.Slf4j;
 public class PerformanceClientService {
 
 	private final PerformanceExistenceValidator performanceExistenceValidator;
-	private final PerformanceResponseMapper performanceResponseMapper;
+	private final CurrentUserContext userContext;
+	@Qualifier("deduplicationStringRedisTemplate")
+	private final StringRedisTemplate redisTemplate;
+	private final Duration seatStatusTtl;
 
 	@Transactional
 	public BookingSeatClientResponseDto updateSeatStatus(BookingSeatClientRequestDto request) {
+
+		if (isDuplicate(request, "lock")) {
+			return new BookingSeatClientResponseDto(
+				null, false, "이미 처리 중인 요청입니다. 잠시만 기다려 주세요."
+			);
+		}
 
 		Performance performance = performanceExistenceValidator.validateByPerformanceId(request.performanceId());
 		PerformanceSchedule schedule = performance.getScheduleById(request.performanceScheduleId());
@@ -60,6 +76,12 @@ public class PerformanceClientService {
 
 	@Transactional
 	public BookingSeatClientResponseDto cancelSeatStatus(BookingSeatClientRequestDto request) {
+
+		if (isDuplicate(request, "cancel")) {
+			return new BookingSeatClientResponseDto(
+				null, false, "이미 처리 중인 요청입니다. 잠시만 기다려 주세요."
+			);
+		}
 
 		Performance performance = performanceExistenceValidator.validateByPerformanceId(request.performanceId());
 		PerformanceSchedule schedule = performance.getScheduleById(request.performanceScheduleId());
@@ -94,6 +116,11 @@ public class PerformanceClientService {
 		return new SeatLayoutResponseDto(seatLayout);
 	}
 
+	@Cacheable(
+		cacheNames = SCHEDULE_END_TIME,
+		key = "#performanceScheduleId",
+		unless = "#result == null"
+	)
 	@Transactional
 	public PerformanceEndTimeDto getPerformanceEndTime(UUID performanceId, UUID performanceScheduleId) {
 
@@ -104,6 +131,11 @@ public class PerformanceClientService {
 		return new PerformanceEndTimeDto(schedule.getEndAt());
 	}
 
+	@Cacheable(
+		cacheNames = SCHEDULE_START_TIME,
+		key = "#performanceScheduleId",
+		unless = "#result == null"
+	)
 	@Transactional
 	public PerformanceStartTimeDto getPerformanceStartTime(UUID performanceId, UUID performanceScheduleId) {
 
@@ -112,5 +144,27 @@ public class PerformanceClientService {
 		PerformanceSchedule schedule = performance.getScheduleById(performanceScheduleId);
 
 		return new PerformanceStartTimeDto(schedule.getStartAt());
+	}
+
+	/**
+	 * @return true 면 중복, false 면 처음 요청
+	 */
+	private boolean isDuplicate(BookingSeatClientRequestDto request, String action) {
+
+		UUID userId = userContext.getUserId();
+
+		String key = String.format(
+			"dedup:perf:%s:sched:%s:seat:%s:user:%s:action:%s",
+			request.performanceId(),
+			request.performanceScheduleId(),
+			request.scheduleSeatId(),
+			userId,
+			action
+		);
+
+		Boolean first = redisTemplate.opsForValue()
+			.setIfAbsent(key, "1", seatStatusTtl);
+
+		return !Boolean.TRUE.equals(first);
 	}
 }

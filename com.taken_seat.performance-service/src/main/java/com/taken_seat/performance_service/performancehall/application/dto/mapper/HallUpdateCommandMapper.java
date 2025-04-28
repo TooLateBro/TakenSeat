@@ -5,13 +5,13 @@ import org.mapstruct.ReportingPolicy;
 
 import com.taken_seat.performance_service.performancehall.application.dto.command.UpdatePerformanceHallCommand;
 import com.taken_seat.performance_service.performancehall.application.dto.command.UpdateSeatCommand;
-import com.taken_seat.performance_service.performancehall.presentation.dto.request.UpdateRequestDto;
-import com.taken_seat.performance_service.performancehall.presentation.dto.response.SeatDto;
+import com.taken_seat.performance_service.performancehall.presentation.dto.request.HallUpdateRequestDto;
+import com.taken_seat.performance_service.performancehall.presentation.dto.response.HallSeatDto;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface HallUpdateCommandMapper {
 
-	UpdatePerformanceHallCommand toCommand(UpdateRequestDto updateRequestDto);
+	UpdatePerformanceHallCommand toCommand(HallUpdateRequestDto hallUpdateRequestDto);
 
-	UpdateSeatCommand toCommand(SeatDto seatDto);
+	UpdateSeatCommand toCommand(HallSeatDto hallSeatDto);
 }

@@ -23,7 +23,7 @@
 // import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 // import com.taken_seat.common_service.dto.AuthenticatedUser;
 // import com.taken_seat.performance_service.performance.application.dto.request.CreatePerformanceScheduleDto;
-// import com.taken_seat.performance_service.performance.application.dto.request.CreateRequestDto;
+// import com.taken_seat.performance_service.performance.application.dto.request.HallCreateRequestDto;
 // import com.taken_seat.performance_service.performance.application.dto.request.CreateSeatPriceDto;
 // import com.taken_seat.performance_service.performance.application.dto.response.DetailResponseDto;
 // import com.taken_seat.performance_service.performance.application.dto.response.PerformanceScheduleResponseDto;
@@ -55,8 +55,8 @@
 // 	@MockitoBean
 // 	private AuthenticatedUser authenticatedUser;
 //
-// 	public static CreateRequestDto createValidRequestDto() {
-// 		return CreateRequestDto.builder()
+// 	public static HallCreateRequestDto createValidRequestDto() {
+// 		return HallCreateRequestDto.builder()
 // 			.title("뮤지컬 레미제라블")
 // 			.description("프랑스 혁명을 배경으로 한 감동적인 뮤지컬")
 // 			.startAt(LocalDateTime.of(2025, 6, 1, 19, 0))
@@ -106,7 +106,7 @@
 // 			.scheduleSeats(List.of(seatPrice1, seatPrice2))
 // 			.build();
 //
-// 		CreateRequestDto requestDto = CreateRequestDto.builder()
+// 		HallCreateRequestDto requestDto = HallCreateRequestDto.builder()
 // 			.title("레미제라블")
 // 			.description("감동적인 뮤지컬")
 // 			.startAt(LocalDateTime.of(2025, 6, 1, 19, 0))
@@ -132,7 +132,7 @@
 // 	@DisplayName("공연 상세 조회 성공 시 응답 dto가 반환되는지 테스트")
 // 	void getDetail() throws Exception {
 // 		// given
-// 		CreateRequestDto requestDto = createValidRequestDto();
+// 		HallCreateRequestDto requestDto = createValidRequestDto();
 // 		Performance performance = Performance.create(requestDto, authenticatedUser.getUserId());
 // 		performanceJpaRepository.save(performance);
 //
@@ -207,7 +207,7 @@
 // 	@DisplayName("공연 삭제 성공 시 deletedAt, deletedBy가 정상적으로 반영되어야 한다")
 // 	void deletePerformance_shouldSoftDelete() throws Exception {
 // 		// given
-// 		CreateRequestDto requestDto = createValidRequestDto();
+// 		HallCreateRequestDto requestDto = createValidRequestDto();
 // 		Performance performance = Performance.create(requestDto, authenticatedUser.getUserId());
 // 		performanceJpaRepository.save(performance);
 //
