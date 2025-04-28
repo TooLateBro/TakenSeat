@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import com.taken_seat.performance_service.performance.domain.model.PerformanceStatus;
+import com.taken_seat.performance_service.performance.presentation.dto.response.schema.SearchResponseSchema;
 
 public record SearchResponseDto(
 	UUID performanceId,
@@ -12,5 +13,5 @@ public record SearchResponseDto(
 	LocalDateTime endAt,
 	PerformanceStatus status,
 	String posterUrl
-) {
+) implements SearchResponseSchema {
 }

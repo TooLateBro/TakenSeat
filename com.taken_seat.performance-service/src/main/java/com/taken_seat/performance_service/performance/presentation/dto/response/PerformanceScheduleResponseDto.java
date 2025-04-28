@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 
 import com.taken_seat.performance_service.performance.domain.model.PerformanceScheduleStatus;
+import com.taken_seat.performance_service.performance.presentation.dto.response.schema.PerformanceScheduleResponseSchema;
 
 public record PerformanceScheduleResponseDto(
 	UUID performanceScheduleId,
@@ -15,6 +16,6 @@ public record PerformanceScheduleResponseDto(
 	LocalDateTime saleEndAt,
 	PerformanceScheduleStatus status,
 	List<ScheduleSeatResponseDto> scheduleSeats
-) {
+) implements PerformanceScheduleResponseSchema {
 }
 
