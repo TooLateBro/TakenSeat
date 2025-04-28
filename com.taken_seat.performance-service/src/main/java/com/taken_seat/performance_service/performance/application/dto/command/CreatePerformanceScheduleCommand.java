@@ -10,6 +10,6 @@ public record CreatePerformanceScheduleCommand(
 	LocalDateTime endAt,
 	LocalDateTime saleStartAt,
 	LocalDateTime saleEndAt,
-	List<CreateSeatPriceCommand> seatPrices
+	List<CreateScheduleSeatCommand> scheduleSeats
 ) {
 }

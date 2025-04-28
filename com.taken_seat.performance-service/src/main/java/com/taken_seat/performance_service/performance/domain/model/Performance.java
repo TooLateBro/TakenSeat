@@ -8,9 +8,7 @@ import java.util.UUID;
 import com.taken_seat.common_service.entity.BaseTimeEntity;
 import com.taken_seat.common_service.exception.customException.PerformanceException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
-import com.taken_seat.performance_service.performance.application.dto.command.CreatePerformanceCommand;
 import com.taken_seat.performance_service.performance.application.dto.command.UpdatePerformanceCommand;
-import com.taken_seat.performance_service.performance.domain.helper.PerformanceCreateHelper;
 import com.taken_seat.performance_service.performance.domain.helper.PerformanceUpdateHelper;
 import com.taken_seat.performance_service.performancehall.domain.model.SeatType;
 
@@ -71,28 +69,22 @@ public class Performance extends BaseTimeEntity {
 	@Builder.Default
 	private List<PerformanceSchedule> schedules = new ArrayList<>();
 
-	public static Performance create(CreatePerformanceCommand command, UUID createdBy) {
-
-		Performance performance = PerformanceCreateHelper.createPerformance(command, createdBy);
-
-		PerformanceCreateHelper.createPerformanceSchedules(command, performance,
-			createdBy);
-
-		return performance;
+	public void addSchedules(List<PerformanceSchedule> schedules) {
+		this.schedules.addAll(schedules);
 	}
 
 	public void update(UpdatePerformanceCommand command, UUID updatedBy) {
 		this.preUpdate(updatedBy);
 
-		this.title = command.title();
-		this.description = command.description();
-		this.startAt = command.startAt();
-		this.endAt = command.endAt();
-		this.status = command.status();
-		this.posterUrl = command.posterUrl();
-		this.ageLimit = command.ageLimit();
-		this.maxTicketCount = command.maxTicketCount();
-		this.discountInfo = command.discountInfo();
+		title = command.title();
+		description = command.description();
+		startAt = command.startAt();
+		endAt = command.endAt();
+		status = command.status();
+		posterUrl = command.posterUrl();
+		ageLimit = command.ageLimit();
+		maxTicketCount = command.maxTicketCount();
+		discountInfo = command.discountInfo();
 
 		PerformanceUpdateHelper.updateSchedules(this, command.schedules(), updatedBy);
 	}
@@ -105,11 +97,10 @@ public class Performance extends BaseTimeEntity {
 	}
 
 	public Integer findPriceByScheduleAndSeatType(UUID performanceScheduleId, SeatType seatType) {
-		return this.schedules.stream()
-			.filter(performanceSchedule -> performanceSchedule.getId().equals(performanceScheduleId))
-			.flatMap(performanceSchedule -> performanceSchedule.getSeatPrices().stream())
-			.filter(performanceSeatPrice -> performanceSeatPrice.getSeatType().equals(seatType))
-			.map(PerformanceSeatPrice::getPrice)
+		return this.getScheduleById(performanceScheduleId)
+			.getScheduleSeats().stream()
+			.filter(scheduleSeat -> scheduleSeat.getSeatType().equals(seatType))
+			.map(ScheduleSeat::getPrice)
 			.findFirst()
 			.orElseThrow(() -> new PerformanceException(ResponseCode.SEAT_PRICE_NOT_FOUND_EXCEPTION));
 	}
@@ -118,8 +109,7 @@ public class Performance extends BaseTimeEntity {
 		this.status = newStatus;
 	}
 
-	public void updateScheduleStatus(UUID performanceScheduleId, PerformanceScheduleStatus newStatus) {
-		PerformanceSchedule schedule = getScheduleById(performanceScheduleId);
-		schedule.updateStatus(newStatus);
+	public void updateStatusBasedOnSchedules() {
+		this.status = PerformanceStatus.status(startAt, endAt, schedules);
 	}
 }

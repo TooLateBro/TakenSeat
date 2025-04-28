@@ -20,9 +20,4 @@ public class PerformanceFacadeImpl implements PerformanceFacade {
 	public Performance getByPerformanceId(UUID performanceId) {
 		return performanceExistenceValidator.validateByPerformanceId(performanceId);
 	}
-
-	@Override
-	public Performance getByPerformanceScheduleId(UUID performanceScheduleId) {
-		return performanceExistenceValidator.validateByPerformanceScheduleId(performanceScheduleId);
-	}
 }

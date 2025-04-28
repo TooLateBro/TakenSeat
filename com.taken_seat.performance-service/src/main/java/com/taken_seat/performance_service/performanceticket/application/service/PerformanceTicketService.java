@@ -1,4 +1,4 @@
-package com.taken_seat.performance_service.Performanceticket.application.service;
+package com.taken_seat.performance_service.performanceticket.application.service;
 
 import org.springframework.stereotype.Service;
 
@@ -7,9 +7,9 @@ import com.taken_seat.common_service.dto.response.TicketPerformanceClientRespons
 import com.taken_seat.performance_service.performance.domain.facade.PerformanceFacade;
 import com.taken_seat.performance_service.performance.domain.model.Performance;
 import com.taken_seat.performance_service.performance.domain.model.PerformanceSchedule;
+import com.taken_seat.performance_service.performance.domain.model.ScheduleSeat;
 import com.taken_seat.performance_service.performancehall.domain.facade.PerformanceHallFacade;
 import com.taken_seat.performance_service.performancehall.domain.model.PerformanceHall;
-import com.taken_seat.performance_service.performancehall.domain.model.Seat;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,23 +22,20 @@ public class PerformanceTicketService {
 
 	public TicketPerformanceClientResponse getPerformanceInfo(TicketPerformanceClientRequest request) {
 
-		Performance performance = performanceFacade.getByPerformanceId(request.getPerformanceId());
-
-		PerformanceSchedule schedule = performance.getScheduleById(request.getPerformanceScheduleId());
-
+		Performance performance = performanceFacade.getByPerformanceId(request.performanceId());
+		PerformanceSchedule schedule = performance.getScheduleById(request.performanceScheduleId());
 		PerformanceHall performanceHall = performanceHallFacade.getByPerformanceHallId(schedule.getPerformanceHallId());
+		ScheduleSeat scheduleSeat = schedule.getScheduleSeatById(request.scheduleSeatId());
 
-		Seat seat = performanceHall.getSeatById(request.getSeatId());
-
-		return TicketPerformanceClientResponse.builder()
-			.title(performance.getTitle())
-			.startAt(schedule.getStartAt())
-			.endAt(schedule.getEndAt())
-			.name(performanceHall.getName())
-			.address(performanceHall.getAddress())
-			.seatNumber(seat.getSeatNumber())
-			.seatRowNumber(seat.getRowNumber())
-			.seatType(seat.getSeatType().name())
-			.build();
+		return new TicketPerformanceClientResponse(
+			performance.getTitle(),
+			performanceHall.getName(),
+			performanceHall.getAddress(),
+			scheduleSeat.getRowNumber(),
+			scheduleSeat.getSeatNumber(),
+			scheduleSeat.getSeatType().name(),
+			schedule.getStartAt(),
+			schedule.getEndAt()
+		);
 	}
 }

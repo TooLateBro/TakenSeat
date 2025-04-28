@@ -16,7 +16,6 @@ import com.taken_seat.performance_service.performancehall.application.dto.mapper
 import com.taken_seat.performance_service.performancehall.application.dto.mapper.HallResponseMapper;
 import com.taken_seat.performance_service.performancehall.application.dto.mapper.HallUpdateCommandMapper;
 import com.taken_seat.performance_service.performancehall.domain.model.PerformanceHall;
-import com.taken_seat.performance_service.performancehall.domain.repository.PerformanceHallQueryRepository;
 import com.taken_seat.performance_service.performancehall.domain.repository.PerformanceHallRepository;
 import com.taken_seat.performance_service.performancehall.domain.validation.PerformanceHallExistenceValidator;
 import com.taken_seat.performance_service.performancehall.domain.validation.PerformanceHallValidator;
@@ -40,7 +39,6 @@ public class PerformanceHallService {
 	private final PerformanceHallRepository performanceHallRepository;
 	private final HallResponseMapper hallResponseMapper;
 	private final PerformanceHallExistenceValidator performanceHallExistenceValidator;
-	private final PerformanceHallQueryRepository performanceHallQueryRepository;
 	private final HallCreateCommandMapper hallCreateCommandMapper;
 	private final HallUpdateCommandMapper hallUpdateCommandMapper;
 
@@ -69,7 +67,7 @@ public class PerformanceHallService {
 	public PageResponseDto search(SearchFilterParam filterParam, Pageable pageable) {
 
 		Page<SearchResponseDto> pages =
-			performanceHallQueryRepository.searchByFilter(filterParam, pageable);
+			performanceHallRepository.findAll(filterParam, pageable);
 
 		return hallResponseMapper.toPage(pages);
 	}
