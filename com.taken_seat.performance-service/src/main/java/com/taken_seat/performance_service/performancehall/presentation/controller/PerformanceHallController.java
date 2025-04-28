@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.taken_seat.common_service.aop.annotation.RoleCheck;
+import com.taken_seat.common_service.aop.vo.Role;
 import com.taken_seat.common_service.dto.ApiResponseData;
 import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.performance_service.performancehall.application.service.PerformanceHallService;
@@ -39,6 +41,7 @@ public class PerformanceHallController implements PerformanceHallControllerDocs 
 
 	private final PerformanceHallService performanceHallService;
 
+	@RoleCheck(allowedRoles = {Role.ADMIN, Role.MANAGER})
 	@PostMapping
 	public ResponseEntity<ApiResponseData<HallCreateResponseDto>> create(
 		@Valid @RequestBody HallCreateRequestDto request,
@@ -65,6 +68,7 @@ public class PerformanceHallController implements PerformanceHallControllerDocs 
 		return ResponseEntity.ok(ApiResponseData.success(response));
 	}
 
+	@RoleCheck(allowedRoles = {Role.ADMIN, Role.MANAGER})
 	@PatchMapping("/{id}")
 	public ResponseEntity<ApiResponseData<HallUpdateResponseDto>> update(
 		@PathVariable("id") UUID id,
@@ -75,6 +79,7 @@ public class PerformanceHallController implements PerformanceHallControllerDocs 
 		return ResponseEntity.ok(ApiResponseData.success(response));
 	}
 
+	@RoleCheck(allowedRoles = {Role.ADMIN, Role.MANAGER})
 	@DeleteMapping("/{id}")
 	public ResponseEntity<ApiResponseData<Void>> delete(@PathVariable("id") UUID id,
 		AuthenticatedUser authenticatedUser) {
