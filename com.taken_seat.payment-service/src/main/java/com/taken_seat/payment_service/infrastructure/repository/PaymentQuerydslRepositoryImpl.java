@@ -23,7 +23,7 @@ import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.taken_seat.common_service.exception.customException.PaymentException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
-import com.taken_seat.payment_service.application.dto.controller.request.PaymentSearchReqDto;
+import com.taken_seat.payment_service.application.dto.service.PaymentSearchDto;
 import com.taken_seat.payment_service.domain.enums.PaymentStatus;
 import com.taken_seat.payment_service.domain.model.Payment;
 import com.taken_seat.payment_service.domain.model.QPayment;
@@ -41,7 +41,7 @@ public class PaymentQuerydslRepositoryImpl implements PaymentQuerydslRepository 
 	private static final List<String> VALID_SORT_BY = Arrays.asList("createdAt", "updatedAt", "deletedAt");
 
 	@Override
-	public Page<Payment> search(PaymentSearchReqDto searchReqDto) {
+	public Page<Payment> search(PaymentSearchDto searchReqDto) {
 		int size = validateSize(searchReqDto.getSize());
 
 		Sort sort = getSortOrder(searchReqDto.getSort(), searchReqDto.getOrder());
