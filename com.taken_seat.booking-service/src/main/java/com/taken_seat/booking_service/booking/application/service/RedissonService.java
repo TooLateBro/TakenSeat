@@ -26,18 +26,19 @@ public class RedissonService {
 	@Value("${variable.lock-lease-time}")
 	private long LOCK_LEASE_TIME;
 
-	public BookingSeatClientResponseDto tryHoldSeat(UUID performanceId, UUID performanceScheduleId, UUID seatId) {
-		String key = "lock:seat:" + seatId;
+	public BookingSeatClientResponseDto tryHoldSeat(UUID performanceId, UUID performanceScheduleId,
+		UUID scheduleSeatId) {
+		String key = "lock:seat:" + scheduleSeatId;
 		RLock lock = redissonClient.getLock(key);
 
 		// TODO: FeignClient 처리에서 Kafka 이벤트 처리로 변경해보기
 		try {
 			if (lock.tryLock(LOCK_WAIT_TIME, LOCK_LEASE_TIME, TimeUnit.SECONDS)) {
-				BookingSeatClientRequestDto dto = BookingSeatClientRequestDto.builder()
-					.performanceId(performanceId)
-					.performanceScheduleId(performanceScheduleId)
-					.seatId(seatId)
-					.build();
+				BookingSeatClientRequestDto dto = new BookingSeatClientRequestDto(
+					performanceId,
+					performanceScheduleId,
+					scheduleSeatId
+				);
 
 				BookingSeatClientResponseDto responseDto = bookingClientService.updateSeatStatus(dto);
 

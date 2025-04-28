@@ -1,4 +1,4 @@
-package com.taken_seat.booking_service.booking.application.dto.response;
+package com.taken_seat.booking_service.booking.presentation.dto.response;
 
 import java.util.List;
 import java.util.stream.Collectors;

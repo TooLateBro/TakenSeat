@@ -1,4 +1,4 @@
-package com.taken_seat.booking_service.booking.application.dto.response;
+package com.taken_seat.booking_service.booking.presentation.dto.response;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -16,7 +16,7 @@ public class AdminBookingReadResponse {
 	private UUID userId;
 	private UUID performanceId;
 	private UUID performanceScheduleId;
-	private UUID seatId;
+	private UUID scheduleSeatId;
 	private UUID paymentId;
 	private int price;
 	private int discountedPrice;
@@ -36,7 +36,7 @@ public class AdminBookingReadResponse {
 			.userId(booking.getUserId())
 			.performanceId(booking.getPerformanceId())
 			.performanceScheduleId(booking.getPerformanceScheduleId())
-			.seatId(booking.getSeatId())
+			.scheduleSeatId(booking.getScheduleSeatId())
 			.paymentId(booking.getPaymentId())
 			.price(booking.getPrice())
 			.discountedPrice(booking.getDiscountedPrice())

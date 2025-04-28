@@ -54,14 +54,14 @@ public class TicketServiceImpl implements TicketService {
 		Ticket ticket = Ticket.builder()
 			.userId(message.getUserId())
 			.bookingId(message.getBookingId())
-			.title(info.getTitle())
-			.name(info.getName())
-			.address(info.getAddress())
-			.startAt(info.getStartAt())
-			.endAt(info.getEndAt())
-			.seatRowNumber(info.getSeatRowNumber())
-			.seatNumber(info.getSeatNumber())
-			.seatType(info.getSeatType())
+			.title(info.title())
+			.name(info.name())
+			.address(info.address())
+			.startAt(info.startAt())
+			.endAt(info.endAt())
+			.seatRowNumber(info.rowNumber())
+			.seatNumber(info.seatNumber())
+			.seatType(info.seatType())
 			.build();
 		ticket.prePersist(message.getUserId());
 

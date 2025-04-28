@@ -24,7 +24,7 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 @Configuration
 public class JacksonConfig {
 
-	private static final String DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
+	private static final String DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
 	private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern(DATETIME_FORMAT);
 
 	@Bean
