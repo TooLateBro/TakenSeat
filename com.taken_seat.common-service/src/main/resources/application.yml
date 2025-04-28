@@ -1,3 +1,10 @@
 spring:
   application:
     name: common-service
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
