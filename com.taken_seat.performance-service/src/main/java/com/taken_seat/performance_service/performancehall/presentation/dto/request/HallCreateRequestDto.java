@@ -2,6 +2,8 @@ package com.taken_seat.performance_service.performancehall.presentation.dto.requ
 
 import java.util.List;
 
+import com.taken_seat.performance_service.performancehall.presentation.dto.request.schema.HallCreateRequestSchema;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -22,5 +24,5 @@ public record HallCreateRequestDto(
 	@Valid
 	@NotEmpty(message = "공연 좌석 정보는 필수입니다")
 	List<HallCreateSeatDto> seats
-) {
+) implements HallCreateRequestSchema {
 }

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 
 import com.taken_seat.performance_service.performance.domain.model.PerformanceScheduleStatus;
+import com.taken_seat.performance_service.performance.presentation.dto.request.schema.CreatePerformanceScheduleSchema;
 
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.FutureOrPresent;
@@ -34,6 +35,6 @@ public record CreatePerformanceScheduleDto(
 
 	@NotEmpty(message = "좌석 가격 정보는 최소 1개 이상이어야 합니다.")
 	List<CreateScheduleSeatDto> scheduleSeats
-) {
+) implements CreatePerformanceScheduleSchema {
 }
 

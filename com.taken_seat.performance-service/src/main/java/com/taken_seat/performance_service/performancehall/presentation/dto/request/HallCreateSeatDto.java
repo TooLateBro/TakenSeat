@@ -2,6 +2,7 @@ package com.taken_seat.performance_service.performancehall.presentation.dto.requ
 
 import com.taken_seat.performance_service.performancehall.domain.model.SeatStatus;
 import com.taken_seat.performance_service.performancehall.domain.model.SeatType;
+import com.taken_seat.performance_service.performancehall.presentation.dto.request.schema.HallCreateSeatSchema;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -23,7 +24,7 @@ public record HallCreateSeatDto(
 	SeatType seatType,
 
 	SeatStatus status
-) implements BaseSeatDto {
+) implements BaseSeatDto, HallCreateSeatSchema {
 
 	@Override
 	public String getRowNumber() {

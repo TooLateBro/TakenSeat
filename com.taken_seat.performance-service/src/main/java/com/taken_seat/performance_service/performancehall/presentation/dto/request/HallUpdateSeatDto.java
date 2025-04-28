@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import com.taken_seat.performance_service.performancehall.domain.model.SeatStatus;
 import com.taken_seat.performance_service.performancehall.domain.model.SeatType;
+import com.taken_seat.performance_service.performancehall.presentation.dto.request.schema.HallUpdateSeatSchema;
 
 import jakarta.validation.constraints.Pattern;
 
@@ -18,7 +19,7 @@ public record HallUpdateSeatDto(
 
 	SeatType seatType,
 	SeatStatus status
-) implements BaseSeatDto {
+) implements BaseSeatDto, HallUpdateSeatSchema {
 
 	@Override
 	public String getRowNumber() {

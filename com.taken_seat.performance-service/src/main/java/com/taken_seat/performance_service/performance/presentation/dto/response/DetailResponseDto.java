@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 
 import com.taken_seat.performance_service.performance.domain.model.PerformanceStatus;
+import com.taken_seat.performance_service.performance.presentation.dto.response.schema.DetailResponseSchema;
 
 public record DetailResponseDto(
 	UUID performanceId,
@@ -18,5 +19,5 @@ public record DetailResponseDto(
 	Integer maxTicketCount,
 	String discountInfo,
 	List<PerformanceScheduleResponseDto> schedules
-) {
+) implements DetailResponseSchema {
 }
