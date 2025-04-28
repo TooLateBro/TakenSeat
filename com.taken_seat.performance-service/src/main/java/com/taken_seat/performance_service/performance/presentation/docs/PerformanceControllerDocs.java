@@ -40,12 +40,28 @@ public interface PerformanceControllerDocs {
 	ResponseEntity<ApiResponseData<DetailResponseDto>> getDetail(UUID id);
 
 	@Operation(summary = "공연 수정", description = "공연 ID를 기반으로 공연 정보를 수정합니다.")
-	ResponseEntity<ApiResponseData<UpdateResponseDto>> update(UUID id, @RequestBody UpdateRequestDto request,
-		AuthenticatedUser authenticatedUser);
+	ResponseEntity<ApiResponseData<UpdateResponseDto>> update(
+		UUID id,
+		@RequestBody UpdateRequestDto request,
+		AuthenticatedUser authenticatedUser
+	);
 
 	@Operation(summary = "공연 삭제", description = "공연 ID를 기반으로 공연 정보를 삭제합니다.")
-	ResponseEntity<ApiResponseData<Void>> delete(UUID id, AuthenticatedUser authenticatedUser);
+	ResponseEntity<ApiResponseData<Void>> delete(
+		UUID id,
+		AuthenticatedUser authenticatedUser
+	);
 
 	@Operation(summary = "공연 상태 변경", description = "공연 ID를 기반으로 공연 상태를 변경합니다.")
-	ResponseEntity<ApiResponseData<Void>> updateStatus(UUID id, AuthenticatedUser authenticatedUser);
+	ResponseEntity<ApiResponseData<Void>> updateStatus(
+		UUID id,
+		AuthenticatedUser authenticatedUser
+	);
+
+	@Operation(summary = "공연 회차 삭제", description = "공연 ID 및 회차 ID를 기반으로 특정 회차를 삭제합니다.")
+	ResponseEntity<ApiResponseData<Void>> deletePerformanceSchedule(
+		UUID performanceId,
+		UUID performanceScheduleId,
+		AuthenticatedUser authenticatedUser
+	);
 }

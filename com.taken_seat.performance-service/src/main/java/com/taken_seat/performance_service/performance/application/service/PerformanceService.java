@@ -131,4 +131,21 @@ public class PerformanceService {
 
 		performanceRepository.save(performance);
 	}
+
+	@Transactional
+	public void deletePerformanceSchedule(
+		UUID performanceId,
+		UUID performanceScheduleId,
+		AuthenticatedUser authenticatedUser) {
+
+		PerformanceValidator.validateAuthorized(authenticatedUser);
+
+		Performance performance = performanceExistenceValidator.validateByPerformanceId(performanceId);
+
+		PerformanceSchedule schedule = performance.getScheduleById(performanceScheduleId);
+
+		schedule.delete(authenticatedUser.getUserId());
+
+		performanceRepository.save(performance);
+	}
 }
