@@ -110,12 +110,11 @@ public enum ResponseCode {
 	SEAT_LOCK_FAILED(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), "좌석 선점을 위한 락 획득에 실패했습니다."),
 	SEAT_INTERRUPTED_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR.value(),
 		"락 획득 중 인터럽트가 발생했습니다."),
+	SEAT_STATUS_NOT_FOUND(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "좌석 상태를 찾을 수 없습니다."),
 
 	//Queue
 	QUEUE_UNAUTHORIZED_TOKEN_EXCEPTION(HttpStatus.UNAUTHORIZED, HttpStatus.UNAUTHORIZED.value(), "유효하지 않은 토큰입니다."),
 	QUEUE_NOT_FOUND_TOKEN_EXCEPTION(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "대기열에 존재하지 않는 사용자입니다.");
-
-
 
 	private final HttpStatus status;
 	private final Integer code;
