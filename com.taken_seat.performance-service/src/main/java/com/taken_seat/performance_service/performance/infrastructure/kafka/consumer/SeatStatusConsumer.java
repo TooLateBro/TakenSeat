@@ -1,5 +1,6 @@
 package com.taken_seat.performance_service.performance.infrastructure.kafka.consumer;
 
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
 import com.taken_seat.performance_service.performance.application.service.PerformanceClientService;
@@ -15,6 +16,7 @@ public class SeatStatusConsumer {
 
 	private final PerformanceClientService performanceClientService;
 
+	@KafkaListener(topics = "seat-status-topic", groupId = "performance-service-group", containerFactory = "performanceKafkaListenerContainerFactory")
 	public void consumeSeatStatusChangedEvent(SeatStatusChangedEvent event) {
 
 		log.info("[Performance] Kafka SeatStatusChangedEvent 수신 - scheduleSeatId={}, seatStatus={}",
