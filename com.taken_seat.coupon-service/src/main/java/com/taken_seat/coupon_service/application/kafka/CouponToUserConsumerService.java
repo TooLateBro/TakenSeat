@@ -4,5 +4,5 @@ import com.taken_seat.common_service.message.KafkaUserInfoMessage;
 
 public interface CouponToUserConsumerService {
 
-    KafkaUserInfoMessage producerMessage(KafkaUserInfoMessage message) throws InterruptedException ;
+    KafkaUserInfoMessage producerMessage(KafkaUserInfoMessage message);
 }

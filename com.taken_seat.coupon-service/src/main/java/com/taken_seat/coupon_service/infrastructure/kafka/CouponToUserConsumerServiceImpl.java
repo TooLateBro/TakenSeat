@@ -30,7 +30,7 @@ public class CouponToUserConsumerServiceImpl implements CouponToUserConsumerServ
 
     @Transactional
     @Override
-    public KafkaUserInfoMessage producerMessage(KafkaUserInfoMessage message) throws InterruptedException {
+    public KafkaUserInfoMessage producerMessage(KafkaUserInfoMessage message){
         String redisKey = "couponId:" + message.getCouponId();
 //        RLock lock = redissonClient.getLock(redisKey); // redis key 로 락 설정
         try {
@@ -39,12 +39,12 @@ public class CouponToUserConsumerServiceImpl implements CouponToUserConsumerServ
 //                throw new InterruptedException("대기 상태 입니다....");
 //            }
             Coupon coupon = couponRepository.findByIdAndDeletedAtIsNull(message.getCouponId())
-                    .orElseThrow(() -> new IllegalArgumentException("쿠폰이 존재하지 않습니다."));
+                    .orElseThrow(() -> new CouponException(ResponseCode.COUPON_NOT_FOUND));
 
             // hasKey 로 키 존재 여부 확인 후 set 으로 저장
             Boolean exists = redisTemplate.hasKey(redisKey); // 데이터 초기화
-            if (exists== null || !exists) {
-                redisTemplate.opsForValue().set(redisKey, coupon.getQuantity(), Duration.ofSeconds(10));
+            if (exists == null || !exists) {
+                redisTemplate.opsForValue().set(redisKey, coupon.getQuantity(), Duration.ofSeconds(60));
             }
 
             Long currentQuantity = redisTemplate.opsForValue().get(redisKey);
@@ -54,7 +54,7 @@ public class CouponToUserConsumerServiceImpl implements CouponToUserConsumerServ
             }
             Long updatedQuantity = redisTemplate.opsForValue().decrement(redisKey);
 
-            if (updatedQuantity == 0 || 0 == coupon.getQuantity()) {
+            if (updatedQuantity == 0 || updatedQuantity < 0) {
                 throw new CouponException(ResponseCode.COUPON_QUANTITY_EXCEPTION);
             }
 
