@@ -4,9 +4,7 @@ import static com.taken_seat.performance_service.common.config.RedisCacheConfig.
 
 import java.time.Duration;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
@@ -22,10 +20,11 @@ import com.taken_seat.common_service.exception.customException.PerformanceExcept
 import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.performance_service.common.context.CurrentUserContext;
 import com.taken_seat.performance_service.performance.application.dto.mapper.PerformanceResponseMapper;
+import com.taken_seat.performance_service.performance.application.helper.SeatStatusKafkaHelper;
+import com.taken_seat.performance_service.performance.application.helper.SeatStatusRedisHelper;
 import com.taken_seat.performance_service.performance.domain.model.Performance;
 import com.taken_seat.performance_service.performance.domain.model.PerformanceSchedule;
 import com.taken_seat.performance_service.performance.domain.model.ScheduleSeat;
-import com.taken_seat.performance_service.performance.domain.repository.redis.SeatStatusRedisRepository;
 import com.taken_seat.performance_service.performance.domain.validator.PerformanceExistenceValidator;
 import com.taken_seat.performance_service.performance.presentation.dto.response.ScheduleSeatResponseDto;
 import com.taken_seat.performance_service.performance.presentation.dto.response.SeatLayoutResponseDto;
@@ -44,7 +43,8 @@ public class PerformanceClientService {
 	@Qualifier("deduplicationStringRedisTemplate")
 	private final StringRedisTemplate redisTemplate;
 	private final Duration seatStatusTtl;
-	private final SeatStatusRedisRepository seatStatusRedisRepository;
+	private final SeatStatusRedisHelper seatStatusRedisHelper;
+	private final SeatStatusKafkaHelper seatStatusKafkaHelper;
 
 	@Transactional
 	public BookingSeatClientResponseDto updateSeatStatus(BookingSeatClientRequestDto request) {
@@ -65,10 +65,15 @@ public class PerformanceClientService {
 			return new BookingSeatClientResponseDto(null, false, "이미 선점된 좌석입니다.");
 		}
 
-		seatStatusRedisRepository.saveSeatStatus(
+		seatStatusRedisHelper.saveSeatStatus(
 			request.performanceScheduleId(),
 			request.scheduleSeatId(),
-			SeatStatus.SOLDOUT.name()
+			SeatStatus.SOLDOUT);
+
+		seatStatusKafkaHelper.sendSeatStatusChangedEvent(
+			request.performanceScheduleId(),
+			request.scheduleSeatId(),
+			SeatStatus.SOLDOUT
 		);
 
 		Integer price = performance.findPriceByScheduleAndSeatType(
@@ -101,10 +106,16 @@ public class PerformanceClientService {
 			throw new PerformanceException(ResponseCode.SEAT_STATUS_CHANGE_NOT_ALLOWED);
 		}
 
-		seatStatusRedisRepository.saveSeatStatus(
+		seatStatusRedisHelper.saveSeatStatus(
 			request.performanceScheduleId(),
 			request.scheduleSeatId(),
-			SeatStatus.AVAILABLE.name()
+			SeatStatus.AVAILABLE
+		);
+
+		seatStatusKafkaHelper.sendSeatStatusChangedEvent(
+			request.performanceScheduleId(),
+			request.scheduleSeatId(),
+			SeatStatus.AVAILABLE
 		);
 
 		log.info("[Performance] 좌석 선점 취소 - 성공 - scheduleSeatId={}, scheduleId={}",
@@ -180,26 +191,19 @@ public class PerformanceClientService {
 		return !Boolean.TRUE.equals(first);
 	}
 
-	@Transactional(readOnly = true)
-	public SeatStatus getSeatStatusFromRedis(UUID performanceScheduleId, UUID scheduleSeatId) {
+	@Transactional
+	public void updateScheduleSeatStatusByKafka(
+		UUID performanceScheduleId, UUID scheduleSeatId, SeatStatus seatStatus) {
 
-		String status = seatStatusRedisRepository.getSeatStatus(performanceScheduleId, scheduleSeatId);
+		Performance performance = performanceExistenceValidator.validateByPerformanceScheduleId(performanceScheduleId);
 
-		if (status == null) {
-			throw new PerformanceException(ResponseCode.SEAT_STATUS_NOT_FOUND);
-		}
-		return SeatStatus.valueOf(status);
-	}
+		PerformanceSchedule schedule = performance.getScheduleById(performanceScheduleId);
 
-	@Transactional(readOnly = true)
-	public Map<UUID, SeatStatus> getAllSeatStatusesFromRedis(UUID performanceScheduleId) {
+		ScheduleSeat scheduleSeat = schedule.getScheduleSeatById(scheduleSeatId);
 
-		Map<Object, Object> entries = seatStatusRedisRepository.getAllSeatStatus(performanceScheduleId);
+		scheduleSeat.changeSeatStatus(seatStatus);
 
-		return entries.entrySet().stream()
-			.collect(Collectors.toMap(
-				entry -> UUID.fromString(entry.getKey().toString()),
-				entry -> SeatStatus.valueOf(entry.getValue().toString())
-			));
+		log.info("[Performance] Kafka 기반 좌석 상태 업데이트 완료 - scheduleSeatId={}, seatStatus={}",
+			scheduleSeatId, seatStatus);
 	}
 }
