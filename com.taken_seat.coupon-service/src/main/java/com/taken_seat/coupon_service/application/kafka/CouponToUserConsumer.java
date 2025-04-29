@@ -8,5 +8,5 @@ import org.springframework.messaging.handler.annotation.Payload;
 public interface CouponToUserConsumer {
 
     KafkaUserInfoMessage consume(@Payload KafkaUserInfoMessage message,
-                                        @Header(KafkaHeaders.RECEIVED_KEY) String key);
+                                 @Header(KafkaHeaders.RECEIVED_KEY) String key);
 }

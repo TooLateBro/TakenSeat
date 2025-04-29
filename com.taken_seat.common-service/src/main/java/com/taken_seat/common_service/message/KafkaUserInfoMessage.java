@@ -1,10 +1,10 @@
 package com.taken_seat.common_service.message;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
-import lombok.*;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -12,16 +12,22 @@ import java.util.UUID;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
 public class KafkaUserInfoMessage {
 
+    @Schema(example = "uuid")
     private UUID userId;
+
+    @Schema(example = "uuid")
     private UUID couponId;
+
+    @Schema(hidden = true)
     private Integer discount;
 
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Schema(hidden = true)
     private LocalDateTime expiredAt;
+
+    @Schema(hidden = true)
     private Status status = Status.PENDING;
 
     public enum Status {
