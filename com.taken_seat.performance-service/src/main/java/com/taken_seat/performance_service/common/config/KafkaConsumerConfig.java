@@ -13,6 +13,7 @@ import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
 import org.springframework.kafka.listener.DefaultErrorHandler;
+import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.util.backoff.FixedBackOff;
 
 import com.taken_seat.performance_service.performance.infrastructure.kafka.producer.SeatStatusChangedEvent;
@@ -66,6 +67,9 @@ public class KafkaConsumerConfig {
 		props.put(org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
 			org.springframework.kafka.support.serializer.JsonDeserializer.class);
 		props.put(org.springframework.kafka.support.serializer.JsonDeserializer.TRUSTED_PACKAGES, "*");
+		props.put(
+			JsonDeserializer.VALUE_DEFAULT_TYPE,
+			"com.taken_seat.performance_service.performance.infrastructure.kafka.producer.SeatStatusChangedEvent");
 
 		return new org.springframework.kafka.core.DefaultKafkaConsumerFactory<>(props);
 	}
