@@ -4,7 +4,9 @@ import static com.taken_seat.performance_service.common.config.RedisCacheConfig.
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
@@ -25,6 +27,7 @@ import com.taken_seat.performance_service.performance.application.helper.SeatSta
 import com.taken_seat.performance_service.performance.domain.model.Performance;
 import com.taken_seat.performance_service.performance.domain.model.PerformanceSchedule;
 import com.taken_seat.performance_service.performance.domain.model.ScheduleSeat;
+import com.taken_seat.performance_service.performance.domain.repository.PerformanceQueryRepository;
 import com.taken_seat.performance_service.performance.domain.validator.PerformanceExistenceValidator;
 import com.taken_seat.performance_service.performance.presentation.dto.response.ScheduleSeatResponseDto;
 import com.taken_seat.performance_service.performance.presentation.dto.response.SeatLayoutResponseDto;
@@ -45,6 +48,7 @@ public class PerformanceClientService {
 	private final Duration seatStatusTtl;
 	private final SeatStatusRedisHelper seatStatusRedisHelper;
 	private final SeatStatusKafkaHelper seatStatusKafkaHelper;
+	private final PerformanceQueryRepository performanceQueryRepository;
 
 	@Transactional
 	public BookingSeatClientResponseDto updateSeatStatus(BookingSeatClientRequestDto request) {
@@ -205,5 +209,26 @@ public class PerformanceClientService {
 
 		log.info("[Performance] Kafka 기반 좌석 상태 업데이트 완료 - scheduleSeatId={}, seatStatus={}",
 			scheduleSeatId, seatStatus);
+	}
+
+	@Transactional(readOnly = true)
+	public List<UUID> getAllPerformanceScheduleIds() {
+
+		return performanceQueryRepository.findAllPerformanceScheduleIds();
+	}
+
+	@Transactional(readOnly = true)
+	public Map<UUID, SeatStatus> getAllSeatStatuses(UUID performanceScheduleId) {
+
+		Performance performance =
+			performanceExistenceValidator.validateByPerformanceScheduleId(performanceScheduleId);
+		PerformanceSchedule performanceSchedule =
+			performance.getScheduleById(performanceScheduleId);
+
+		return performanceSchedule.getScheduleSeats().stream()
+			.collect(Collectors.toMap(
+				ScheduleSeat::getId,
+				ScheduleSeat::getSeatStatus
+			));
 	}
 }
