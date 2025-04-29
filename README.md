@@ -125,9 +125,9 @@ TakenSeat                                                  # 루트 프로젝트
 │  ├──test/java/com/taken_seat/queue_service
 │  ├──Dockerfile
 │
-├──com.taken_seat.bookingCommand-service                          # 예매 서비스
+├──com.taken_seat.booking-service                          # 예매 서비스
 │  ├──src/main/java/com/taken_seat/booking_service
-│  │   ├──bookingCommand/
+│  │   ├──booking/
 │  │   │   ├──application/
 │  │   │   ├──domain/
 │  │   │   ├──infrastructure/
