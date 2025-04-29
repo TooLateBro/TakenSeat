@@ -14,10 +14,10 @@ import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.common_service.exception.customException.PaymentException;
 import com.taken_seat.common_service.exception.customException.PaymentHistoryException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
-import com.taken_seat.payment_service.application.dto.controller.request.PaymentSearchReqDto;
 import com.taken_seat.payment_service.application.dto.controller.response.PagePaymentResponseDto;
 import com.taken_seat.payment_service.application.dto.controller.response.PaymentDetailResDto;
 import com.taken_seat.payment_service.application.dto.service.PaymentDto;
+import com.taken_seat.payment_service.application.dto.service.PaymentSearchDto;
 import com.taken_seat.payment_service.domain.model.Payment;
 import com.taken_seat.payment_service.domain.model.PaymentHistory;
 import com.taken_seat.payment_service.domain.repository.PaymentHistoryRepository;
@@ -116,7 +116,7 @@ public class PaymentServiceImpl implements PaymentService {
 	@Override
 	@Transactional(readOnly = true)
 	@Cacheable(cacheNames = "paymentSearchCache", key = "#searchReqDto.q + '-' + #searchReqDto.category + '-' + #searchReqDto.page + '-' + #searchReqDto.size")
-	public PagePaymentResponseDto searchPayment(PaymentSearchReqDto searchReqDto) {
+	public PagePaymentResponseDto searchPayment(PaymentSearchDto searchReqDto) {
 
 		Page<Payment> paymentPages = paymentQuerydslRepository.search(searchReqDto);
 

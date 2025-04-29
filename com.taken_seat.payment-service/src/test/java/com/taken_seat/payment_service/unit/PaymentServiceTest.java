@@ -22,10 +22,10 @@ import org.springframework.data.domain.PageRequest;
 
 import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.common_service.exception.customException.PaymentException;
-import com.taken_seat.payment_service.application.dto.controller.request.PaymentSearchReqDto;
 import com.taken_seat.payment_service.application.dto.controller.response.PagePaymentResponseDto;
 import com.taken_seat.payment_service.application.dto.controller.response.PaymentDetailResDto;
 import com.taken_seat.payment_service.application.dto.service.PaymentDto;
+import com.taken_seat.payment_service.application.dto.service.PaymentSearchDto;
 import com.taken_seat.payment_service.application.service.PaymentServiceImpl;
 import com.taken_seat.payment_service.domain.enums.PaymentStatus;
 import com.taken_seat.payment_service.domain.model.Payment;
@@ -195,7 +195,7 @@ public class PaymentServiceTest {
 	@DisplayName("결제 리스트 검색 - 상태(status) 필터 적용 - SUCCESS")
 	void testSearchPayment_success_withStatusFilter() {
 		// Given
-		PaymentSearchReqDto searchReqDto = PaymentSearchReqDto.builder()
+		PaymentSearchDto searchReqDto = PaymentSearchDto.builder()
 			.q("REFUNDED")
 			.category("status")
 			.page(0)
@@ -236,7 +236,7 @@ public class PaymentServiceTest {
 	@DisplayName("결제 리스트 검색 - 비어있는 결과 - SUCCESS")
 	void testSearchPayment_success_emptyResult() {
 		// Given
-		PaymentSearchReqDto searchReqDto = PaymentSearchReqDto.builder()
+		PaymentSearchDto searchReqDto = PaymentSearchDto.builder()
 			.q("REFUNDED")
 			.category("status")
 			.page(0)
