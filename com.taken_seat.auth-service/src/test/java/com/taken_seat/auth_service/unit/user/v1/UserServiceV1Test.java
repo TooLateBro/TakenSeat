@@ -13,6 +13,7 @@ import com.taken_seat.auth_service.domain.repository.userCoupon.UserCouponReposi
 import com.taken_seat.auth_service.infrastructure.persistence.user.UserQueryRepositoryImpl;
 import com.taken_seat.auth_service.presentation.dto.user.UserUpdateRequestDto;
 import com.taken_seat.common_service.aop.vo.Role;
+import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.common_service.exception.customException.AuthException;
 import com.taken_seat.common_service.exception.customException.CouponException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
@@ -57,14 +58,16 @@ public class UserServiceV1Test {
 
     private UUID userId;
     private UUID couponId;
-
+    private AuthenticatedUser authenticatedUser;
 
     @BeforeEach
     public void setUp() {
+        userId = UUID.randomUUID();
         user = User.create(
                 "testuser1","test@test.com","010-1111-1111"
                 ,"testPassword1!", Role.ADMIN
         );
+        authenticatedUser = new AuthenticatedUser(userId, "test@test.com", "ADMIN");
     }
 
     @Test
@@ -252,15 +255,24 @@ public class UserServiceV1Test {
     @DisplayName("쿠폰 발급 성공 테스트")
     public void getCouponSuccess() {
         couponId = UUID.randomUUID();
+        userId = authenticatedUser.getUserId(); // 인증된 사용자 ID
 
         UserCoupon mockCoupon = Mockito.mock(UserCoupon.class);
+        User mockUser = Mockito.mock(User.class);
+
+        when(mockCoupon.getUser()).thenReturn(mockUser); // userCoupon.getUser() -> mockUser
+        when(mockUser.getId()).thenReturn(userId);        // mockUser.getId() -> userId
+
         when(userCouponRepository.findByCouponId(couponId)).thenReturn(Optional.of(mockCoupon));
 
-        String result = userServiceV1.getCoupon(couponId);
+        String result = userServiceV1.getCoupon(couponId, authenticatedUser);
 
         assertTrue(result.contains("축하합니다!"));
         assertTrue(result.contains("수령에 성공했습니다!"));
     }
+
+
+
     @Test
     @DisplayName("쿠폰 발급 실패 테스트 - 쿠폰 발급 실패")
     public void getCouponFail_NoCouponFound() {
@@ -269,7 +281,7 @@ public class UserServiceV1Test {
         when(userCouponRepository.findByCouponId(couponId)).thenReturn(Optional.empty());
 
         CouponException exception = assertThrows(CouponException.class, ()->
-                userServiceV1.getCoupon(couponId));
+                userServiceV1.getCoupon(couponId, authenticatedUser));
 
         assertEquals(ResponseCode.COUPON_QUANTITY_EXCEPTION, exception.getErrorCode());
     }

@@ -11,6 +11,8 @@ import com.taken_seat.common_service.aop.annotation.RoleCheck;
 import com.taken_seat.common_service.aop.vo.Role;
 import com.taken_seat.common_service.dto.ApiResponseData;
 import com.taken_seat.common_service.dto.AuthenticatedUser;
+import com.taken_seat.common_service.exception.customException.AuthException;
+import com.taken_seat.common_service.exception.enums.ResponseCode;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -33,7 +35,9 @@ public class UserControllerV1 implements UserControllerDocs {
     @GetMapping("/{userId}")
     public ResponseEntity<ApiResponseData<UserInfoResponseDtoV1>> getUser(@PathVariable UUID userId,
                                                                           AuthenticatedUser authenticatedUser) {
-
+        if (!authenticatedUser.getUserId().equals(userId)) {
+            throw new AuthException(ResponseCode.USER_NOT_FOUND);
+        }
         UserInfoResponseDtoV1 userInfo = userServiceV1.getUser(userId);
         return ResponseEntity.ok(ApiResponseData.success(userInfo));
     }
@@ -43,7 +47,7 @@ public class UserControllerV1 implements UserControllerDocs {
     public ResponseEntity<ApiResponseData<String>> getCoupon(@PathVariable UUID couponId,
                                                              AuthenticatedUser authenticatedUser) {
 
-        String result = userServiceV1.getCoupon(couponId);
+        String result = userServiceV1.getCoupon(couponId, authenticatedUser);
         return ResponseEntity.ok(ApiResponseData.success(result));
     }
 
@@ -52,7 +56,9 @@ public class UserControllerV1 implements UserControllerDocs {
                                                                                     @RequestParam(defaultValue = "0") int page,
                                                                                     @RequestParam(defaultValue = "10") int size,
                                                                                     AuthenticatedUser authenticatedUser) {
-
+        if (!authenticatedUser.getUserId().equals(userId)) {
+            throw new AuthException(ResponseCode.USER_NOT_FOUND);
+        }
         UserDetailsResponseDtoV1 userInfo = userServiceV1.getUserDetails(userId, page, size);
         return ResponseEntity.ok(ApiResponseData.success(userInfo));
     }
@@ -73,7 +79,9 @@ public class UserControllerV1 implements UserControllerDocs {
     public ResponseEntity<ApiResponseData<UserInfoResponseDtoV1>> updateUser(@PathVariable UUID userId,
                                                                              @Valid @RequestBody UserUpdateRequestDto requestDto,
                                                                              AuthenticatedUser authenticatedUser) {
-
+        if (!authenticatedUser.getUserId().equals(userId)) {
+            throw new AuthException(ResponseCode.USER_NOT_FOUND);
+        }
         UserInfoResponseDtoV1 userInfo = userServiceV1.updateUser(userId, userMapper.toDto(requestDto));
         return ResponseEntity.ok(ApiResponseData.success(userInfo));
     }
@@ -81,7 +89,9 @@ public class UserControllerV1 implements UserControllerDocs {
     @DeleteMapping("/{userId}")
     public ResponseEntity<ApiResponseData<Void>> deleteUser(@PathVariable UUID userId,
                                                             AuthenticatedUser authenticatedUser) {
-
+        if (!authenticatedUser.getUserId().equals(userId)) {
+            throw new AuthException(ResponseCode.USER_NOT_FOUND);
+        }
         userServiceV1.deleteUser(userId);
         return ResponseEntity.ok(ApiResponseData.success(null));
     }

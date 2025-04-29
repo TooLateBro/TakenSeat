@@ -4,6 +4,7 @@ import com.taken_seat.auth_service.application.dto.PageResponseDto;
 import com.taken_seat.auth_service.application.dto.user.v1.UserDetailsResponseDtoV1;
 import com.taken_seat.auth_service.application.dto.user.v1.UserInfoResponseDtoV1;
 import com.taken_seat.auth_service.application.dto.user.v1.UserUpdateDto;
+import com.taken_seat.common_service.dto.AuthenticatedUser;
 
 import java.util.UUID;
 
@@ -19,6 +20,6 @@ public interface UserServiceV1 {
 
     void deleteUser(UUID userId);
 
-    String getCoupon(UUID couponId);
+    String getCoupon(UUID couponId, AuthenticatedUser authenticatedUser);
 
 }

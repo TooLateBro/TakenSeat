@@ -10,6 +10,7 @@ import com.taken_seat.auth_service.domain.entity.user.UserCoupon;
 import com.taken_seat.auth_service.domain.repository.user.UserQueryRepository;
 import com.taken_seat.auth_service.domain.repository.user.UserRepository;
 import com.taken_seat.auth_service.domain.repository.userCoupon.UserCouponRepository;
+import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.common_service.exception.customException.AuthException;
 import com.taken_seat.common_service.exception.customException.CouponException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
@@ -119,9 +120,12 @@ public class UserServiceV1Impl implements UserServiceV1 {
 
     @Transactional(readOnly = true)
     @Override
-    public String getCoupon(UUID couponId) {
+    public String getCoupon(UUID couponId, AuthenticatedUser authenticatedUser) {
         UserCoupon userCoupon = userCouponRepository.findByCouponId(couponId)
                 .orElseThrow(()-> new CouponException(ResponseCode.COUPON_QUANTITY_EXCEPTION));
+        if (!authenticatedUser.getUserId().equals(userCoupon.getUser().getId())) {
+            throw new AuthException(ResponseCode.USER_NOT_FOUND);
+        }
         return "축하합니다!" + userCoupon + " 수령에 성공했습니다!";
     }
 }
