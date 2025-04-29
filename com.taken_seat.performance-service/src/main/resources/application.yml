@@ -75,3 +75,9 @@ springdoc:
 variable:
   lock-wait-time: 3 # 초
   lock-lease-time: 5 # 초
+
+performance:
+  kafka:
+    dlq:
+      retry-interval-ms: 0
+      max-attempts: 3
