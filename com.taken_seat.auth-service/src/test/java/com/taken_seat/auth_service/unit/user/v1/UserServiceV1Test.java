@@ -1,6 +1,8 @@
 package com.taken_seat.auth_service.unit.user.v1;
 
 import com.taken_seat.auth_service.application.dto.PageResponseDto;
+import com.taken_seat.auth_service.application.dto.user.v1.UserUpdateDto;
+import com.taken_seat.auth_service.application.dto.user.v1.UserDetailsResponseDtoV1;
 import com.taken_seat.auth_service.application.dto.user.v1.UserInfoResponseDtoV1;
 import com.taken_seat.auth_service.application.dto.user.v1.UserMapper;
 import com.taken_seat.auth_service.application.service.user.v1.UserServiceV1Impl;
@@ -71,8 +73,7 @@ public class UserServiceV1Test {
         when(userRepository.findByIdAndDeletedAtIsNull(userId)).thenReturn(Optional.of(user));
 
         UserInfoResponseDtoV1 mappedDto = new UserInfoResponseDtoV1(
-                user.getId(), user.getUsername(), user.getEmail(), user.getPhone(), user.getRole(), null, null
-        );
+                user.getId(), user.getUsername(), user.getEmail(), user.getPhone(), user.getRole());
         when(userMapper.userToUserInfoResponseDto(user)).thenReturn(mappedDto);
 
         UserInfoResponseDtoV1 resultV1 = userServiceV1.getUser(userId);
@@ -110,12 +111,12 @@ public class UserServiceV1Test {
         when(userCouponRepository.findCouponIdByUserIdAndIsActiveTrue(any(UUID.class), eq(pageable)))
                 .thenReturn(userCouponPage);
 
-        UserInfoResponseDtoV1 mockedDto = new UserInfoResponseDtoV1(
+        UserDetailsResponseDtoV1 mockedDto = new UserDetailsResponseDtoV1(
                 mockedUser.getId(), mockedUser.getUsername(), null, null, null, null, null
         );
         when(userMapper.userToUserInfoDetailsResponseDto(any(User.class), eq(userCouponPage)))
                 .thenReturn(mockedDto);
-        UserInfoResponseDtoV1 resultV1 = userServiceV1.getUserDetails(userId, page, size);
+        UserDetailsResponseDtoV1 resultV1 = userServiceV1.getUserDetails(userId, page, size);
 
         assertNotNull(resultV1);
     }
@@ -151,7 +152,7 @@ public class UserServiceV1Test {
         Page<User> userPage = new PageImpl<>(userList, pageable, userList.size());
         when(userQueryRepository.findAllByDeletedAtIsNull(null, null, pageable)).thenReturn(userPage);
 
-        PageResponseDto<UserInfoResponseDtoV1> resultV1 = userServiceV1.searchUser(null, null, page, size);
+        PageResponseDto<UserDetailsResponseDtoV1> resultV1 = userServiceV1.searchUser(null, null, page, size);
 
         assertNotNull(resultV1);
     }
@@ -187,15 +188,18 @@ public class UserServiceV1Test {
         when(userRepository.findByIdAndDeletedAtIsNull(userId)).thenReturn(Optional.of(user));
 
         UserInfoResponseDtoV1 mockedResponse = new UserInfoResponseDtoV1(
-                user.getId(), user.getUsername(), user.getPhone(), user.getEmail(), null, null, null
+                user.getId(), user.getUsername(), user.getPhone(), user.getEmail(), null
         );
         when(userMapper.userToUserInfoResponseDto(user)).thenReturn(mockedResponse);
+
+        UserUpdateDto userUpdateDto = new UserUpdateDto(username, email, phone, password, role);
+        when(userMapper.toDto(any(UserUpdateRequestDto.class))).thenReturn(userUpdateDto);
 
         UserUpdateRequestDto userUpdateRequestDto = new UserUpdateRequestDto(
                 username, password, phone, email, role
         );
 
-        UserInfoResponseDtoV1 userInfoResponseDtoV1 = userServiceV1.updateUser(userId, userUpdateRequestDto.toDto());
+        UserInfoResponseDtoV1 userInfoResponseDtoV1 = userServiceV1.updateUser(userId, userMapper.toDto(userUpdateRequestDto));
 
         assertNotNull(userInfoResponseDtoV1);
     }
@@ -211,13 +215,14 @@ public class UserServiceV1Test {
         Role role = Role.CUSTOMER;
 
         when(userRepository.findByIdAndDeletedAtIsNull(userId)).thenReturn(Optional.empty());
-
+        UserUpdateDto userUpdateDto = new UserUpdateDto(username, email, phone, password, role);
+        when(userMapper.toDto(any(UserUpdateRequestDto.class))).thenReturn(userUpdateDto);
         UserUpdateRequestDto userUpdateRequestDto = new UserUpdateRequestDto(
                 username, password, phone, email, role
         );
 
         AuthException exception = assertThrows(AuthException.class, () ->
-                userServiceV1.updateUser(userId, userUpdateRequestDto.toDto()));
+                userServiceV1.updateUser(userId, userMapper.toDto(userUpdateRequestDto)));
 
         assertEquals(ResponseCode.USER_NOT_FOUND, exception.getErrorCode());
     }
