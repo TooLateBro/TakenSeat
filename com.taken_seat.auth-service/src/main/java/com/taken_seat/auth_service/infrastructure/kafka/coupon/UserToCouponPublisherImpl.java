@@ -24,7 +24,7 @@ public class UserToCouponPublisherImpl implements UserToCouponPublisher {
     @Override
     public void sendUserCoupon(KafkaUserInfoMessage message) {
         try {
-            String partitionKey = "userId : "+message.getUserId() + " & couponId :" + message.getCouponId();
+            String partitionKey = "couponId : " + message.getCouponId();
 
             kafkaTemplate.send(REQUEST_TOPIC, partitionKey, message)
                     .whenComplete((sendResult, ex) -> {

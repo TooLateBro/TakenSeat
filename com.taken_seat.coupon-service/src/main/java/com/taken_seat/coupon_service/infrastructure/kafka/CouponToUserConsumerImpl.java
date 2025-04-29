@@ -29,7 +29,7 @@ public class CouponToUserConsumerImpl implements CouponToUserConsumer {
     public KafkaUserInfoMessage consume(@Payload KafkaUserInfoMessage message,
                                         @Header(KafkaHeaders.RECEIVED_KEY) String key) {
         log.info("Receive userId: {}", message.getUserId());
-        if (!key.equals("userId : "+message.getUserId() + " & couponId :" + message.getCouponId())){
+        if (!key.equals("couponId : " + message.getCouponId())){
             throw new CouponException(ResponseCode.COUPON_NOT_FOUND);
         }
         return couponToUserConsumerService.producerMessage(message);
