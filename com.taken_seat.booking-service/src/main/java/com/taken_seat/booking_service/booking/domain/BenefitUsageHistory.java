@@ -1,6 +1,5 @@
 package com.taken_seat.booking_service.booking.domain;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 import com.taken_seat.common_service.entity.BaseTimeEntity;
@@ -34,7 +33,6 @@ public class BenefitUsageHistory extends BaseTimeEntity {
 
 	private UUID couponId;
 	private Integer mileage;
-	private LocalDateTime usedAt;
 	private boolean refunded;
 
 	public void refunded(UUID id) {

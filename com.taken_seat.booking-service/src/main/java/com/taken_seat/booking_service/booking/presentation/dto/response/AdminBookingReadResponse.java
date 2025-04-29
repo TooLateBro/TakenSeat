@@ -3,7 +3,7 @@ package com.taken_seat.booking_service.booking.presentation.dto.response;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import com.taken_seat.booking_service.booking.domain.Booking;
+import com.taken_seat.booking_service.booking.domain.BookingQuery;
 import com.taken_seat.booking_service.booking.domain.BookingStatus;
 
 import lombok.Builder;
@@ -23,6 +23,12 @@ public class AdminBookingReadResponse {
 	private BookingStatus bookingStatus;
 	private LocalDateTime bookedAt;
 	private LocalDateTime canceledAt;
+	private String title;
+	private String name;
+	private String address;
+	private String rowNumber;
+	private String seatNumber;
+	private String seatType;
 	private LocalDateTime createdAt;
 	private UUID createdBy;
 	private LocalDateTime updatedAt;
@@ -30,25 +36,25 @@ public class AdminBookingReadResponse {
 	private LocalDateTime deletedAt;
 	private UUID deletedBy;
 
-	public static AdminBookingReadResponse toDto(Booking booking) {
+	public static AdminBookingReadResponse toDto(BookingQuery bookingQuery) {
 		return AdminBookingReadResponse.builder()
-			.id(booking.getId())
-			.userId(booking.getUserId())
-			.performanceId(booking.getPerformanceId())
-			.performanceScheduleId(booking.getPerformanceScheduleId())
-			.scheduleSeatId(booking.getScheduleSeatId())
-			.paymentId(booking.getPaymentId())
-			.price(booking.getPrice())
-			.discountedPrice(booking.getDiscountedPrice())
-			.bookingStatus(booking.getBookingStatus())
-			.bookedAt(booking.getBookedAt())
-			.canceledAt(booking.getCanceledAt())
-			.createdAt(booking.getCreatedAt())
-			.createdBy(booking.getCreatedBy())
-			.updatedAt(booking.getUpdatedAt())
-			.updatedBy(booking.getUpdatedBy())
-			.deletedAt(booking.getDeletedAt())
-			.deletedBy(booking.getDeletedBy())
+			.id(bookingQuery.getId())
+			.userId(bookingQuery.getUserId())
+			.performanceId(bookingQuery.getPerformanceId())
+			.performanceScheduleId(bookingQuery.getPerformanceScheduleId())
+			.scheduleSeatId(bookingQuery.getScheduleSeatId())
+			.paymentId(bookingQuery.getPaymentId())
+			.price(bookingQuery.getPrice())
+			.discountedPrice(bookingQuery.getDiscountedPrice())
+			.bookingStatus(bookingQuery.getBookingStatus())
+			.bookedAt(bookingQuery.getBookedAt())
+			.canceledAt(bookingQuery.getCanceledAt())
+			.createdAt(bookingQuery.getCreatedAt())
+			.createdBy(bookingQuery.getCreatedBy())
+			.updatedAt(bookingQuery.getUpdatedAt())
+			.updatedBy(bookingQuery.getUpdatedBy())
+			.deletedAt(bookingQuery.getDeletedAt())
+			.deletedBy(bookingQuery.getDeletedBy())
 			.build();
 	}
 }

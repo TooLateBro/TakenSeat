@@ -2,7 +2,7 @@ package com.taken_seat.booking_service.booking.presentation.dto.response;
 
 import java.util.UUID;
 
-import com.taken_seat.booking_service.booking.domain.Booking;
+import com.taken_seat.booking_service.booking.domain.BookingCommand;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,7 +12,7 @@ import lombok.Getter;
 public class BookingCreateResponse {
 	private UUID bookingId;
 
-	public static BookingCreateResponse toDto(Booking booking) {
-		return new BookingCreateResponse(booking.getId());
+	public static BookingCreateResponse toDto(BookingCommand bookingCommand) {
+		return new BookingCreateResponse(bookingCommand.getId());
 	}
 }

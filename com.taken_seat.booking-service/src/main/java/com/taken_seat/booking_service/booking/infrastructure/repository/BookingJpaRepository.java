@@ -7,17 +7,17 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.taken_seat.booking_service.booking.domain.Booking;
+import com.taken_seat.booking_service.booking.domain.BookingCommand;
 
-public interface BookingJpaRepository extends JpaRepository<Booking, UUID> {
+public interface BookingJpaRepository extends JpaRepository<BookingCommand, UUID> {
 
-	Optional<Booking> findByIdAndUserIdAndDeletedAtIsNull(UUID id, UUID userId);
+	Optional<BookingCommand> findByIdAndUserIdAndDeletedAtIsNull(UUID id, UUID userId);
 
-	Page<Booking> findAllByUserIdAndDeletedAtIsNull(Pageable pageable, UUID userId);
+	Page<BookingCommand> findAllByUserIdAndDeletedAtIsNull(Pageable pageable, UUID userId);
 
-	Optional<Booking> findByUserIdAndPerformanceIdAndDeletedAtIsNull(UUID userId, UUID performanceId);
+	Optional<BookingCommand> findByUserIdAndPerformanceIdAndDeletedAtIsNull(UUID userId, UUID performanceId);
 
-	Optional<Booking> findByIdAndDeletedAtIsNull(UUID id);
+	Optional<BookingCommand> findByIdAndDeletedAtIsNull(UUID id);
 
 	boolean existsByUserIdAndPerformanceIdAndPerformanceScheduleIdAndScheduleSeatIdAndDeletedAtIsNullAndCanceledAtIsNull(
 		UUID userId,

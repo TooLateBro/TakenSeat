@@ -6,7 +6,7 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.listener.PatternTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 
-import com.taken_seat.booking_service.booking.infrastructure.messaging.RedisExpireListener;
+import com.taken_seat.booking_service.booking.infrastructure.service.RedisExpireListener;
 
 import lombok.RequiredArgsConstructor;
 

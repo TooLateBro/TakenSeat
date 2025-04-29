@@ -7,20 +7,20 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
-import com.taken_seat.booking_service.booking.domain.Booking;
+import com.taken_seat.booking_service.booking.domain.BookingCommand;
 
 @Repository
 public interface BookingRepository {
 
-	Booking save(Booking booking);
+	BookingCommand save(BookingCommand bookingCommand);
 
-	Optional<Booking> findById(UUID id);
+	Optional<BookingCommand> findById(UUID id);
 
-	Optional<Booking> findByIdAndUserId(UUID id, UUID userId);
+	Optional<BookingCommand> findByIdAndUserId(UUID id, UUID userId);
 
-	Page<Booking> findAllByUserId(Pageable pageable, UUID userId);
+	Page<BookingCommand> findAllByUserId(Pageable pageable, UUID userId);
 
-	Optional<Booking> findByUserIdAndPerformanceId(UUID userId, UUID performanceId);
+	Optional<BookingCommand> findByUserIdAndPerformanceId(UUID userId, UUID performanceId);
 
 	boolean isUniqueBooking(UUID userId, UUID performanceId, UUID performanceScheduleId, UUID seatId);
 }

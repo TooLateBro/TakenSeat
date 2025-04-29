@@ -7,7 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
-import com.taken_seat.booking_service.booking.domain.Booking;
+import com.taken_seat.booking_service.booking.domain.BookingCommand;
 import com.taken_seat.booking_service.booking.domain.repository.BookingRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -19,27 +19,27 @@ public class BookingRepositoryImpl implements BookingRepository {
 	private final BookingJpaRepository bookingJpaRepository;
 
 	@Override
-	public Booking save(Booking booking) {
-		return bookingJpaRepository.save(booking);
+	public BookingCommand save(BookingCommand bookingCommand) {
+		return bookingJpaRepository.save(bookingCommand);
 	}
 
 	@Override
-	public Optional<Booking> findById(UUID id) {
+	public Optional<BookingCommand> findById(UUID id) {
 		return bookingJpaRepository.findByIdAndDeletedAtIsNull(id);
 	}
 
 	@Override
-	public Optional<Booking> findByIdAndUserId(UUID id, UUID userId) {
+	public Optional<BookingCommand> findByIdAndUserId(UUID id, UUID userId) {
 		return bookingJpaRepository.findByIdAndUserIdAndDeletedAtIsNull(id, userId);
 	}
 
 	@Override
-	public Page<Booking> findAllByUserId(Pageable pageable, UUID userId) {
+	public Page<BookingCommand> findAllByUserId(Pageable pageable, UUID userId) {
 		return bookingJpaRepository.findAllByUserIdAndDeletedAtIsNull(pageable, userId);
 	}
 
 	@Override
-	public Optional<Booking> findByUserIdAndPerformanceId(UUID userId, UUID performanceId) {
+	public Optional<BookingCommand> findByUserIdAndPerformanceId(UUID userId, UUID performanceId) {
 		return bookingJpaRepository.findByUserIdAndPerformanceIdAndDeletedAtIsNull(userId, performanceId);
 	}
 

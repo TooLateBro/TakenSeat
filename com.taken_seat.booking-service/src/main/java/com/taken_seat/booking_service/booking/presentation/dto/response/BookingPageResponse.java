@@ -1,12 +1,10 @@
 package com.taken_seat.booking_service.booking.presentation.dto.response;
 
 import java.util.List;
-import java.util.stream.IntStream;
 
 import org.springframework.data.domain.Page;
 
-import com.taken_seat.booking_service.booking.domain.Booking;
-import com.taken_seat.common_service.dto.response.TicketPerformanceClientResponse;
+import com.taken_seat.booking_service.booking.domain.BookingQuery;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,13 +23,13 @@ public class BookingPageResponse {
 	private long totalElements;
 	private Boolean isLast;
 
-	public static BookingPageResponse toDto(Page<Booking> page, List<TicketPerformanceClientResponse> responses) {
-		List<BookingReadResponse> content = IntStream.range(0, page.getContent().size())
-			.mapToObj(i -> BookingReadResponse.toDto(page.getContent().get(i), responses.get(i)))
-			.toList();
+	public static BookingPageResponse toDto(Page<BookingQuery> page) {
 
 		return BookingPageResponse.builder()
-			.content(content)
+			.content(page.getContent().stream()
+				.map(BookingReadResponse::toDto)
+				.toList()
+			)
 			.pageNumber(page.getNumber())
 			.pageSize(page.getSize())
 			.totalPages(page.getTotalPages())

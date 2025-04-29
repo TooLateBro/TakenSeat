@@ -1,9 +1,12 @@
-package com.taken_seat.booking_service.booking.infrastructure.messaging;
+package com.taken_seat.booking_service.booking.infrastructure.service;
+
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
+import com.taken_seat.booking_service.booking.application.dto.event.BookingEntityEvent;
 import com.taken_seat.booking_service.booking.application.service.BookingProducer;
 import com.taken_seat.booking_service.common.message.TicketRequestMessage;
 import com.taken_seat.common_service.message.PaymentMessage;
@@ -36,6 +39,15 @@ public class BookingKafkaProducer implements BookingProducer {
 
 	@Value("${kafka.topic.queue-response}")
 	private String QUEUE_RESPONSE_TOPIC;
+
+	@Value("${kafka.topic.booking-expire}")
+	private String BOOKING_EXPIRE_TOPIC;
+
+	@Value("${kafka.topic.booking-created}")
+	private String BOOKING_CREATED_TOPIC;
+
+	@Value("${kafka.topic.booking-updated}")
+	private String BOOKING_UPDATED_TOPIC;
 
 	@Override
 	public void sendPaymentRequest(PaymentMessage message) {
@@ -71,5 +83,23 @@ public class BookingKafkaProducer implements BookingProducer {
 	public void sendQueueEnterResponse(QueueEnterMessage message) {
 
 		kafkaTemplate.send(QUEUE_RESPONSE_TOPIC, message);
+	}
+
+	@Override
+	public void sendBookingExpireEvent(UUID bookingId) {
+
+		kafkaTemplate.send(BOOKING_EXPIRE_TOPIC, bookingId);
+	}
+
+	@Override
+	public void sendBookingCreatedEvent(BookingEntityEvent event) {
+
+		kafkaTemplate.send(BOOKING_CREATED_TOPIC, event);
+	}
+
+	@Override
+	public void sendBookingUpdatedEvent(BookingEntityEvent event) {
+
+		kafkaTemplate.send(BOOKING_UPDATED_TOPIC, event);
 	}
 }

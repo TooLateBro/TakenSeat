@@ -20,12 +20,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Builder(toBuilder = true)
+@Builder
 @Entity
 @Getter
 @NoArgsConstructor
-@Table(name = "p_booking")
-public class Booking extends BaseTimeEntity {
+@Table(name = "p_booking_command")
+public class BookingCommand extends BaseTimeEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
@@ -65,5 +65,11 @@ public class Booking extends BaseTimeEntity {
 
 	public void discount(int price) {
 		this.discountedPrice = price;
+	}
+
+	public void paymentComplete(UUID paymentId) {
+		this.bookingStatus = BookingStatus.COMPLETED;
+		this.paymentId = paymentId;
+		this.bookedAt = LocalDateTime.now();
 	}
 }
