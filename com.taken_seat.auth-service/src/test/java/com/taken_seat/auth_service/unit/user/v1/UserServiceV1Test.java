@@ -1,6 +1,8 @@
 package com.taken_seat.auth_service.unit.user.v1;
 
 import com.taken_seat.auth_service.application.dto.PageResponseDto;
+import com.taken_seat.auth_service.application.dto.user.v1.UserUpdateDto;
+import com.taken_seat.auth_service.application.dto.user.v1.UserDetailsResponseDtoV1;
 import com.taken_seat.auth_service.application.dto.user.v1.UserInfoResponseDtoV1;
 import com.taken_seat.auth_service.application.dto.user.v1.UserMapper;
 import com.taken_seat.auth_service.application.service.user.v1.UserServiceV1Impl;
@@ -11,6 +13,7 @@ import com.taken_seat.auth_service.domain.repository.userCoupon.UserCouponReposi
 import com.taken_seat.auth_service.infrastructure.persistence.user.UserQueryRepositoryImpl;
 import com.taken_seat.auth_service.presentation.dto.user.UserUpdateRequestDto;
 import com.taken_seat.common_service.aop.vo.Role;
+import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.common_service.exception.customException.AuthException;
 import com.taken_seat.common_service.exception.customException.CouponException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
@@ -55,14 +58,16 @@ public class UserServiceV1Test {
 
     private UUID userId;
     private UUID couponId;
-
+    private AuthenticatedUser authenticatedUser;
 
     @BeforeEach
     public void setUp() {
+        userId = UUID.randomUUID();
         user = User.create(
                 "testuser1","test@test.com","010-1111-1111"
                 ,"testPassword1!", Role.ADMIN
         );
+        authenticatedUser = new AuthenticatedUser(userId, "test@test.com", "ADMIN");
     }
 
     @Test
@@ -71,8 +76,7 @@ public class UserServiceV1Test {
         when(userRepository.findByIdAndDeletedAtIsNull(userId)).thenReturn(Optional.of(user));
 
         UserInfoResponseDtoV1 mappedDto = new UserInfoResponseDtoV1(
-                user.getId(), user.getUsername(), user.getEmail(), user.getPhone(), user.getRole(), null, null
-        );
+                user.getId(), user.getUsername(), user.getEmail(), user.getPhone(), user.getRole());
         when(userMapper.userToUserInfoResponseDto(user)).thenReturn(mappedDto);
 
         UserInfoResponseDtoV1 resultV1 = userServiceV1.getUser(userId);
@@ -110,12 +114,12 @@ public class UserServiceV1Test {
         when(userCouponRepository.findCouponIdByUserIdAndIsActiveTrue(any(UUID.class), eq(pageable)))
                 .thenReturn(userCouponPage);
 
-        UserInfoResponseDtoV1 mockedDto = new UserInfoResponseDtoV1(
+        UserDetailsResponseDtoV1 mockedDto = new UserDetailsResponseDtoV1(
                 mockedUser.getId(), mockedUser.getUsername(), null, null, null, null, null
         );
         when(userMapper.userToUserInfoDetailsResponseDto(any(User.class), eq(userCouponPage)))
                 .thenReturn(mockedDto);
-        UserInfoResponseDtoV1 resultV1 = userServiceV1.getUserDetails(userId, page, size);
+        UserDetailsResponseDtoV1 resultV1 = userServiceV1.getUserDetails(userId, page, size);
 
         assertNotNull(resultV1);
     }
@@ -151,7 +155,7 @@ public class UserServiceV1Test {
         Page<User> userPage = new PageImpl<>(userList, pageable, userList.size());
         when(userQueryRepository.findAllByDeletedAtIsNull(null, null, pageable)).thenReturn(userPage);
 
-        PageResponseDto<UserInfoResponseDtoV1> resultV1 = userServiceV1.searchUser(null, null, page, size);
+        PageResponseDto<UserDetailsResponseDtoV1> resultV1 = userServiceV1.searchUser(null, null, page, size);
 
         assertNotNull(resultV1);
     }
@@ -187,15 +191,18 @@ public class UserServiceV1Test {
         when(userRepository.findByIdAndDeletedAtIsNull(userId)).thenReturn(Optional.of(user));
 
         UserInfoResponseDtoV1 mockedResponse = new UserInfoResponseDtoV1(
-                user.getId(), user.getUsername(), user.getPhone(), user.getEmail(), null, null, null
+                user.getId(), user.getUsername(), user.getPhone(), user.getEmail(), null
         );
         when(userMapper.userToUserInfoResponseDto(user)).thenReturn(mockedResponse);
+
+        UserUpdateDto userUpdateDto = new UserUpdateDto(username, email, phone, password, role);
+        when(userMapper.toDto(any(UserUpdateRequestDto.class))).thenReturn(userUpdateDto);
 
         UserUpdateRequestDto userUpdateRequestDto = new UserUpdateRequestDto(
                 username, password, phone, email, role
         );
 
-        UserInfoResponseDtoV1 userInfoResponseDtoV1 = userServiceV1.updateUser(userId, userUpdateRequestDto.toDto());
+        UserInfoResponseDtoV1 userInfoResponseDtoV1 = userServiceV1.updateUser(userId, userMapper.toDto(userUpdateRequestDto));
 
         assertNotNull(userInfoResponseDtoV1);
     }
@@ -211,13 +218,14 @@ public class UserServiceV1Test {
         Role role = Role.CUSTOMER;
 
         when(userRepository.findByIdAndDeletedAtIsNull(userId)).thenReturn(Optional.empty());
-
+        UserUpdateDto userUpdateDto = new UserUpdateDto(username, email, phone, password, role);
+        when(userMapper.toDto(any(UserUpdateRequestDto.class))).thenReturn(userUpdateDto);
         UserUpdateRequestDto userUpdateRequestDto = new UserUpdateRequestDto(
                 username, password, phone, email, role
         );
 
         AuthException exception = assertThrows(AuthException.class, () ->
-                userServiceV1.updateUser(userId, userUpdateRequestDto.toDto()));
+                userServiceV1.updateUser(userId, userMapper.toDto(userUpdateRequestDto)));
 
         assertEquals(ResponseCode.USER_NOT_FOUND, exception.getErrorCode());
     }
@@ -247,15 +255,24 @@ public class UserServiceV1Test {
     @DisplayName("쿠폰 발급 성공 테스트")
     public void getCouponSuccess() {
         couponId = UUID.randomUUID();
+        userId = authenticatedUser.getUserId(); // 인증된 사용자 ID
 
         UserCoupon mockCoupon = Mockito.mock(UserCoupon.class);
+        User mockUser = Mockito.mock(User.class);
+
+        when(mockCoupon.getUser()).thenReturn(mockUser); // userCoupon.getUser() -> mockUser
+        when(mockUser.getId()).thenReturn(userId);        // mockUser.getId() -> userId
+
         when(userCouponRepository.findByCouponId(couponId)).thenReturn(Optional.of(mockCoupon));
 
-        String result = userServiceV1.getCoupon(couponId);
+        String result = userServiceV1.getCoupon(couponId, authenticatedUser);
 
         assertTrue(result.contains("축하합니다!"));
         assertTrue(result.contains("수령에 성공했습니다!"));
     }
+
+
+
     @Test
     @DisplayName("쿠폰 발급 실패 테스트 - 쿠폰 발급 실패")
     public void getCouponFail_NoCouponFound() {
@@ -264,7 +281,7 @@ public class UserServiceV1Test {
         when(userCouponRepository.findByCouponId(couponId)).thenReturn(Optional.empty());
 
         CouponException exception = assertThrows(CouponException.class, ()->
-                userServiceV1.getCoupon(couponId));
+                userServiceV1.getCoupon(couponId, authenticatedUser));
 
         assertEquals(ResponseCode.COUPON_QUANTITY_EXCEPTION, exception.getErrorCode());
     }

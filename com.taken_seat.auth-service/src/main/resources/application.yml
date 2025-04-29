@@ -32,8 +32,6 @@ kafka:
     coupon-response-user: coupon.response.user
     benefit-usage-request: benefit.usage.request
     benefit-refund-request: benefit.refund.request
-  key:
-    coupon-user-key: coupon.user.key
   consumer:
     group-id: auth-service
 

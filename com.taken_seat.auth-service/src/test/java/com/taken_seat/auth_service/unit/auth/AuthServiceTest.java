@@ -1,6 +1,9 @@
 package com.taken_seat.auth_service.unit.auth;
 
+import com.taken_seat.auth_service.application.dto.auth.AuthLoginDto;
 import com.taken_seat.auth_service.application.dto.auth.AuthLoginResponseDto;
+import com.taken_seat.auth_service.application.dto.auth.AuthSignUpDto;
+import com.taken_seat.auth_service.application.dto.user.v1.UserDetailsResponseDtoV1;
 import com.taken_seat.auth_service.application.dto.user.v1.UserInfoResponseDtoV1;
 import com.taken_seat.auth_service.application.dto.user.v1.UserMapper;
 import com.taken_seat.auth_service.application.service.auth.AuthServiceImpl;
@@ -91,26 +94,25 @@ public class AuthServiceTest {
 
         AuthSignUpRequestDto requestDto = new AuthSignUpRequestDto(username, password, email, phone, role);
 
-        // DTO 객체의 유효성 검사 수행
-        // @NotNull, @Email, @Pattern 등의 어노테이션에 따라 검사
         Set<ConstraintViolation<AuthSignUpRequestDto>> constraintViolations = validator.validate(requestDto);
+
+        AuthSignUpDto authSignUpDto = new AuthSignUpDto(username, email, phone, password, role);
+        when(userMapper.toDto(any(AuthSignUpRequestDto.class))).thenReturn(authSignUpDto);
 
         when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
         when(bCryptPasswordEncoder.encode(password)).thenReturn("encodedPassword");
 
         UserInfoResponseDtoV1 mappedDto = new UserInfoResponseDtoV1(
-                user.getId(), user.getUsername(), user.getEmail(), user.getPhone(), user.getRole(), null, null
-        );
+                user.getId(), user.getUsername(), user.getEmail(), user.getPhone(), user.getRole());
         when(userMapper.userToUserInfoResponseDto(any(User.class))).thenReturn(mappedDto);
 
-        UserInfoResponseDtoV1 result = authService.signUp(requestDto.toDto());
+        UserInfoResponseDtoV1 result = authService.signUp(userMapper.toDto(requestDto));
 
         assertNotNull(result);
-        // 유효성 검사에서 위반 사항이 없는지 확인
-        // constraintViolations가 비어 있어야 함
         assertTrue(constraintViolations.isEmpty());
         assertEquals(email, result.email());
     }
+
     @Test
     @DisplayName("회원가입 실패 테스트")
     public void signUpFail() {
@@ -123,14 +125,15 @@ public class AuthServiceTest {
         AuthSignUpRequestDto requestDto = new AuthSignUpRequestDto(username, password, email, phone, role);
 
         Set<ConstraintViolation<AuthSignUpRequestDto>> constraintViolations = validator.validate(requestDto);
+        AuthSignUpDto authSignUpDto = new AuthSignUpDto(username, email, phone, password, role);
+        when(userMapper.toDto(any(AuthSignUpRequestDto.class))).thenReturn(authSignUpDto);
 
         when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
         when(bCryptPasswordEncoder.encode(password)).thenReturn("encodedPassword");
         UserInfoResponseDtoV1 mappedDto = new UserInfoResponseDtoV1(
-                user.getId(), username, email, phone, role, null, null
-        );
+                user.getId(), username, email, phone, role);
         when(userMapper.userToUserInfoResponseDto(any(User.class))).thenReturn(mappedDto);
-        UserInfoResponseDtoV1 result = authService.signUp(requestDto.toDto());
+        UserInfoResponseDtoV1 result = authService.signUp(userMapper.toDto(requestDto));
 
         assertNotNull(result);
         assertFalse(constraintViolations.isEmpty());
@@ -145,6 +148,9 @@ public class AuthServiceTest {
 
         AuthLoginRequestDto requestDto = new AuthLoginRequestDto(email, password);
 
+        AuthLoginDto authLoginDto = new AuthLoginDto(email, password);
+        when(userMapper.toDto(any(AuthLoginRequestDto.class))).thenReturn(authLoginDto);
+
         when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
         when(bCryptPasswordEncoder.matches(password, "testPassword1!")).thenReturn(true);
         when(jwtUtil.createToken(user)).thenReturn("access_token");
@@ -152,7 +158,7 @@ public class AuthServiceTest {
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
 
         // 실제 서비스 메서드 실행
-        AuthLoginResponseDto result = authService.login(requestDto.toDto());
+        AuthLoginResponseDto result = authService.login(userMapper.toDto(requestDto));
 
         // 결과 검증
         assertNotNull(result);
@@ -168,10 +174,13 @@ public class AuthServiceTest {
 
         AuthLoginRequestDto requestDto = new AuthLoginRequestDto(email, password);
 
+        AuthLoginDto authLoginDto = new AuthLoginDto(email, password);
+        when(userMapper.toDto(any(AuthLoginRequestDto.class))).thenReturn(authLoginDto);
+
         when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
 
         AuthException exception = assertThrows(AuthException.class, () -> {
-            authService.login(requestDto.toDto());
+            authService.login(userMapper.toDto(requestDto));
         });
 
         assertEquals(ResponseCode.USER_NOT_FOUND, exception.getErrorCode());
@@ -185,11 +194,14 @@ public class AuthServiceTest {
 
         AuthLoginRequestDto requestDto = new AuthLoginRequestDto(email, password);
 
+        AuthLoginDto authLoginDto = new AuthLoginDto(email, password);
+        when(userMapper.toDto(any(AuthLoginRequestDto.class))).thenReturn(authLoginDto);
+
         when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
         when(bCryptPasswordEncoder.matches(password, user.getPassword())).thenReturn(false);
 
         AuthException exception = assertThrows(AuthException.class, () -> {
-            authService.login(requestDto.toDto());
+            authService.login(userMapper.toDto(requestDto));
         });
 
         assertEquals(ResponseCode.USER_BAD_PASSWORD, exception.getErrorCode());

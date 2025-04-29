@@ -1,6 +1,7 @@
 package com.taken_seat.auth_service.presentation.docs;
 
 import com.taken_seat.common_service.dto.ApiResponseData;
+import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.common_service.message.KafkaUserInfoMessage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -23,5 +24,5 @@ public interface UserToCouponPublisherControllerDocs {
                     content = @Content(schema = @Schema(implementation = ApiResponseData.class))
             )
     })
-    void sendUserCoupon(@RequestBody KafkaUserInfoMessage message);
+    void sendUserCoupon(@RequestBody KafkaUserInfoMessage message, AuthenticatedUser authenticatedUser);
 }

@@ -1,14 +1,16 @@
 package com.taken_seat.auth_service.application.service.user.v1;
 
 import com.taken_seat.auth_service.application.dto.PageResponseDto;
+import com.taken_seat.auth_service.application.dto.user.v1.UserDetailsResponseDtoV1;
 import com.taken_seat.auth_service.application.dto.user.v1.UserInfoResponseDtoV1;
-import com.taken_seat.auth_service.application.dto.user.UserUpdateDto;
+import com.taken_seat.auth_service.application.dto.user.v1.UserUpdateDto;
 import com.taken_seat.auth_service.application.dto.user.v1.UserMapper;
 import com.taken_seat.auth_service.domain.entity.user.User;
 import com.taken_seat.auth_service.domain.entity.user.UserCoupon;
 import com.taken_seat.auth_service.domain.repository.user.UserQueryRepository;
 import com.taken_seat.auth_service.domain.repository.user.UserRepository;
 import com.taken_seat.auth_service.domain.repository.userCoupon.UserCouponRepository;
+import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.common_service.exception.customException.AuthException;
 import com.taken_seat.common_service.exception.customException.CouponException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
@@ -51,7 +53,7 @@ public class UserServiceV1Impl implements UserServiceV1 {
     @Transactional(readOnly = true)
     @Override
     @Cacheable(cacheNames = "searchUser", key = "#userId + '-' + #page+'-'+#size")
-    public UserInfoResponseDtoV1 getUserDetails(UUID userId, int page, int size) {
+    public UserDetailsResponseDtoV1 getUserDetails(UUID userId, int page, int size) {
         User user = userRepository.findByIdAndDeletedAtIsNull(userId)
                 .orElseThrow(()-> new AuthException(ResponseCode.USER_NOT_FOUND));
 
@@ -64,7 +66,7 @@ public class UserServiceV1Impl implements UserServiceV1 {
     @Transactional(readOnly = true)
     @Override
     @Cacheable(cacheNames = "searchUser", key = "#username + '-' + #role + '-' + #page + '-' + #size")
-    public PageResponseDto<UserInfoResponseDtoV1> searchUser(String username, String role, int page, int size) {
+    public PageResponseDto<UserDetailsResponseDtoV1> searchUser(String username, String role, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<User> userInfos = userQueryRepository.findAllByDeletedAtIsNull(username, role, pageable);
 
@@ -72,7 +74,7 @@ public class UserServiceV1Impl implements UserServiceV1 {
             throw new AuthException(ResponseCode.USER_NOT_FOUND);
         }
 
-        Page<UserInfoResponseDtoV1> userInfoPage = userInfos.map(user -> {
+        Page<UserDetailsResponseDtoV1> userInfoPage = userInfos.map(user -> {
             List<UserCoupon> coupons = user.getUserCoupons();
             Page<UserCoupon> userCouponsPage = new PageImpl<>(coupons, pageable, coupons.size());
             return userMapper.userToUserInfoDetailsResponseDto(user, userCouponsPage);
@@ -83,7 +85,7 @@ public class UserServiceV1Impl implements UserServiceV1 {
 
     @Transactional
     @Override
-    @CachePut(cacheNames = "userCache", key = "#result.userId")
+    @CachePut(cacheNames = "userCache", key = "#result.id")
     @CacheEvict(cacheNames = "searchUser", allEntries = true)
     public UserInfoResponseDtoV1 updateUser(UUID userId, UserUpdateDto dto) {
         User user = userRepository.findByIdAndDeletedAtIsNull(userId)
@@ -118,9 +120,12 @@ public class UserServiceV1Impl implements UserServiceV1 {
 
     @Transactional(readOnly = true)
     @Override
-    public String getCoupon(UUID couponId) {
+    public String getCoupon(UUID couponId, AuthenticatedUser authenticatedUser) {
         UserCoupon userCoupon = userCouponRepository.findByCouponId(couponId)
                 .orElseThrow(()-> new CouponException(ResponseCode.COUPON_QUANTITY_EXCEPTION));
+        if (!authenticatedUser.getUserId().equals(userCoupon.getUser().getId())) {
+            throw new AuthException(ResponseCode.USER_NOT_FOUND);
+        }
         return "축하합니다!" + userCoupon + " 수령에 성공했습니다!";
     }
 }

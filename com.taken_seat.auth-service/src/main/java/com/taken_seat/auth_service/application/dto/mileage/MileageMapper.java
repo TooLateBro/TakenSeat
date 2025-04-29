@@ -1,6 +1,7 @@
 package com.taken_seat.auth_service.application.dto.mileage;
 
 import com.taken_seat.auth_service.domain.entity.mileage.Mileage;
+import com.taken_seat.auth_service.presentation.dto.mileage.UserMileageRequestDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 
@@ -9,4 +10,6 @@ import org.mapstruct.ReportingPolicy;
 public interface MileageMapper {
 
     UserMileageResponseDto userToUserMileageResponseDto(Mileage mileage);
+
+    UserMileageDto toDto(UserMileageRequestDto dto);
 }

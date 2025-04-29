@@ -2,6 +2,7 @@ package com.taken_seat.auth_service.unit.mileage;
 
 import com.taken_seat.auth_service.application.dto.PageResponseDto;
 import com.taken_seat.auth_service.application.dto.mileage.MileageMapper;
+import com.taken_seat.auth_service.application.dto.mileage.UserMileageDto;
 import com.taken_seat.auth_service.application.dto.mileage.UserMileageResponseDto;
 import com.taken_seat.auth_service.application.service.mileage.MileageServiceImpl;
 import com.taken_seat.auth_service.domain.entity.mileage.Mileage;
@@ -19,7 +20,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -34,7 +34,8 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -86,10 +87,13 @@ public class MileageServiceTest {
         User user = mock(User.class);
         when(userRepository.findByIdAndDeletedAtIsNull(userId)).thenReturn(Optional.of(user));
 
+        UserMileageDto mileageDto = new UserMileageDto(30000);
+        when(mileageMapper.toDto(mileageRequestDto)).thenReturn(mileageDto);
+
         UserMileageResponseDto mappedDto = new UserMileageResponseDto(30000, updatedAt);
         when(mileageMapper.userToUserMileageResponseDto(any(Mileage.class))).thenReturn(mappedDto);
 
-        UserMileageResponseDto responseDto = mileageService.createMileageUser(userId, mileageRequestDto.toDto());
+        UserMileageResponseDto responseDto = mileageService.createMileageUser(userId, mileageMapper.toDto(mileageRequestDto));
 
         assertNotNull(responseDto);
     }
@@ -104,7 +108,8 @@ public class MileageServiceTest {
         );
         when(userRepository.findByIdAndDeletedAtIsNull(userId)).thenReturn(Optional.empty());
 
-        AuthException exception = assertThrows(AuthException.class, () -> mileageService.createMileageUser(userId, mileageRequestDto.toDto()));
+        AuthException exception = assertThrows(AuthException.class, () -> mileageService.createMileageUser(userId,
+                mileageMapper.toDto(mileageRequestDto)));
 
         assertEquals(ResponseCode.USER_NOT_FOUND, exception.getErrorCode());
     }
@@ -216,7 +221,11 @@ public class MileageServiceTest {
         UserMileageRequestDto requestDto = new UserMileageRequestDto(40000);
         UserMileageResponseDto mappedDto = new UserMileageResponseDto(400000, updatedAt);
         when(mileageMapper.userToUserMileageResponseDto(mileage)).thenReturn(mappedDto);
-        UserMileageResponseDto responseDto = mileageService.updateMileageUser(mileageId, authenticatedUser, requestDto.toDto());
+
+        UserMileageDto mileageDto = new UserMileageDto(30000);
+        when(mileageMapper.toDto(requestDto)).thenReturn(mileageDto);
+
+        UserMileageResponseDto responseDto = mileageService.updateMileageUser(mileageId, authenticatedUser, mileageMapper.toDto(requestDto));
 
         assertNotNull(responseDto);
         assertNotNull(mappedDto);
@@ -229,7 +238,7 @@ public class MileageServiceTest {
         when(mileageRepository.findByIdAndDeletedAtIsNull(mileageId)).thenReturn(Optional.empty());
         UserMileageRequestDto requestDto = new UserMileageRequestDto(40000);
         MileageException exception = assertThrows(MileageException.class, () ->
-                mileageService.updateMileageUser(mileageId, authenticatedUser, requestDto.toDto()));
+                mileageService.updateMileageUser(mileageId, authenticatedUser, mileageMapper.toDto(requestDto)));
 
         assertEquals(ResponseCode.MILEAGE_NOT_FOUND, exception.getErrorCode());
     }

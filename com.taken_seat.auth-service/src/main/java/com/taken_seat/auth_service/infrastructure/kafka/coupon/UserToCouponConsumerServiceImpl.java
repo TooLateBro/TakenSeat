@@ -41,9 +41,9 @@ public class UserToCouponConsumerServiceImpl implements UserToCouponConsumerServ
             UserCoupon u_c = UserCoupon.create(user, message);
 
             userCouponRepository.save(u_c);
-            log.info("[Coupon] -> [Auth] 쿠폰 발급에 성공하였습니다! 마이페이지에서 확인해주세요. {}, {}", message.getUserId(), message.getCouponId());
+            log.info("[Coupon] -> [Auth] 쿠폰 발급에 성공하였습니다! 마이페이지에서 확인해주세요. userId : {}, couponId : {}", message.getUserId(), message.getCouponId());
         }else{
-            log.error("[Auth] 쿠폰이 모두 소진되었습니다.");
+            log.error("[Auth] 쿠폰이 모두 소진되었습니다. userId : {}, couponId : {}", message.getUserId(), message.getCouponId());
         }
     }
 }

@@ -2,6 +2,9 @@ package com.taken_seat.auth_service.presentation.controller.kafka;
 
 import com.taken_seat.auth_service.application.kafka.coupon.UserToCouponPublisher;
 import com.taken_seat.auth_service.presentation.docs.UserToCouponPublisherControllerDocs;
+import com.taken_seat.common_service.aop.annotation.RoleCheck;
+import com.taken_seat.common_service.dto.AuthenticatedUser;
+import com.taken_seat.common_service.exception.customException.AuthException;
 import com.taken_seat.common_service.exception.customException.CouponException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.common_service.message.KafkaUserInfoMessage;
@@ -21,8 +24,12 @@ public class UserToCouponPublisherController implements UserToCouponPublisherCon
     }
 
     @PostMapping("/send")
-    public void sendUserCoupon(@RequestBody KafkaUserInfoMessage message){
+    @RoleCheck()
+    public void sendUserCoupon(@RequestBody KafkaUserInfoMessage message, AuthenticatedUser authenticatedUser) {
         try {
+            if(authenticatedUser == null) {
+                throw new AuthException(ResponseCode.USER_NOT_FOUND);
+            }
             userToCouponPublisher.sendUserCoupon(message);
         } catch (Exception e) {
             throw new CouponException(ResponseCode.COUPON_QUANTITY_EXCEPTION);
