@@ -4,7 +4,9 @@ import static com.taken_seat.performance_service.common.config.RedisCacheConfig.
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
@@ -23,6 +25,7 @@ import com.taken_seat.performance_service.performance.application.dto.mapper.Per
 import com.taken_seat.performance_service.performance.domain.model.Performance;
 import com.taken_seat.performance_service.performance.domain.model.PerformanceSchedule;
 import com.taken_seat.performance_service.performance.domain.model.ScheduleSeat;
+import com.taken_seat.performance_service.performance.domain.repository.redis.SeatStatusRedisRepository;
 import com.taken_seat.performance_service.performance.domain.validator.PerformanceExistenceValidator;
 import com.taken_seat.performance_service.performance.presentation.dto.response.ScheduleSeatResponseDto;
 import com.taken_seat.performance_service.performance.presentation.dto.response.SeatLayoutResponseDto;
@@ -41,6 +44,7 @@ public class PerformanceClientService {
 	@Qualifier("deduplicationStringRedisTemplate")
 	private final StringRedisTemplate redisTemplate;
 	private final Duration seatStatusTtl;
+	private final SeatStatusRedisRepository seatStatusRedisRepository;
 
 	@Transactional
 	public BookingSeatClientResponseDto updateSeatStatus(BookingSeatClientRequestDto request) {
@@ -61,7 +65,11 @@ public class PerformanceClientService {
 			return new BookingSeatClientResponseDto(null, false, "이미 선점된 좌석입니다.");
 		}
 
-		scheduleSeat.updateStatus(SeatStatus.SOLDOUT);
+		seatStatusRedisRepository.saveSeatStatus(
+			request.performanceScheduleId(),
+			request.scheduleSeatId(),
+			SeatStatus.SOLDOUT.name()
+		);
 
 		Integer price = performance.findPriceByScheduleAndSeatType(
 			request.performanceScheduleId(),
@@ -93,7 +101,11 @@ public class PerformanceClientService {
 			throw new PerformanceException(ResponseCode.SEAT_STATUS_CHANGE_NOT_ALLOWED);
 		}
 
-		scheduleSeat.updateStatus(SeatStatus.AVAILABLE);
+		seatStatusRedisRepository.saveSeatStatus(
+			request.performanceScheduleId(),
+			request.scheduleSeatId(),
+			SeatStatus.AVAILABLE.name()
+		);
 
 		log.info("[Performance] 좌석 선점 취소 - 성공 - scheduleSeatId={}, scheduleId={}",
 			request.scheduleSeatId(), request.performanceScheduleId());
@@ -166,5 +178,28 @@ public class PerformanceClientService {
 			.setIfAbsent(key, "1", seatStatusTtl);
 
 		return !Boolean.TRUE.equals(first);
+	}
+
+	@Transactional(readOnly = true)
+	public SeatStatus getSeatStatusFromRedis(UUID performanceScheduleId, UUID scheduleSeatId) {
+
+		String status = seatStatusRedisRepository.getSeatStatus(performanceScheduleId, scheduleSeatId);
+
+		if (status == null) {
+			throw new PerformanceException(ResponseCode.SEAT_STATUS_NOT_FOUND);
+		}
+		return SeatStatus.valueOf(status);
+	}
+
+	@Transactional(readOnly = true)
+	public Map<UUID, SeatStatus> getAllSeatStatusesFromRedis(UUID performanceScheduleId) {
+
+		Map<Object, Object> entries = seatStatusRedisRepository.getAllSeatStatus(performanceScheduleId);
+
+		return entries.entrySet().stream()
+			.collect(Collectors.toMap(
+				entry -> UUID.fromString(entry.getKey().toString()),
+				entry -> SeatStatus.valueOf(entry.getValue().toString())
+			));
 	}
 }
