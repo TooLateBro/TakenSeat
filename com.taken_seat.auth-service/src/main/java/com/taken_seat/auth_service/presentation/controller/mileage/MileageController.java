@@ -1,6 +1,7 @@
 package com.taken_seat.auth_service.presentation.controller.mileage;
 
 import com.taken_seat.auth_service.application.dto.PageResponseDto;
+import com.taken_seat.auth_service.application.dto.mileage.MileageMapper;
 import com.taken_seat.auth_service.application.dto.mileage.UserMileageResponseDto;
 import com.taken_seat.auth_service.application.service.mileage.MileageService;
 import com.taken_seat.auth_service.presentation.docs.MileageControllerDocs;
@@ -23,9 +24,11 @@ import java.util.UUID;
 public class MileageController implements MileageControllerDocs {
 
     private final MileageService mileageService;
+    private final MileageMapper mileageMapper;
 
-    public MileageController(MileageService mileageService) {
+    public MileageController(MileageService mileageService, MileageMapper mileageMapper) {
         this.mileageService = mileageService;
+        this.mileageMapper = mileageMapper;
     }
 
     @PostMapping("/{userId}")
@@ -34,7 +37,7 @@ public class MileageController implements MileageControllerDocs {
             @PathVariable UUID userId,
             @RequestBody UserMileageRequestDto requestDto) {
 
-        UserMileageResponseDto mileageInfo = mileageService.createMileageUser(userId, requestDto.toDto());
+        UserMileageResponseDto mileageInfo = mileageService.createMileageUser(userId, mileageMapper.toDto(requestDto));
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponseData.success(mileageInfo));
     }
@@ -83,7 +86,7 @@ public class MileageController implements MileageControllerDocs {
             AuthenticatedUser authenticatedUser,
             @RequestBody UserMileageRequestDto requestDto) {
 
-        UserMileageResponseDto mileageInfo = mileageService.updateMileageUser(mileageId, authenticatedUser, requestDto.toDto());
+        UserMileageResponseDto mileageInfo = mileageService.updateMileageUser(mileageId, authenticatedUser, mileageMapper.toDto(requestDto));
         return ResponseEntity.ok(ApiResponseData.success(mileageInfo));
     }
 
