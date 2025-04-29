@@ -21,7 +21,7 @@ public class SeatStatusProducer {
 			seatStatusChangedEvent.scheduleSeatId().toString(),
 			seatStatusChangedEvent);
 
-		log.info("[Kafka] SeatStatusChangedEvent 발행 - scheduleSeatId={}, seatStatus={}",
+		log.info("[Performance] Kafka SeatStatusChangedEvent 발행 - scheduleSeatId={}, seatStatus={}",
 			seatStatusChangedEvent.scheduleSeatId(), seatStatusChangedEvent.seatStatus());
 	}
 }
