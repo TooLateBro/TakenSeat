@@ -1,20 +1,17 @@
 package com.taken_seat.auth_service.presentation.dto.user;
 
-import com.taken_seat.auth_service.application.dto.user.UserUpdateDto;
 import com.taken_seat.common_service.aop.vo.Role;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class UserUpdateRequestDto {
 
     @Size(min = 4, max = 10, message = "이름은 최소 4자 이상, 10자 이하이어야 합니다.")
@@ -43,8 +40,4 @@ public class UserUpdateRequestDto {
 
     @Schema(example = "ADMIN")
     private Role role = null;
-
-    public UserUpdateDto toDto() {
-        return UserUpdateDto.create(this.username, this.email, this.phone, this.password, this.role);
-    }
 }

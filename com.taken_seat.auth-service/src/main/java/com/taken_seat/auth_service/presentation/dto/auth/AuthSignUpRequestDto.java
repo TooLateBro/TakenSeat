@@ -1,6 +1,5 @@
 package com.taken_seat.auth_service.presentation.dto.auth;
 
-import com.taken_seat.auth_service.application.dto.auth.AuthSignUpDto;
 import com.taken_seat.common_service.aop.vo.Role;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
@@ -39,8 +38,4 @@ public record AuthSignUpRequestDto(
 
         @Schema(example = "ADMIN")
         Role role
-) {
-    public AuthSignUpDto toDto() {
-        return AuthSignUpDto.create(username, email, phone, password, role);
-    }
-}
+) {}
