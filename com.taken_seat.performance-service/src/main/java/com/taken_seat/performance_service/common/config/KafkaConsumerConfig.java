@@ -1,5 +1,8 @@
 package com.taken_seat.performance_service.common.config;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.kafka.common.TopicPartition;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -34,20 +37,36 @@ public class KafkaConsumerConfig {
 
 	@Bean
 	public ConcurrentKafkaListenerContainerFactory<String, SeatStatusChangedEvent> performanceKafkaListenerContainerFactory(
-		ConsumerFactory<String, SeatStatusChangedEvent> consumerFactory,
-		KafkaTemplate<String, SeatStatusChangedEvent> kafkaTemplate
+		ConsumerFactory<String, SeatStatusChangedEvent> seatStatusConsumerFactory,
+		KafkaTemplate<String, SeatStatusChangedEvent> seatStatusKafkaTemplate
 	) {
 		ConcurrentKafkaListenerContainerFactory<String, SeatStatusChangedEvent> factory =
 			new ConcurrentKafkaListenerContainerFactory<>();
-		factory.setConsumerFactory(consumerFactory);
+		factory.setConsumerFactory(seatStatusConsumerFactory);
 
 		factory.setCommonErrorHandler(new DefaultErrorHandler(
-			new DeadLetterPublishingRecoverer(kafkaTemplate,
+			new DeadLetterPublishingRecoverer(seatStatusKafkaTemplate,
 				(record, ex) -> new TopicPartition(
 					"seat-status-dlq-topic", record.partition())),
-			new FixedBackOff(0L, 3)
+			new FixedBackOff(retryIntervalMs, maxAttempts)
 		));
 
 		return factory;
+	}
+
+	@Bean
+	public ConsumerFactory<String, SeatStatusChangedEvent> seatStatusConsumerFactory(
+		@Value("${common.kafka.bootstrap-servers}") String bootstrapServers
+	) {
+		Map<String, Object> props = new HashMap<>();
+		props.put(org.apache.kafka.clients.consumer.ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+		props.put(org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG, "performance-service-group");
+		props.put(org.apache.kafka.clients.consumer.ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
+			org.apache.kafka.common.serialization.StringDeserializer.class);
+		props.put(org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
+			org.springframework.kafka.support.serializer.JsonDeserializer.class);
+		props.put(org.springframework.kafka.support.serializer.JsonDeserializer.TRUSTED_PACKAGES, "*");
+
+		return new org.springframework.kafka.core.DefaultKafkaConsumerFactory<>(props);
 	}
 }
