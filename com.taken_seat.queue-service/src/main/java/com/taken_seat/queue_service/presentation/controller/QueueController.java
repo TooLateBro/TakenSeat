@@ -1,14 +1,19 @@
 package com.taken_seat.queue_service.presentation.controller;
 
 
+import com.taken_seat.common_service.dto.ApiResponseData;
 import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.queue_service.application.dto.QueueReqDto;
 import com.taken_seat.queue_service.application.dto.TokenReqDto;
+import com.taken_seat.queue_service.application.dto.TokenResDto;
 import com.taken_seat.queue_service.application.service.QueueService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 
 @RequiredArgsConstructor
@@ -18,12 +23,12 @@ public class QueueController {
     private final QueueService queueService;
 
     @PostMapping("")
-    public ResponseEntity<?> enterQueue(@RequestBody @Valid QueueReqDto reqDto, AuthenticatedUser authenticatedUser) {
-        return ResponseEntity.ok().body(queueService.enterQueue(reqDto, authenticatedUser.getUserId()));
+    public ResponseEntity<ApiResponseData<TokenResDto>> enterQueue(@RequestBody @Valid QueueReqDto reqDto) {
+        return ResponseEntity.ok().body(ApiResponseData.success(queueService.enterQueue(reqDto, UUID.randomUUID())));
     }
 
     @PostMapping("/getRank")
-    public ResponseEntity<?> getRank(@RequestBody @Valid TokenReqDto reqDto) {
-        return ResponseEntity.ok().body(queueService.getRank(reqDto));
+    public ResponseEntity<ApiResponseData<String>> getRank(@RequestBody @Valid TokenReqDto reqDto) {
+        return ResponseEntity.ok().body(ApiResponseData.success(queueService.getRank(reqDto)));
     }
 }

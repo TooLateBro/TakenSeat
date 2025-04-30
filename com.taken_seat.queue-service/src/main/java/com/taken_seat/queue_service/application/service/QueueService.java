@@ -13,6 +13,7 @@ import com.taken_seat.queue_service.infrastructure.repository.QueueRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import java.util.List;
 import java.util.Set;
@@ -76,6 +77,9 @@ public class QueueService {
             Long userRank = queueRepository.getRank(token, key);
 
             return "총 대기자 수: " + queueSize + ", 현재 대기 순번: " + (userRank + 1);
+
+        } catch (QueueException e) {
+            throw e;
         }
         catch (Exception e) {
             throw new RuntimeException(e.getMessage());
