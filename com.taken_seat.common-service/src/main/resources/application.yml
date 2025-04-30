@@ -8,3 +8,8 @@ springdoc:
     path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
+
+management:
+  metrics:
+    tags:
+      service: ${spring.application.name}

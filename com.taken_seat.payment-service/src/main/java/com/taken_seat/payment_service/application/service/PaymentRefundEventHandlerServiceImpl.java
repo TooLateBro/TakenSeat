@@ -3,6 +3,7 @@ package com.taken_seat.payment_service.application.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.taken_seat.common_service.aop.TrackLatency;
 import com.taken_seat.common_service.exception.customException.PaymentException;
 import com.taken_seat.common_service.exception.customException.PaymentHistoryException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
@@ -27,6 +28,10 @@ public class PaymentRefundEventHandlerServiceImpl implements PaymentRefundEventH
 
 	private final PaymentRefundResponseProducer paymentRefundResponseProducer;
 
+	@TrackLatency(
+		value = "payment_refund_seconds",
+		description = "결제 환불 처리 시간(초)"
+	)
 	@Override
 	public void processPaymentRefund(PaymentRefundMessage message) {
 
