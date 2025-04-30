@@ -34,14 +34,15 @@ public class QueueService {
             //timestamp를 통해 대기 순서 보장
             long timestamp = System.currentTimeMillis();
 
-            //기존에 존재하는 토큰이라면(재입장 시) -> 기존 토큰 삭제 후 대기열 맨 뒤로 보내기
-            if (queueRepository.setIsMember(key, token)) {
+            //기존에 존재하는 토큰이라면(재입장 시) -> 기존 큐 및 관리 Set에서 삭제 후 대기열 맨 뒤로 보내기
+            if (queueRepository.setIsMember(token)) {
                 queueRepository.exitQueue(token, key);
+                queueRepository.removeUser(token);
             }
 
             // 토큰 재/신규 추가
             queueRepository.enterQueue(token, key, timestamp);
-            queueRepository.addUser(key, token);
+            queueRepository.addUser(token);
 
             //공연이 공연 관리 set에 존재하지 않는다면 넣어주기
             if(!queueRepository.setIsPerformance(key)) {
@@ -68,7 +69,7 @@ public class QueueService {
             String key = jwt.getPerformanceId(token);
 
             //대기열에 없는 사용자일 때
-            if(!queueRepository.setIsMember(key, token))
+            if(!queueRepository.setIsMember(token))
                 throw new QueueException(ResponseCode.QUEUE_NOT_FOUND_TOKEN_EXCEPTION);
 
             Long queueSize = queueRepository.getQueueSize(key);
@@ -112,7 +113,6 @@ public void processQueueBatch(int batchSize) {
                 //해당 공연의 대기자 수가 0명이면 공연 관리 set에서 공연 삭제 & 해당 공연 대기열 set 삭제
                 if(queueRepository.getQueueSize(performance) == 0) {
                     queueRepository.removeActivePerformance(performance);
-                    queueRepository.deleteUserSet(performance);
                     queueRepository.deleteQueue(performance);
 
                     log.info("대기자 없음. 공연 set에서 삭제: " + performance);
@@ -129,8 +129,11 @@ public void processQueueBatch(int batchSize) {
         for (String token : users) {
             //카프카 이벤트 전송
             kafkaSendEvent(token);
+            //대기열 인원 관리 set에서 유저 삭제
+            queueRepository.removeUser(token);
             log.info("카프카 이벤트 전송 성공. 공연 UUID: " + performance);
         }
+        //Sorted Set에서 인원 삭제
         queueRepository.removeTopUsers(performance, batchSize);
     }
 

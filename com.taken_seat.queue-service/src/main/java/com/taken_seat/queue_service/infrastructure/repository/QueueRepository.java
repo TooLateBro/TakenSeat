@@ -56,17 +56,17 @@ public class QueueRepository {
 
 
     //Set
-    public Long addUser(String performanceId, String token) {
-        return redisTemplate.opsForSet().add(USER_NAMESPACE + performanceId, token);
+    public Long addUser(String token) {
+        return redisTemplate.opsForSet().add(USER_NAMESPACE, token);
     }
 
     //유저가 이미 대기열에 있는지 확인
-    public Boolean setIsMember(String performanceId, String token) {
-        return redisTemplate.opsForSet().isMember(USER_NAMESPACE + performanceId, token);
+    public Boolean setIsMember(String token) {
+        return redisTemplate.opsForSet().isMember(USER_NAMESPACE, token);
     }
 
-    public void deleteUserSet(String performanceId) {
-        redisTemplate.delete(USER_NAMESPACE + performanceId);
+    public void removeUser(String token) {
+        redisTemplate.opsForSet().remove(USER_NAMESPACE, token);
     }
 
     //공연Id 관리
