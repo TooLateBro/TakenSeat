@@ -19,7 +19,9 @@ public class PaymentRefundMessage {
 
 	private UUID userId;
 
-	private Integer price;
+	private Integer amount;
+
+	private String cancelReason;
 
 	private PaymentRefundStatus status; // 결제 상태 (결제 요청과 결과에서 모두 사용)
 

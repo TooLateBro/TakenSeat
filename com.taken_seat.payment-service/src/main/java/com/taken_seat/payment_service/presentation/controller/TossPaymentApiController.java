@@ -38,5 +38,4 @@ public class TossPaymentApiController {
 		TossConfirmResponse response = paymentService.confirmPayment(request);
 		return ResponseEntity.ok(response);
 	}
-
 }

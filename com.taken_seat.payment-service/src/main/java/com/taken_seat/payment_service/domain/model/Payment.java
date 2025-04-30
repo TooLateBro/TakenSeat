@@ -68,7 +68,7 @@ public class Payment extends BaseTimeEntity {
 			.userId(dto.getUserId())
 			.amount(dto.getAmount())
 			.orderName(dto.getOrderName())
-			.paymentStatus(PaymentStatus.CREATED)
+			.paymentStatus(PaymentStatus.PENDING)
 			.build();
 
 		payment.prePersist(dto.getUserId());
@@ -82,7 +82,7 @@ public class Payment extends BaseTimeEntity {
 			.userId(message.getUserId())
 			.amount(message.getAmount())
 			.orderName(message.getOrderName())
-			.paymentStatus(PaymentStatus.CREATED)
+			.paymentStatus(PaymentStatus.PENDING)
 			.build();
 
 		payment.prePersist(message.getUserId());
@@ -113,7 +113,7 @@ public class Payment extends BaseTimeEntity {
 			throw new PaymentException(ResponseCode.CANNOT_REFUND);
 		}
 
-		this.refundAmount = message.getPrice();
+		this.refundAmount = message.getAmount();
 		this.refundRequestedAt = LocalDateTime.now();
 		this.paymentStatus = PaymentStatus.REFUNDED;
 		this.preUpdate(message.getUserId());

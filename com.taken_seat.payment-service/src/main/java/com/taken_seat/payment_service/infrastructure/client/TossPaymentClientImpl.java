@@ -14,6 +14,7 @@ import org.springframework.web.client.RestClientException;
 import com.taken_seat.common_service.exception.customException.PaymentException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.payment_service.application.client.TossPaymentClient;
+import com.taken_seat.payment_service.application.client.dto.TossCancelRequest;
 import com.taken_seat.payment_service.application.client.dto.TossConfirmResponse;
 import com.taken_seat.payment_service.application.client.dto.TossPaymentRequest;
 
@@ -47,6 +48,28 @@ public class TossPaymentClientImpl implements TossPaymentClient {
 				.body(request)
 				.retrieve()
 				.body(TossConfirmResponse.class); // 응답을 DTO로 매핑}
+		} catch (HttpClientErrorException ex) {
+			log.error("Toss 결제 클라이언트 오류: {}", ex.getResponseBodyAsString(), ex);
+			throw new PaymentException(ResponseCode.ILLEGAL_ARGUMENT, "결제 승인 중 클라이언트 오류가 발생했습니다.");
+		} catch (RestClientException ex) {
+			log.error("Toss 결제 서버 통신 오류", ex);
+			throw new PaymentException(ResponseCode.ILLEGAL_ARGUMENT, "결제 승인 요청 중 오류가 발생했습니다.");
+		}
+	}
+
+	@Override
+	public void refund(String paymentKey, Integer cancelAmount, String cancelReason) {
+
+		TossCancelRequest request = new TossCancelRequest(cancelAmount, cancelReason);
+
+		try {
+			restClient.post()
+				.uri("/payments/{paymentKey}/cancel", paymentKey)
+				.body(request)
+				.retrieve()
+				.toBodilessEntity();
+			log.info("[Toss] 환불 성공 - paymentKey={}, amount={}", paymentKey, cancelAmount);
+
 		} catch (HttpClientErrorException ex) {
 			log.error("Toss 결제 클라이언트 오류: {}", ex.getResponseBodyAsString(), ex);
 			throw new PaymentException(ResponseCode.ILLEGAL_ARGUMENT, "결제 승인 중 클라이언트 오류가 발생했습니다.");

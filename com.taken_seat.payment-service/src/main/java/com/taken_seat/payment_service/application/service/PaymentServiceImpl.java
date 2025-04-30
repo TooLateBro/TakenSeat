@@ -228,7 +228,13 @@ public class PaymentServiceImpl implements PaymentService {
 		Payment payment = paymentRepository.findByBookingIdAndDeletedAtIsNull(UUID.fromString(orderId))
 			.orElseThrow(() -> new PaymentException(ResponseCode.PAYMENT_NOT_FOUND_EXCEPTION));
 
+		PaymentHistory paymentHistory = paymentHistoryRepository.findByPayment(payment)
+			.orElseThrow(() ->
+				new PaymentHistoryException(ResponseCode.PAYMENT_HISTORY_NOT_FOUND_EXCEPTION));
+
 		payment.updateSuccessInfo(response.paymentKey(), response.totalAmount());
+
+		paymentHistory.updateSuccessInfo(payment);
 
 	}
 }

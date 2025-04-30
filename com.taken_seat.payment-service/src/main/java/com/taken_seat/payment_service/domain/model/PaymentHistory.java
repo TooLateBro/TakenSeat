@@ -97,4 +97,10 @@ public class PaymentHistory extends BaseTimeEntity {
 		this.preUpdate(payment.getUpdatedBy());
 	}
 
+	public void updateSuccessInfo(Payment payment) {
+		this.paymentStatus = PaymentStatus.COMPLETED;
+		this.amount = payment.getAmount();
+		this.approvedAt = LocalDateTime.now();
+		this.updatedAt = LocalDateTime.now();
+	}
 }
