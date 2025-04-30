@@ -24,7 +24,7 @@
 // import com.taken_seat.booking_service.booking.application.dto.response.AdminBookingReadResponse;
 // import com.taken_seat.booking_service.booking.application.dto.response.BookingPageResponse;
 // import com.taken_seat.booking_service.booking.application.dto.response.BookingReadResponse;
-// import com.taken_seat.booking_service.booking.domain.Booking;
+// import com.taken_seat.booking_service.booking.domain.BookingCommand;
 // import com.taken_seat.booking_service.booking.infrastructure.repository.BookingJpaRepository;
 // import com.taken_seat.common_service.dto.ApiResponseData;
 // import com.taken_seat.common_service.dto.response.BookingStatusDto;
@@ -47,14 +47,14 @@
 // 	@DisplayName("단건 조회 테스트")
 // 	void test1() throws Exception {
 //
-// 		Booking booking = Booking.builder()
+// 		BookingCommand booking = BookingCommand.builder()
 // 			.userId(userId)
 // 			.performanceId(UUID.randomUUID())
 // 			.performanceScheduleId(UUID.randomUUID())
 // 			.scheduleSeatId(UUID.randomUUID())
 // 			.build();
 //
-// 		Booking saved = bookingJpaRepository.saveAndFlush(booking);
+// 		BookingCommand saved = bookingJpaRepository.saveAndFlush(booking);
 //
 // 		MvcResult mvcResult = mockMvc.perform(
 // 				get("/api/v1/bookings/" + saved.getId())
@@ -74,22 +74,22 @@
 // 	@DisplayName("페이지 조회 테스트")
 // 	void test2() throws Exception {
 //
-// 		Booking booking1 = Booking.builder()
+// 		BookingCommand booking1 = BookingCommand.builder()
 // 			.userId(userId)
 // 			.performanceId(UUID.randomUUID())
 // 			.performanceScheduleId(UUID.randomUUID())
 // 			.scheduleSeatId(UUID.randomUUID())
 // 			.build();
 //
-// 		Booking booking2 = Booking.builder()
+// 		BookingCommand booking2 = BookingCommand.builder()
 // 			.userId(userId)
 // 			.performanceId(UUID.randomUUID())
 // 			.performanceScheduleId(UUID.randomUUID())
 // 			.scheduleSeatId(UUID.randomUUID())
 // 			.build();
 //
-// 		List<Booking> list = List.of(booking1, booking2);
-// 		List<Booking> savedList = bookingJpaRepository.saveAllAndFlush(list);
+// 		List<BookingCommand> list = List.of(booking1, booking2);
+// 		List<BookingCommand> savedList = bookingJpaRepository.saveAllAndFlush(list);
 //
 // 		MvcResult mvcResult = mockMvc.perform(
 // 				get("/api/v1/bookings")
@@ -110,14 +110,14 @@
 // 	@DisplayName("예매 취소 테스트")
 // 	void test3() throws Exception {
 //
-// 		Booking booking = Booking.builder()
+// 		BookingCommand booking = BookingCommand.builder()
 // 			.userId(userId)
 // 			.performanceId(UUID.randomUUID())
 // 			.performanceScheduleId(UUID.randomUUID())
 // 			.scheduleSeatId(UUID.randomUUID())
 // 			.build();
 //
-// 		Booking saved = bookingJpaRepository.saveAndFlush(booking);
+// 		BookingCommand saved = bookingJpaRepository.saveAndFlush(booking);
 //
 // 		mockMvc.perform(
 // 				patch("/api/v1/bookings/" + saved.getId())
@@ -131,7 +131,7 @@
 // 	@DisplayName("예매 삭제 테스트")
 // 	void test4() throws Exception {
 //
-// 		Booking booking = Booking.builder()
+// 		BookingCommand booking = BookingCommand.builder()
 // 			.userId(userId)
 // 			.performanceId(UUID.randomUUID())
 // 			.performanceScheduleId(UUID.randomUUID())
@@ -139,7 +139,7 @@
 // 			.canceledAt(LocalDateTime.now())
 // 			.build();
 //
-// 		Booking saved = bookingJpaRepository.saveAndFlush(booking);
+// 		BookingCommand saved = bookingJpaRepository.saveAndFlush(booking);
 //
 // 		mockMvc.perform(
 // 				delete("/api/v1/bookings/" + saved.getId())
@@ -152,7 +152,7 @@
 // 	void test5() throws Exception {
 //
 // 		UUID randomUserId = UUID.randomUUID();
-// 		Booking booking = Booking.builder()
+// 		BookingCommand booking = BookingCommand.builder()
 // 			.userId(randomUserId)
 // 			.performanceId(UUID.randomUUID())
 // 			.performanceScheduleId(UUID.randomUUID())
@@ -160,7 +160,7 @@
 // 			.canceledAt(LocalDateTime.now())
 // 			.build();
 //
-// 		Booking saved = bookingJpaRepository.saveAndFlush(booking);
+// 		BookingCommand saved = bookingJpaRepository.saveAndFlush(booking);
 //
 // 		MvcResult mvcResult = mockMvc.perform(
 // 				get("/api/v1/admin/bookings/" + saved.getId())
@@ -182,7 +182,7 @@
 // 	void test6() throws Exception {
 //
 // 		UUID randomUserId = UUID.randomUUID();
-// 		Booking booking1 = Booking.builder()
+// 		BookingCommand booking1 = BookingCommand.builder()
 // 			.userId(randomUserId)
 // 			.performanceId(UUID.randomUUID())
 // 			.performanceScheduleId(UUID.randomUUID())
@@ -190,7 +190,7 @@
 // 			.canceledAt(LocalDateTime.now())
 // 			.build();
 //
-// 		Booking booking2 = Booking.builder()
+// 		BookingCommand booking2 = BookingCommand.builder()
 // 			.userId(randomUserId)
 // 			.performanceId(UUID.randomUUID())
 // 			.performanceScheduleId(UUID.randomUUID())
@@ -198,8 +198,8 @@
 // 			.canceledAt(LocalDateTime.now())
 // 			.build();
 //
-// 		List<Booking> list = List.of(booking1, booking2);
-// 		List<Booking> savedList = bookingJpaRepository.saveAllAndFlush(list);
+// 		List<BookingCommand> list = List.of(booking1, booking2);
+// 		List<BookingCommand> savedList = bookingJpaRepository.saveAllAndFlush(list);
 //
 // 		MvcResult mvcResult = mockMvc.perform(
 // 				get("/api/v1/admin/bookings")
@@ -220,7 +220,7 @@
 // 	@DisplayName("클라이언트 메서드 테스트")
 // 	void test7() throws Exception {
 // 		UUID performanceId = UUID.randomUUID();
-// 		Booking booking = Booking.builder()
+// 		BookingCommand booking = BookingCommand.builder()
 // 			.userId(userId)
 // 			.performanceId(performanceId)
 // 			.performanceScheduleId(UUID.randomUUID())
