@@ -59,6 +59,7 @@ management:
   metrics:
     tags:
       application: coupon-service
+      service: coupon-service
   zipkin:
     tracing:
       endpoint: ${ZIPKIN_ENDPOINT}

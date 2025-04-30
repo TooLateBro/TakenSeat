@@ -65,6 +65,7 @@ management:
   metrics:
     tags:
       application: auth-service
+      service: auth-service
   endpoint:
     health:
       show-details: always

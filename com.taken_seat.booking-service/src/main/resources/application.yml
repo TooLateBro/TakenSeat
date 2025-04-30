@@ -29,6 +29,7 @@ management:
   metrics:
     tags:
       application: booking-service
+      service: booking-service
   zipkin:
     tracing:
       endpoint: ${ZIPKIN_ENDPOINT}

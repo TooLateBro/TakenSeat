@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.taken_seat.common_service.aop.TrackLatency;
 import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.common_service.exception.customException.PaymentException;
 import com.taken_seat.common_service.exception.customException.PaymentHistoryException;
@@ -52,6 +53,10 @@ public class PaymentServiceImpl implements PaymentService {
 	 * @return PaymentRegisterResDto 등록된 결제의 정보
 	 * @throws IllegalArgumentException 결제 요청 금액이 1원 미만인 경우 예외 발생
 	 */
+	@TrackLatency(
+		value = "payment_register_seconds",
+		description = "결제 등록 API 처리 시간(초)"
+	)
 	@Override
 	@CachePut(cacheNames = "paymentCache", key = "#result.id")
 	public PaymentDetailResDto registerPayment(PaymentDto dto) {

@@ -14,6 +14,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.taken_seat.common_service.aop.TrackLatency;
 import com.taken_seat.common_service.dto.request.BookingSeatClientRequestDto;
 import com.taken_seat.common_service.dto.response.BookingSeatClientResponseDto;
 import com.taken_seat.common_service.dto.response.PerformanceEndTimeDto;
@@ -33,6 +34,7 @@ import com.taken_seat.performance_service.performance.presentation.dto.response.
 import com.taken_seat.performance_service.performance.presentation.dto.response.SeatLayoutResponseDto;
 import com.taken_seat.performance_service.performancehall.domain.model.SeatStatus;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -49,7 +51,12 @@ public class PerformanceClientService {
 	private final SeatStatusRedisHelper seatStatusRedisHelper;
 	private final SeatStatusKafkaHelper seatStatusKafkaHelper;
 	private final PerformanceQueryRepository performanceQueryRepository;
+	private final MeterRegistry meterRegistry;
 
+	@TrackLatency(
+		value = "performance_seat_lock_seconds",
+		description = "좌석 선점 API 처리 시간(초)"
+	)
 	@Transactional
 	public BookingSeatClientResponseDto updateSeatStatus(BookingSeatClientRequestDto request) {
 
@@ -88,9 +95,16 @@ public class PerformanceClientService {
 		log.info("[Performance] 좌석 선점 - 성공 - scheduleSeatId={}, scheduleId={}, seatType={}, price={}",
 			request.scheduleSeatId(), request.performanceScheduleId(), scheduleSeat.getSeatType(), price);
 
+		meterRegistry.counter("performance_seat_lock_total", "result", "success").increment();
+		meterRegistry.counter("performance_seat_lock_total", "result", "fail").increment();
+
 		return new BookingSeatClientResponseDto(price, true, "좌석 선점에 성공했습니다.");
 	}
 
+	@TrackLatency(
+		value = "performance_seat_cancel_seconds",
+		description = "좌석 선점 취소 API 처리 시간(초)"
+	)
 	@Transactional
 	public BookingSeatClientResponseDto cancelSeatStatus(BookingSeatClientRequestDto request) {
 
@@ -125,9 +139,16 @@ public class PerformanceClientService {
 		log.info("[Performance] 좌석 선점 취소 - 성공 - scheduleSeatId={}, scheduleId={}",
 			request.scheduleSeatId(), request.performanceScheduleId());
 
+		meterRegistry.counter("performance_seat_lock_fail_total", "reason", "already_sold_out").increment();
+		meterRegistry.counter("performance_seat_lock_fail_total", "reason", "redis_fail").increment();
+
 		return new BookingSeatClientResponseDto(null, false, "좌석 선점이 취소되었습니다.");
 	}
 
+	@TrackLatency(
+		value = "performance_seat_layout_seconds",
+		description = "좌석 배치도 조회 API 처리 시간(초)"
+	)
 	@Transactional(readOnly = true)
 	public SeatLayoutResponseDto getSeatLayout(UUID performanceScheduleId) {
 

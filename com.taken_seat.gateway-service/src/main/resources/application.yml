@@ -113,6 +113,7 @@ management:
   metrics:
     tags:
       application: gateway-service
+      service: gateway-service
   endpoint:
     health:
       show-details: always

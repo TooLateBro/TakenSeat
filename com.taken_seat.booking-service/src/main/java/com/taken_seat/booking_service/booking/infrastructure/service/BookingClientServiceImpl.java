@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import com.taken_seat.booking_service.booking.application.service.BookingClientService;
 import com.taken_seat.booking_service.booking.presentation.dto.response.SeatLayoutResponseDto;
 import com.taken_seat.booking_service.common.client.PerformanceClient;
+import com.taken_seat.common_service.aop.TrackLatency;
 import com.taken_seat.common_service.dto.ApiResponseData;
 import com.taken_seat.common_service.dto.request.BookingSeatClientRequestDto;
 import com.taken_seat.common_service.dto.response.BookingSeatClientResponseDto;
@@ -43,6 +44,10 @@ public class BookingClientServiceImpl implements BookingClientService {
 		return response.body();
 	}
 
+	@TrackLatency(
+		value = "booking_client_get_seat_layout_seconds",
+		description = "예매 클라이언트 - 좌석 배치도 조회 처리 시간(초)"
+	)
 	@Override
 	public SeatLayoutResponseDto getSeatLayout(UUID performanceScheduleId) {
 		ApiResponseData<SeatLayoutResponseDto> response = performanceClient.getSeatLayout(performanceScheduleId);
