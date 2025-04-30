@@ -30,8 +30,6 @@ kafka:
   consumer:
     group-id: waitingQueue
 
-
-
 eureka:
   client:
     service-url:
@@ -43,6 +41,7 @@ management:
   metrics:
     tags:
       application: queue-service
+      service: queue-service
   zipkin:
     tracing:
       endpoint: ${ZIPKIN_ENDPOINT}

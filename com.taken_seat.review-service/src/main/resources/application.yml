@@ -36,6 +36,7 @@ management:
   metrics:
     tags:
       application: review-service
+      service: review-service
   zipkin:
     tracing:
       endpoint: ${ZIPKIN_ENDPOINT}

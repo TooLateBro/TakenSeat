@@ -40,6 +40,7 @@ management:
   metrics:
     tags:
       application: performance-service
+      service: performance-service
 
   zipkin:
     tracing:
