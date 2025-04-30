@@ -17,4 +17,9 @@ public class TossPaymentViewController {
 		return "tossPaymentSuccess";
 	}
 
+	@GetMapping("/fail")
+	public String getFailPage() {
+		return "tossPaymentFail";
+	}
+
 }
