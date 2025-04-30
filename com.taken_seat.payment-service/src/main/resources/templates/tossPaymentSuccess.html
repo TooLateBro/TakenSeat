@@ -45,7 +45,7 @@
     // 클라이언트에서 결제 금액을 조작하는 행위를 방지할 수 있습니다.
     const urlParams = new URLSearchParams(window.location.search);
     const paymentKey = urlParams.get("paymentKey");
-    const bookingId = urlParams.get("bookingId");
+    const orderId = urlParams.get("orderId");
     const amount = parseInt(urlParams.get("amount")); // 문자열 -> 숫자
 
     // DOM 요소 참조
@@ -54,18 +54,18 @@
     const amountElement = document.getElementById("amount");
 
     // 텍스트 표시
-    orderIdElement.textContent = bookingId;
+    orderIdElement.textContent = orderId;
     amountElement.textContent = amount.toLocaleString("ko-KR") + "원";
     paymentKeyElement.textContent = paymentKey;
 
     async function confirm() {
         const requestData = {
             paymentKey: paymentKey,
-            bookingId: bookingId,
+            orderId: orderId,
             amount: amount
         };
         try {
-            const response = await fetch(`/api/v1/payments/confirm?bookingId=${bookingId}`, {
+            const response = await fetch(`/api/v1/payments/confirm?orderId=${orderId}`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
@@ -74,6 +74,9 @@
             });
 
             const json = await response.json();
+
+            alert(response.status)
+
 
             if (!response.ok) {
                 // 결제 실패 비즈니스 로직을 구현하세요.

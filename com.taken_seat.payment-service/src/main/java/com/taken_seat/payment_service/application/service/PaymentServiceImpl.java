@@ -14,6 +14,9 @@ import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.common_service.exception.customException.PaymentException;
 import com.taken_seat.common_service.exception.customException.PaymentHistoryException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
+import com.taken_seat.payment_service.application.client.TossPaymentClient;
+import com.taken_seat.payment_service.application.client.dto.TossConfirmResponse;
+import com.taken_seat.payment_service.application.client.dto.TossPaymentRequest;
 import com.taken_seat.payment_service.application.dto.controller.response.PagePaymentResponseDto;
 import com.taken_seat.payment_service.application.dto.controller.response.PaymentCheckoutResponse;
 import com.taken_seat.payment_service.application.dto.controller.response.PaymentDetailResDto;
@@ -38,6 +41,7 @@ public class PaymentServiceImpl implements PaymentService {
 	private final PaymentRepository paymentRepository;
 	private final PaymentQuerydslRepository paymentQuerydslRepository;
 	private final PaymentHistoryRepository paymentHistoryRepository;
+	private final TossPaymentClient tossPaymentClient;
 	private final PaymentMapper paymentMapper;
 
 	/**
@@ -208,5 +212,10 @@ public class PaymentServiceImpl implements PaymentService {
 					"해당 예매 ID 에 대한 결제 정보를 찾을 수 없습니다 : " + bookingId));
 
 		return PaymentCheckoutResponse.from(payment);
+	}
+
+	@Override
+	public TossConfirmResponse confirmPayment(TossPaymentRequest request) {
+		return tossPaymentClient.confirmPayment(request);
 	}
 }

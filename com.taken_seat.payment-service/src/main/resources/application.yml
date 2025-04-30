@@ -67,3 +67,6 @@ eureka:
 logging:
   loki:
     url: ${LOKI_URL}
+
+toss:
+  secret-key: test_sk_6bJXmgo28eNGKY1J5eb63LAnGKWx

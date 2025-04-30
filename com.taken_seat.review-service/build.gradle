@@ -50,6 +50,10 @@ dependencies {
     // Swagger
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0'
 
+
+    // webClient
+    implementation 'org.springframework.boot:spring-boot-starter-webclient'
+
     // .env 환경변수
     implementation 'me.paulschwarz:spring-dotenv:4.0.0'
 

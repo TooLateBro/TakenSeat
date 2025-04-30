@@ -4,10 +4,14 @@ import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.taken_seat.payment_service.application.client.dto.TossConfirmResponse;
+import com.taken_seat.payment_service.application.client.dto.TossPaymentRequest;
 import com.taken_seat.payment_service.application.dto.controller.response.PaymentCheckoutResponse;
 import com.taken_seat.payment_service.application.service.PaymentService;
 
@@ -26,6 +30,12 @@ public class TossPaymentApiController {
 
 		PaymentCheckoutResponse response = paymentService.getCheckoutInfo(bookingId);
 
+		return ResponseEntity.ok(response);
+	}
+
+	@PatchMapping("/confirm")
+	public ResponseEntity<TossConfirmResponse> confirmPayment(@RequestBody TossPaymentRequest request) {
+		TossConfirmResponse response = paymentService.confirmPayment(request);
 		return ResponseEntity.ok(response);
 	}
 

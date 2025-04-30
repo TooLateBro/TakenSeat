@@ -3,6 +3,8 @@ package com.taken_seat.payment_service.application.service;
 import java.util.UUID;
 
 import com.taken_seat.common_service.dto.AuthenticatedUser;
+import com.taken_seat.payment_service.application.client.dto.TossConfirmResponse;
+import com.taken_seat.payment_service.application.client.dto.TossPaymentRequest;
 import com.taken_seat.payment_service.application.dto.controller.response.PagePaymentResponseDto;
 import com.taken_seat.payment_service.application.dto.controller.response.PaymentCheckoutResponse;
 import com.taken_seat.payment_service.application.dto.controller.response.PaymentDetailResDto;
@@ -22,4 +24,6 @@ public interface PaymentService {
 	void deletePayment(UUID id, AuthenticatedUser authenticatedUser);
 
 	PaymentCheckoutResponse getCheckoutInfo(UUID bookingId);
+
+	TossConfirmResponse confirmPayment(TossPaymentRequest request);
 }
