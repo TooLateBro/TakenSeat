@@ -20,6 +20,7 @@ import com.taken_seat.booking_service.booking.domain.BookingStatus;
 import com.taken_seat.booking_service.booking.domain.repository.BookingRepository;
 import com.taken_seat.booking_service.booking.presentation.dto.response.BookingCreateResponse;
 import com.taken_seat.booking_service.common.service.RedisService;
+import com.taken_seat.common_service.aop.TrackLatency;
 import com.taken_seat.common_service.dto.request.BookingSeatClientRequestDto;
 import com.taken_seat.common_service.dto.response.BookingSeatClientResponseDto;
 import com.taken_seat.common_service.exception.customException.BookingException;
@@ -43,6 +44,10 @@ public class BookingCommandServiceImpl implements BookingCommandService {
 	private final RedisService redisService;
 	private final RedissonService redissonService;
 
+	@TrackLatency(
+		value = "booking_create_seconds",
+		description = "예매 생성 처리 시간(초)"
+	)
 	@Override
 	public BookingCreateResponse createBooking(BookingCreateCommand command) {
 
@@ -96,6 +101,10 @@ public class BookingCommandServiceImpl implements BookingCommandService {
 		return BookingCreateResponse.toDto(saved);
 	}
 
+	@TrackLatency(
+		value = "booking_cancel_seconds",
+		description = "예매 취소 처리 시간(초)"
+	)
 	@Override
 	@Transactional
 	@Caching(evict = {

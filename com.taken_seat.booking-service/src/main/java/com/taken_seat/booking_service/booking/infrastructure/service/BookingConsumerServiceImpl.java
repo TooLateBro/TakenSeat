@@ -24,6 +24,7 @@ import com.taken_seat.booking_service.booking.domain.repository.BookingRepositor
 import com.taken_seat.booking_service.booking.presentation.dto.response.SeatLayoutResponseDto;
 import com.taken_seat.booking_service.common.message.TicketRequestMessage;
 import com.taken_seat.booking_service.common.service.RedisService;
+import com.taken_seat.common_service.aop.TrackLatency;
 import com.taken_seat.common_service.dto.request.BookingSeatClientRequestDto;
 import com.taken_seat.common_service.dto.response.BookingSeatClientResponseDto;
 import com.taken_seat.common_service.exception.customException.BookingException;
@@ -48,6 +49,10 @@ public class BookingConsumerServiceImpl implements BookingConsumerService {
 	private final RedisService redisService;
 	private final BookingCommandService bookingCommandService;
 
+	@TrackLatency(
+		value = "booking_consumer_payment_create_seconds",
+		description = "예매 쿠폰·마일리지 적용 및 결제 요청 처리 시간(초)"
+	)
 	@Override
 	@Transactional
 	@Caching(evict = {
