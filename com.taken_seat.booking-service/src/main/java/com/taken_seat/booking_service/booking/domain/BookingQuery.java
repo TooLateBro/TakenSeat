@@ -11,6 +11,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -23,7 +24,9 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor
-@Table(name = "p_booking_query")
+@Table(name = "p_booking_query", indexes = {
+	@Index(name = "idx_user_id_and_deleted_at", columnList = "user_id, deleted_at")
+})
 public class BookingQuery extends BaseTimeEntity {
 	@Id
 	private UUID id;
