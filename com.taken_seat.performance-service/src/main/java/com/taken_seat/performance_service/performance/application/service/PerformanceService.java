@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.taken_seat.common_service.aop.TrackLatency;
 import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.performance_service.performance.application.dto.command.CreatePerformanceCommand;
 import com.taken_seat.performance_service.performance.application.dto.command.UpdatePerformanceCommand;
@@ -70,6 +71,10 @@ public class PerformanceService {
 		return createToDto(saved);
 	}
 
+	@TrackLatency(
+		value = "performance_search_seconds",
+		description = "공연 목록 조회 API 처리 시간(초)"
+	)
 	@Cacheable(
 		cacheNames = PERFORMANCE_SEARCH,
 		key = "#filterParam.toString() + ':' + #pageable.pageNumber + ':' + #pageable.pageSize",
@@ -83,6 +88,10 @@ public class PerformanceService {
 		return performanceResponseMapper.toPage(pages);
 	}
 
+	@TrackLatency(
+		value = "performance_detail_seconds",
+		description = "공연 상세 조회 API 처리 시간(초)"
+	)
 	@Cacheable(
 		cacheNames = PERFORMANCE_DETAIL,
 		key = "#id",
