@@ -3,9 +3,8 @@ package com.taken_seat.booking_service.booking.presentation.dto.response;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import com.taken_seat.booking_service.booking.domain.Booking;
+import com.taken_seat.booking_service.booking.domain.BookingQuery;
 import com.taken_seat.booking_service.booking.domain.BookingStatus;
-import com.taken_seat.common_service.dto.response.TicketPerformanceClientResponse;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -30,28 +29,28 @@ public class BookingReadResponse {
 	private String title;
 	private String name;
 	private String address;
-	private String seatRowNumber;
+	private String rowNumber;
 	private String seatNumber;
 	private String seatType;
 
-	public static BookingReadResponse toDto(Booking booking, TicketPerformanceClientResponse response) {
+	public static BookingReadResponse toDto(BookingQuery bookingQuery) {
 		return BookingReadResponse.builder()
-			.id(booking.getId())
-			.performanceId(booking.getPerformanceId())
-			.performanceScheduleId(booking.getPerformanceScheduleId())
-			.scheduleSeatId(booking.getScheduleSeatId())
-			.paymentId(booking.getPaymentId())
-			.price(booking.getPrice())
-			.discountedPrice(booking.getDiscountedPrice())
-			.bookingStatus(booking.getBookingStatus())
-			.bookedAt(booking.getBookedAt())
-			.canceledAt(booking.getCanceledAt())
-			.title(response.title())
-			.name(response.name())
-			.address(response.address())
-			.seatRowNumber(response.rowNumber())
-			.seatNumber(response.seatNumber())
-			.seatType(response.seatType())
+			.id(bookingQuery.getId())
+			.performanceId(bookingQuery.getPerformanceId())
+			.performanceScheduleId(bookingQuery.getPerformanceScheduleId())
+			.scheduleSeatId(bookingQuery.getScheduleSeatId())
+			.paymentId(bookingQuery.getPaymentId())
+			.price(bookingQuery.getPrice())
+			.discountedPrice(bookingQuery.getDiscountedPrice())
+			.bookingStatus(bookingQuery.getBookingStatus())
+			.bookedAt(bookingQuery.getBookedAt())
+			.canceledAt(bookingQuery.getCanceledAt())
+			.title(bookingQuery.getTitle())
+			.name(bookingQuery.getName())
+			.address(bookingQuery.getAddress())
+			.rowNumber(bookingQuery.getRowNumber())
+			.seatNumber(bookingQuery.getSeatNumber())
+			.seatType(bookingQuery.getSeatType())
 			.build();
 	}
 }

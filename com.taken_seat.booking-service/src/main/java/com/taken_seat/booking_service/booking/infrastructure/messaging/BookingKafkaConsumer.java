@@ -1,10 +1,12 @@
 package com.taken_seat.booking_service.booking.infrastructure.messaging;
 
+import java.util.UUID;
+
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
-import com.taken_seat.booking_service.booking.application.service.BookingConsumerService;
-import com.taken_seat.booking_service.booking.presentation.BookingConsumer;
+import com.taken_seat.booking_service.booking.application.dto.event.BookingEntityEvent;
+import com.taken_seat.booking_service.booking.application.service.BookingService;
 import com.taken_seat.common_service.message.BookingRequestMessage;
 import com.taken_seat.common_service.message.PaymentMessage;
 import com.taken_seat.common_service.message.PaymentRefundMessage;
@@ -14,41 +16,55 @@ import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class BookingKafkaConsumer implements BookingConsumer {
+public class BookingKafkaConsumer {
 
-	private final BookingConsumerService bookingConsumerService;
+	private final BookingService bookingService;
 
-	@Override
-	@KafkaListener(topics = "${kafka.topic.payment-response}", groupId = "${kafka.consumer.group-id.booking-service}")
-	public void updateBooking(PaymentMessage message) {
+	@KafkaListener(topics = "${kafka.topic.payment-response}", groupId = "${kafka.consumer.group-id.booking-command}")
+	public void receivePaymentMessage(PaymentMessage message) {
 
-		bookingConsumerService.updateBooking(message);
+		bookingService.receivePaymentMessage(message);
 	}
 
-	@KafkaListener(topics = "${kafka.topic.payment-refund-response}", groupId = "${kafka.consumer.group-id.booking-service}")
-	public void updateBooking(PaymentRefundMessage message) {
+	@KafkaListener(topics = "${kafka.topic.payment-refund-response}", groupId = "${kafka.consumer.group-id.booking-command}")
+	public void receivePaymentRefundMessage(PaymentRefundMessage message) {
 
-		bookingConsumerService.updateBooking(message);
+		bookingService.receivePaymentRefundMessage(message);
 	}
 
-	@Override
-	@KafkaListener(topics = "${kafka.topic.benefit-usage-response}", groupId = "${kafka.consumer.group-id.booking-service}")
-	public void createPayment(UserBenefitMessage message) {
+	@KafkaListener(topics = "${kafka.topic.benefit-usage-response}", groupId = "${kafka.consumer.group-id.booking-command}")
+	public void receiveBenefitUsageMessage(UserBenefitMessage message) {
 
-		bookingConsumerService.createPayment(message);
+		bookingService.receiveBenefitUsageMessage(message);
 	}
 
-	@Override
-	@KafkaListener(topics = "${kafka.topic.benefit-refund-response}", groupId = "${kafka.consumer.group-id.booking-service}")
-	public void updateBenefitUsageHistory(UserBenefitMessage message) {
+	@KafkaListener(topics = "${kafka.topic.benefit-refund-response}", groupId = "${kafka.consumer.group-id.booking-command}")
+	public void receiveBenefitRefundMessage(UserBenefitMessage message) {
 
-		bookingConsumerService.updateBenefitUsageHistory(message);
+		bookingService.receiveBenefitRefundMessage(message);
 	}
 
-	@Override
-	@KafkaListener(topics = "${kafka.topic.queue-request}", groupId = "${kafka.consumer.group-id.booking-service}")
-	public void acceptFromQueue(BookingRequestMessage message) {
+	@KafkaListener(topics = "${kafka.topic.queue-request}", groupId = "${kafka.consumer.group-id.booking-command}")
+	public void receiveWaitingQueueMessage(BookingRequestMessage message) {
 
-		bookingConsumerService.acceptFromQueue(message);
+		bookingService.receiveWaitingQueueMessage(message);
+	}
+
+	@KafkaListener(topics = "${kafka.topic.booking-expire}", groupId = "${kafka.consumer.group-id.booking-command}")
+	public void receiveBookingExpireEvent(UUID bookingId) {
+
+		bookingService.receiveBookingExpireEvent(bookingId);
+	}
+
+	@KafkaListener(topics = "${kafka.topic.booking-created}", groupId = "${kafka.consumer.group-id.booking-query}")
+	public void receiveBookingCreatedEvent(BookingEntityEvent event) {
+
+		bookingService.receiveBookingCreatedEvent(event);
+	}
+
+	@KafkaListener(topics = "${kafka.topic.booking-updated}", groupId = "${kafka.consumer.group-id.booking-query}")
+	public void receiveBookingUpdatedEvent(BookingEntityEvent event) {
+
+		bookingService.receiveBookingUpdatedEvent(event);
 	}
 }
