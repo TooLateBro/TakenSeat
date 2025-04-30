@@ -42,4 +42,9 @@ public class BookingQueryRepositoryImpl implements BookingQueryRepository {
 	public Page<BookingQuery> findAllByAdmin(Pageable pageable, UUID queryUserId) {
 		return bookingQueryJpaRepository.findAllByUserId(pageable, queryUserId);
 	}
+
+	@Override
+	public Optional<BookingQuery> findByUserIdAndPerformanceId(UUID userId, UUID performanceId) {
+		return bookingQueryJpaRepository.findByUserIdAndPerformanceIdAndDeletedAtIsNull(userId, performanceId);
+	}
 }

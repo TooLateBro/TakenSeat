@@ -599,4 +599,5 @@ public class BookingCommandService {
 	private boolean isValidPrice(int price) {
 		return price > 0;
 	}
+
 }

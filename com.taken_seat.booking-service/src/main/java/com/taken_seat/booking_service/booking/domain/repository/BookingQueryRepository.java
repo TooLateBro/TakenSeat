@@ -18,4 +18,6 @@ public interface BookingQueryRepository {
 	Page<BookingQuery> findAllByUserId(Pageable pageable, UUID userId);
 
 	Page<BookingQuery> findAllByAdmin(Pageable pageable, UUID queryUserId);
+
+	Optional<BookingQuery> findByUserIdAndPerformanceId(UUID userId, UUID performanceId);
 }

@@ -13,6 +13,7 @@ import com.taken_seat.booking_service.booking.application.dto.event.BookingEntit
 import com.taken_seat.booking_service.booking.application.dto.query.BookingAdminListQuery;
 import com.taken_seat.booking_service.booking.application.dto.query.BookingListQuery;
 import com.taken_seat.booking_service.booking.application.dto.query.BookingReadQuery;
+import com.taken_seat.booking_service.booking.application.dto.query.BookingStatusQuery;
 import com.taken_seat.booking_service.booking.application.service.BookingClientService;
 import com.taken_seat.booking_service.booking.domain.BookingQuery;
 import com.taken_seat.booking_service.booking.domain.BookingStatus;
@@ -22,6 +23,7 @@ import com.taken_seat.booking_service.booking.presentation.dto.response.AdminBoo
 import com.taken_seat.booking_service.booking.presentation.dto.response.BookingPageResponse;
 import com.taken_seat.booking_service.booking.presentation.dto.response.BookingReadResponse;
 import com.taken_seat.booking_service.common.service.RedisService;
+import com.taken_seat.common_service.dto.response.BookingStatusDto;
 import com.taken_seat.common_service.dto.response.TicketPerformanceClientResponse;
 import com.taken_seat.common_service.exception.customException.BookingException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
@@ -89,6 +91,14 @@ public class BookingQueryService {
 		log.info("[BookingCommand] 관리자 예매 조회 - 성공: | userId={}", query.userId());
 
 		return AdminBookingPageResponse.toDto(page);
+	}
+
+	@Transactional(readOnly = true)
+	public BookingStatusDto getBookingStatus(BookingStatusQuery query) {
+		BookingQuery bookingQuery = bookingQueryRepository.findByUserIdAndPerformanceId(query.userId(),
+			query.performanceId()).orElseThrow(() -> new BookingException(ResponseCode.BOOKING_NOT_FOUND_EXCEPTION));
+
+		return new BookingStatusDto(bookingQuery.getBookingStatus().name());
 	}
 
 	@Transactional

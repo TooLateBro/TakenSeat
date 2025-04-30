@@ -13,6 +13,7 @@ import com.taken_seat.booking_service.booking.application.dto.event.BookingEntit
 import com.taken_seat.booking_service.booking.application.dto.query.BookingAdminListQuery;
 import com.taken_seat.booking_service.booking.application.dto.query.BookingListQuery;
 import com.taken_seat.booking_service.booking.application.dto.query.BookingReadQuery;
+import com.taken_seat.booking_service.booking.application.dto.query.BookingStatusQuery;
 import com.taken_seat.booking_service.booking.domain.BookingCommand;
 import com.taken_seat.booking_service.booking.presentation.dto.request.BookingCreateRequest;
 import com.taken_seat.booking_service.booking.presentation.dto.request.BookingPayRequest;
@@ -32,6 +33,8 @@ public interface BookingMapper {
 	BookingListQuery toQuery(AuthenticatedUser user, Pageable pageable);
 
 	BookingAdminListQuery toQuery(AuthenticatedUser user, UUID queryUserId, Pageable pageable);
+
+	BookingStatusQuery toQuery(UUID userId, UUID performanceId);
 
 	BookingEntityEvent toEvent(BookingCommand bookingCommand);
 }

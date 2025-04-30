@@ -21,6 +21,7 @@ import com.taken_seat.booking_service.booking.application.dto.mapper.BookingMapp
 import com.taken_seat.booking_service.booking.application.dto.query.BookingAdminListQuery;
 import com.taken_seat.booking_service.booking.application.dto.query.BookingListQuery;
 import com.taken_seat.booking_service.booking.application.dto.query.BookingReadQuery;
+import com.taken_seat.booking_service.booking.application.dto.query.BookingStatusQuery;
 import com.taken_seat.booking_service.booking.application.service.BookingService;
 import com.taken_seat.booking_service.booking.presentation.dto.request.BookingCreateRequest;
 import com.taken_seat.booking_service.booking.presentation.dto.request.BookingPayRequest;
@@ -33,6 +34,7 @@ import com.taken_seat.common_service.aop.annotation.RoleCheck;
 import com.taken_seat.common_service.aop.vo.Role;
 import com.taken_seat.common_service.dto.ApiResponseData;
 import com.taken_seat.common_service.dto.AuthenticatedUser;
+import com.taken_seat.common_service.dto.response.BookingStatusDto;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -105,6 +107,16 @@ public class BookingController {
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
 	}
 
+	@GetMapping("/api/v1/bookings/{userId}/{performanceId}/status")
+	public ResponseEntity<ApiResponseData<BookingStatusDto>> getBookingStatus(@PathVariable("userId") UUID userId,
+		@PathVariable("performanceId") UUID performanceId) {
+
+		BookingStatusQuery query = bookingMapper.toQuery(userId, performanceId);
+		BookingStatusDto response = bookingService.getBookingStatus(query);
+
+		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
+	}
+
 	@RoleCheck(allowedRoles = {Role.ADMIN, Role.MANAGER})
 	@GetMapping("/api/v1/admin/bookings/{id}")
 	public ResponseEntity<ApiResponseData<AdminBookingReadResponse>> adminReadBooking(
@@ -126,4 +138,5 @@ public class BookingController {
 
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
 	}
+
 }

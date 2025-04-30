@@ -9,11 +9,13 @@ import com.taken_seat.booking_service.booking.application.dto.event.BookingEntit
 import com.taken_seat.booking_service.booking.application.dto.query.BookingAdminListQuery;
 import com.taken_seat.booking_service.booking.application.dto.query.BookingListQuery;
 import com.taken_seat.booking_service.booking.application.dto.query.BookingReadQuery;
+import com.taken_seat.booking_service.booking.application.dto.query.BookingStatusQuery;
 import com.taken_seat.booking_service.booking.presentation.dto.response.AdminBookingPageResponse;
 import com.taken_seat.booking_service.booking.presentation.dto.response.AdminBookingReadResponse;
 import com.taken_seat.booking_service.booking.presentation.dto.response.BookingCreateResponse;
 import com.taken_seat.booking_service.booking.presentation.dto.response.BookingPageResponse;
 import com.taken_seat.booking_service.booking.presentation.dto.response.BookingReadResponse;
+import com.taken_seat.common_service.dto.response.BookingStatusDto;
 import com.taken_seat.common_service.message.BookingRequestMessage;
 import com.taken_seat.common_service.message.PaymentMessage;
 import com.taken_seat.common_service.message.PaymentRefundMessage;
@@ -47,6 +49,8 @@ public interface BookingService {
 	AdminBookingReadResponse adminReadBooking(BookingReadQuery query);
 
 	AdminBookingPageResponse adminReadBookings(BookingAdminListQuery query);
+
+	BookingStatusDto getBookingStatus(BookingStatusQuery query);
 
 	void receiveBookingCreatedEvent(BookingEntityEvent event);
 

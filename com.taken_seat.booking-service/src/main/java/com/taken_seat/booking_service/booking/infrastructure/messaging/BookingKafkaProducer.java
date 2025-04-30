@@ -1,4 +1,4 @@
-package com.taken_seat.booking_service.booking.infrastructure.service;
+package com.taken_seat.booking_service.booking.infrastructure.messaging;
 
 import java.util.UUID;
 
