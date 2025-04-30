@@ -36,6 +36,7 @@ management:
   metrics:
     tags:
       application: payment-service
+      service: payment-service
   zipkin:
     tracing:
       endpoint: ${ZIPKIN_ENDPOINT}
