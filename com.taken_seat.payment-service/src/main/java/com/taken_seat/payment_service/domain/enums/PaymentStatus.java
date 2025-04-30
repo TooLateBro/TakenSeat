@@ -3,6 +3,7 @@ package com.taken_seat.payment_service.domain.enums;
 public enum PaymentStatus {
 
 	CREATED("CREATED"),
+	PENDING("PENDING"),
 	COMPLETED("COMPLETED"),
 	FAILED("FAILED"),
 	REFUNDED("REFUNDED"),

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8"/>
+    <script src="https://js.tosspayments.com/v2/standard"></script>
+    <link rel="stylesheet" type="text/css" href="/style.css"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+</head>
+<body>
+<!-- 주문서 영역 -->
+<div class="wrapper">
+    <div class="box_section" style="padding: 40px 30px 50px 30px; margin-top: 30px; margin-bottom: 50px">
+        <h1>일반 결제</h1>
+        <!-- 결제 UI -->
+        <div id="payment-method" style="display: flex">
+            <button id="CARD" class="button2" onclick="selectPaymentMethod('CARD')">카드</button>
+        </div>
+        <!-- 결제하기 버튼 -->
+        <button id="payment-button" class="button" style="margin-top: 30px">결제하기</button>
+    </div>
+</div>
+
+<script>
+    let selectedPaymentMethod = null;
+    main();
+
+    async function main() {
+        // URL에서 트랜잭션 ID 파라미터 가져오기
+        const urlParams = new URLSearchParams(window.location.search);
+        const bookingId = urlParams.get('bookingId');
+        console.log(bookingId);
+
+        // API에서 결제 데이터 가져오기
+        let paymentData;
+        try {
+            const response = await fetch(`/api/v1/payments/checkout-info?bookingId=${bookingId}`);
+            if (!response.ok) {
+                throw new Error('결제 정보를 가져오는 데 실패했습니다.');
+            }
+            paymentData = await response.json();
+        } catch (error) {
+            console.error('API 요청 오류:', error);
+            alert('결제 정보를 가져오는 데 문제가 발생했습니다.');
+            return;
+        }
+
+        // 결제위젯 초기화
+        const clientKey = "test_ck_yZqmkKeP8gN945PZpxKKrbQRxB9l";
+        const tossPayments = TossPayments(clientKey);
+
+        // 회원 결제 - API에서 받은 customerId 사용
+        const customerKey = paymentData.customerKey;
+        const payment = tossPayments.payment({
+            customerKey,
+        });
+
+        // 주문의 결제 금액 설정 - API에서 받은 amount 사용
+        const amount = {
+            currency: "KRW",
+            value: parseInt(paymentData.originalAmount),
+        };
+
+        // '결제하기' 버튼 누르면 결제창 띄우기
+        const button = document.getElementById("payment-button");
+        button.addEventListener("click", async function () {
+            switch (selectedPaymentMethod) {
+                case "CARD":
+                    await payment.requestPayment({
+                            method: "CARD", // 카드 및 간편결제
+                            amount,
+                            orderId: paymentData.bookingId,
+                            orderName: paymentData.orderName,
+                            successUrl: window.location.origin + "/success",
+                            failUrl: window.location.origin + "/fail",
+                            card: {
+                                useEscrow: false,
+                                flowMode:
+                                    "DEFAULT",
+                                useCardPoint:
+                                    false,
+                                useAppCardOnly:
+                                    false,
+                            }
+                        }
+                    );
+                    break;
+                default:
+                    alert("유효하지 않은 결제 수단입니다.");
+            }
+
+        });
+    }
+
+    function selectPaymentMethod(method) {
+        if (selectedPaymentMethod != null) {
+            document.getElementById(selectedPaymentMethod).style.backgroundColor = "#ffffff";
+        }
+
+        selectedPaymentMethod = method;
+
+        document.getElementById(selectedPaymentMethod).style.backgroundColor = "rgb(229 239 255)";
+    }
+</script>
+</body>
+</html>

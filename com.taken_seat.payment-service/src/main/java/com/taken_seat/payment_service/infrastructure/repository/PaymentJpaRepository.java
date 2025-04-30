@@ -10,4 +10,6 @@ import com.taken_seat.payment_service.domain.model.Payment;
 public interface PaymentJpaRepository extends JpaRepository<Payment, UUID> {
 
 	Optional<Payment> findByIdAndDeletedAtIsNull(UUID id);
+
+	Optional<Payment> findByBookingIdAndDeletedAtIsNull(UUID bookingId);
 }

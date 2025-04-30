@@ -15,6 +15,7 @@ import com.taken_seat.common_service.exception.customException.PaymentException;
 import com.taken_seat.common_service.exception.customException.PaymentHistoryException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.payment_service.application.dto.controller.response.PagePaymentResponseDto;
+import com.taken_seat.payment_service.application.dto.controller.response.PaymentCheckoutResponse;
 import com.taken_seat.payment_service.application.dto.controller.response.PaymentDetailResDto;
 import com.taken_seat.payment_service.application.dto.service.PaymentDto;
 import com.taken_seat.payment_service.application.dto.service.PaymentSearchDto;
@@ -196,5 +197,16 @@ public class PaymentServiceImpl implements PaymentService {
 
 		payment.delete(authenticatedUser.getUserId());
 		paymentHistory.delete(authenticatedUser.getUserId());
+	}
+
+	@Override
+	public PaymentCheckoutResponse getCheckoutInfo(UUID bookingId) {
+
+		Payment payment = paymentRepository.findByBookingIdAndDeletedAtIsNull(bookingId)
+			.orElseThrow(() ->
+				new PaymentException(ResponseCode.PAYMENT_NOT_FOUND_EXCEPTION,
+					"해당 예매 ID 에 대한 결제 정보를 찾을 수 없습니다 : " + bookingId));
+
+		return PaymentCheckoutResponse.from(payment);
 	}
 }

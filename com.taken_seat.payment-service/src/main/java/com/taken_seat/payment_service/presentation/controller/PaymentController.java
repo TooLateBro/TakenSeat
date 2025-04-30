@@ -42,7 +42,7 @@ public class PaymentController {
 	private final PaymentMapper paymentMapper;
 
 	@PostMapping
-	@RoleCheck(allowedRoles = Role.ADMIN)
+	// @RoleCheck(allowedRoles = Role.ADMIN)
 	@PaymentSwaggerDocs.RegisterPayment
 	public ResponseEntity<ApiResponseData<PaymentDetailResDto>> registerPayment(
 		@Valid @RequestBody PaymentRegisterReqDto paymentRegisterReqDto,
