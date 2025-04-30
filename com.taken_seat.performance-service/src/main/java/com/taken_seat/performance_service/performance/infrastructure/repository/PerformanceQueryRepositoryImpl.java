@@ -1,6 +1,7 @@
 package com.taken_seat.performance_service.performance.infrastructure.repository;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -13,6 +14,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.taken_seat.performance_service.common.support.QueryDslOrderUtil;
 import com.taken_seat.performance_service.performance.domain.model.Performance;
 import com.taken_seat.performance_service.performance.domain.model.QPerformance;
+import com.taken_seat.performance_service.performance.domain.model.QPerformanceSchedule;
 import com.taken_seat.performance_service.performance.domain.repository.PerformanceQueryRepository;
 import com.taken_seat.performance_service.performance.presentation.dto.request.SearchFilterParam;
 import com.taken_seat.performance_service.performance.presentation.dto.response.SearchResponseDto;
@@ -37,6 +39,22 @@ public class PerformanceQueryRepositoryImpl implements PerformanceQueryRepositor
 		long total = fetchTotal(builder);
 
 		return new PageImpl<>(content, pageable, total);
+	}
+
+	@Override
+	public List<UUID> findAllPerformanceScheduleIds() {
+
+		QPerformance performance = QPerformance.performance;
+		QPerformanceSchedule performanceSchedule = QPerformanceSchedule.performanceSchedule;
+
+		return jpaQueryFactory
+			.select(performanceSchedule.id)
+			.from(performanceSchedule)
+			.join(performanceSchedule.performance, performance)
+			.where(
+				performanceSchedule.deletedAt.isNull(),
+				performance.deletedAt.isNull())
+			.fetch();
 	}
 
 	private BooleanBuilder buildConditions(SearchFilterParam searchFilterParam) {

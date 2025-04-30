@@ -83,12 +83,12 @@ public class ScheduleSeat extends BaseTimeEntity {
 		price = command.price();
 	}
 
-	public void updateStatus(SeatStatus newStatus) {
-		if (this.seatStatus == SeatStatus.DISABLED) {
+	public void changeSeatStatus(SeatStatus newSeatStatus) {
+
+		if (seatStatus == SeatStatus.DISABLED) {
 			throw new PerformanceException(ResponseCode.SEAT_STATUS_CHANGE_NOT_ALLOWED);
 		}
-		this.seatStatus = newStatus;
-
+		seatStatus = newSeatStatus;
 		performanceSchedule.updateStatusBasedOnSeats();
 	}
 }
