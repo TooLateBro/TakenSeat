@@ -10,7 +10,10 @@ public record PaymentRegisterReqDto(
 	UUID bookingId,
 
 	@NotNull(message = "결제 금액은 필수입니다.")
-	Integer price
+	Integer price,
+
+	@NotNull(message = "결제 상품명은 필수입니다.")
+	String orderName
 
 ) {
 }

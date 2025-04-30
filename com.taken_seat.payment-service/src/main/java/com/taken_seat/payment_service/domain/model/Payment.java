@@ -47,6 +47,9 @@ public class Payment extends BaseTimeEntity {
 	private Integer price;
 
 	@Column(nullable = false)
+	private String orderName;
+
+	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
 	private PaymentStatus paymentStatus;
 
@@ -61,7 +64,8 @@ public class Payment extends BaseTimeEntity {
 			.bookingId(dto.getBookingId())
 			.userId(dto.getUserId())
 			.price(dto.getPrice())
-			.paymentStatus(PaymentStatus.COMPLETED)
+			.orderName(dto.getOrderName())
+			.paymentStatus(PaymentStatus.PENDING)
 			.build();
 
 		payment.prePersist(dto.getUserId());
@@ -74,7 +78,8 @@ public class Payment extends BaseTimeEntity {
 			.bookingId(message.getBookingId())
 			.userId(message.getUserId())
 			.price(message.getPrice())
-			.paymentStatus(PaymentStatus.CREATED)
+			.orderName(message.getOrderName())
+			.paymentStatus(PaymentStatus.PENDING)
 			.build();
 
 		payment.prePersist(message.getUserId());

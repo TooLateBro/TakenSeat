@@ -21,6 +21,8 @@ public class PaymentDto {
 
 	private Integer price;         // 결제 금액
 
+	private String orderName;
+
 	private PaymentStatus paymentStatus;   // 결제 상태 (UPDATE 시 필요)
 
 	private UUID userId;           // 결제 생성자(AuthenticatedUser 정보에서)

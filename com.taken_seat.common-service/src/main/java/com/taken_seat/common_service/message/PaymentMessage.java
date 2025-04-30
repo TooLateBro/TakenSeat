@@ -21,6 +21,8 @@ public class PaymentMessage {
 
 	private Integer price; // 결제 금액
 
+	private String orderName;
+
 	private PaymentResultStatus status; // 결제 상태 (결제 요청과 결과에서 모두 사용)
 
 	private MessageType type; // 메시지 타입 (REQUEST / RESULT)
