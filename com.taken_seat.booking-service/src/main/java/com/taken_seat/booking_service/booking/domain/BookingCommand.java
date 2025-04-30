@@ -12,6 +12,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -24,7 +25,9 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor
-@Table(name = "p_booking_command")
+@Table(name = "p_booking_command", indexes = {
+	@Index(name = "idx_dupe_check", columnList = "user_id, performance_id, performance_schedule_id, schedule_seat_id")
+})
 public class BookingCommand extends BaseTimeEntity {
 
 	@Id
