@@ -62,9 +62,9 @@ public class PaymentServiceImpl implements PaymentService {
 	public PaymentDetailResDto registerPayment(PaymentDto dto) {
 		// MASTER 계정이 직접 등록하는 API - 결제 API 호출 없이 수동 등록
 
-		if (dto.getPrice() <= 0) {
+		if (dto.getAmount() <= 0) {
 			throw new PaymentException(ResponseCode.ILLEGAL_ARGUMENT,
-				"결제 금액은 1원 미만일 수 없습니다. 요청 금액 : " + dto.getPrice());
+				"결제 금액은 1원 미만일 수 없습니다. 요청 금액 : " + dto.getAmount());
 		}
 
 		Payment payment = Payment.register(dto);
@@ -151,9 +151,9 @@ public class PaymentServiceImpl implements PaymentService {
 	@CacheEvict(cacheNames = "paymentSearchCache", allEntries = true)
 	public PaymentDetailResDto updatePayment(PaymentDto dto) {
 
-		if (dto.getPrice() <= 0) {
+		if (dto.getAmount() <= 0) {
 			throw new PaymentException(ResponseCode.ILLEGAL_ARGUMENT,
-				"결제 금액은 1원 미만일 수 없습니다. 요청 금액 : " + dto.getPrice());
+				"결제 금액은 1원 미만일 수 없습니다. 요청 금액 : " + dto.getAmount());
 		}
 
 		Payment payment = paymentRepository.findByIdAndDeletedAtIsNull(dto.getPaymentId())
@@ -216,6 +216,19 @@ public class PaymentServiceImpl implements PaymentService {
 
 	@Override
 	public TossConfirmResponse confirmPayment(TossPaymentRequest request) {
-		return tossPaymentClient.confirmPayment(request);
+
+		TossConfirmResponse response = tossPaymentClient.confirmPayment(request);
+
+		saveOrUpdatePayment(response, request.orderId());
+
+		return response;
+	}
+
+	private void saveOrUpdatePayment(TossConfirmResponse response, String orderId) {
+		Payment payment = paymentRepository.findByBookingIdAndDeletedAtIsNull(UUID.fromString(orderId))
+			.orElseThrow(() -> new PaymentException(ResponseCode.PAYMENT_NOT_FOUND_EXCEPTION));
+
+		payment.updateSuccessInfo(response.paymentKey(), response.totalAmount());
+
 	}
 }

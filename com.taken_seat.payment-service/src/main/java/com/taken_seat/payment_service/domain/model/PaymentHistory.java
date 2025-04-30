@@ -40,7 +40,7 @@ public class PaymentHistory extends BaseTimeEntity {
 	private Payment payment;
 
 	@Column(nullable = false)
-	private Integer price;
+	private Integer amount;
 
 	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
@@ -55,7 +55,7 @@ public class PaymentHistory extends BaseTimeEntity {
 	public static PaymentHistory register(Payment payment) {
 		PaymentHistory paymentHistory = PaymentHistory.builder()
 			.payment(payment)
-			.price(payment.getPrice())
+			.amount(payment.getAmount())
 			.paymentStatus(payment.getPaymentStatus())
 			.approvedAt(payment.getApprovedAt())
 			.build();
@@ -66,7 +66,7 @@ public class PaymentHistory extends BaseTimeEntity {
 	}
 
 	public void updateHistory(Payment payment) {
-		this.price = payment.getPrice();
+		this.amount = payment.getAmount();
 		this.paymentStatus = payment.getPaymentStatus();
 		this.approvedAt = payment.getApprovedAt();
 		this.refundAmount = payment.getRefundAmount();
@@ -91,7 +91,7 @@ public class PaymentHistory extends BaseTimeEntity {
 			throw new PaymentException(ResponseCode.CANNOT_REFUND);
 		}
 
-		this.refundAmount = payment.getPrice();
+		this.refundAmount = payment.getAmount();
 		this.refundRequestedAt = LocalDateTime.now();
 		this.paymentStatus = PaymentStatus.REFUNDED;
 		this.preUpdate(payment.getUpdatedBy());

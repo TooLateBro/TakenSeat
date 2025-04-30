@@ -55,7 +55,7 @@ public class PaymentRefundEventHandlerServiceImpl implements PaymentRefundEventH
 			.orElseThrow(() -> new PaymentHistoryException(ResponseCode.PAYMENT_HISTORY_NOT_FOUND_EXCEPTION));
 
 		payment.refund(message);
-		log.debug("[Payment] 환불 처리 - 성공 - paymentId={}, price={}", payment.getId(), payment.getPrice());
+		log.debug("[Payment] 환불 처리 - 성공 - paymentId={}, price={}", payment.getId(), payment.getAmount());
 
 		paymentHistory.refund(payment);
 		log.debug("[Payment] 환불 히스토리 저장 완료 - paymentHistoryId: {}", paymentHistory.getId());

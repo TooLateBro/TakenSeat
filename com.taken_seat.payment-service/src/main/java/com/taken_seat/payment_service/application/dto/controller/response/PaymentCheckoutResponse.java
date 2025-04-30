@@ -20,7 +20,7 @@ public class PaymentCheckoutResponse {
 		return PaymentCheckoutResponse.of(
 			payment.getBookingId(),
 			payment.getOrderName(),
-			payment.getPrice(),
+			payment.getAmount(),
 			payment.getUserId().toString()
 		);
 	}

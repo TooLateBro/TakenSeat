@@ -19,7 +19,7 @@ public class PaymentDto {
 
 	private UUID bookingId;        // 결제 생성시 필요한 예매 ID
 
-	private Integer price;         // 결제 금액
+	private Integer amount;         // 결제 금액
 
 	private String orderName;
 

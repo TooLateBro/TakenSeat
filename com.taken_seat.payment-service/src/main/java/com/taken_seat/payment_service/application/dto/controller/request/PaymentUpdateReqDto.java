@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 
 public record PaymentUpdateReqDto(
 	@NotNull(message = "결제 금액은 필수입니다.")
-	Integer price,
+	Integer amount,
 
 	@NotNull(message = "결제 상품명은 필수입니다.")
 	String orderName,

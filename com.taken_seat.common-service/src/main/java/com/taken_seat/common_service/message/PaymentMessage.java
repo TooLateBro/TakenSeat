@@ -19,7 +19,7 @@ public class PaymentMessage {
 
 	private UUID paymentId; // 결제 ID (결제 결과 메시지에서 필요)
 
-	private Integer price; // 결제 금액
+	private Integer amount; // 결제 금액
 
 	private String orderName;
 

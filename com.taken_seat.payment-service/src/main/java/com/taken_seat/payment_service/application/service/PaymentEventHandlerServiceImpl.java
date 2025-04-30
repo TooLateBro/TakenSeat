@@ -30,7 +30,7 @@ public class PaymentEventHandlerServiceImpl implements PaymentEventHandlerServic
 		// 1. 결제 금액 검사
 		if (isInvalidPrice(message)) {
 			log.warn("[Payment] 결제 금액 유효성 검사 - 실패 - bookingId={}, price={}", message.getBookingId(),
-				message.getPrice());
+				message.getAmount());
 
 			PaymentMessage paymentResultMessage = PaymentMessage.builder()
 				.userId(message.getUserId())
@@ -48,7 +48,7 @@ public class PaymentEventHandlerServiceImpl implements PaymentEventHandlerServic
 		// 2. 결제 엔티티 기본 생성 및 저장
 		Payment payment = Payment.register(message);
 		paymentRepository.save(payment);
-		log.debug("[Payment] 결제 저장 - 성공 - paymentId={}, price={}", payment.getId(), payment.getPrice());
+		log.debug("[Payment] 결제 저장 - 성공 - paymentId={}, price={}", payment.getId(), payment.getAmount());
 
 		// 3. 결제 히스토리 생성 및 저장
 		PaymentHistory paymentHistory = PaymentHistory.register(payment);
@@ -72,7 +72,7 @@ public class PaymentEventHandlerServiceImpl implements PaymentEventHandlerServic
 	}
 
 	private boolean isInvalidPrice(PaymentMessage message) {
-		return message.getPrice() == null || message.getPrice() <= 0;
+		return message.getAmount() == null || message.getAmount() <= 0;
 	}
 
 }
