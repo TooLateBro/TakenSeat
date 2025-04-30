@@ -24,11 +24,11 @@ public class QueueController {
 
     @PostMapping("")
     public ResponseEntity<ApiResponseData<TokenResDto>> enterQueue(@RequestBody @Valid QueueReqDto reqDto) {
-        return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(queueService.enterQueue(reqDto, UUID.randomUUID())));
+        return ResponseEntity.ok().body(ApiResponseData.success(queueService.enterQueue(reqDto, UUID.randomUUID())));
     }
 
     @PostMapping("/getRank")
     public ResponseEntity<ApiResponseData<String>> getRank(@RequestBody @Valid TokenReqDto reqDto) {
-        return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(queueService.getRank(reqDto)));
+        return ResponseEntity.ok().body(ApiResponseData.success(queueService.getRank(reqDto)));
     }
 }
