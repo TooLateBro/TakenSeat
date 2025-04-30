@@ -30,22 +30,26 @@ import com.taken_seat.booking_service.booking.presentation.dto.response.AdminBoo
 import com.taken_seat.booking_service.booking.presentation.dto.response.BookingCreateResponse;
 import com.taken_seat.booking_service.booking.presentation.dto.response.BookingPageResponse;
 import com.taken_seat.booking_service.booking.presentation.dto.response.BookingReadResponse;
+import com.taken_seat.booking_service.common.config.BookingSwaggerDocs;
 import com.taken_seat.common_service.aop.annotation.RoleCheck;
 import com.taken_seat.common_service.aop.vo.Role;
 import com.taken_seat.common_service.dto.ApiResponseData;
 import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.common_service.dto.response.BookingStatusDto;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "예매", description = "예매 생성, 조회 및 수정 API입니다.")
 public class BookingController {
 
 	private final BookingService bookingService;
 	private final BookingMapper bookingMapper;
 
+	@BookingSwaggerDocs.CreateBooking
 	@PostMapping("/api/v1/bookings")
 	public ResponseEntity<ApiResponseData<BookingCreateResponse>> createBooking(AuthenticatedUser authenticatedUser,
 		@RequestBody @Valid BookingCreateRequest request) {
@@ -56,6 +60,7 @@ public class BookingController {
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
 	}
 
+	@BookingSwaggerDocs.CancelBooking
 	@PatchMapping("/api/v1/bookings/{id}")
 	public ResponseEntity<ApiResponseData<Void>> cancelBooking(AuthenticatedUser authenticatedUser,
 		@PathVariable("id") UUID id) {
@@ -66,6 +71,7 @@ public class BookingController {
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseData.success());
 	}
 
+	@BookingSwaggerDocs.DeleteBooking
 	@DeleteMapping("/api/v1/bookings/{id}")
 	public ResponseEntity<ApiResponseData<Void>> deleteBooking(AuthenticatedUser authenticatedUser,
 		@PathVariable("id") UUID id) {
@@ -76,6 +82,7 @@ public class BookingController {
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseData.success());
 	}
 
+	@BookingSwaggerDocs.CreatePayment
 	@PostMapping("/api/v1/bookings/{id}/payment")
 	public ResponseEntity<ApiResponseData<Void>> createPayment(AuthenticatedUser authenticatedUser,
 		@PathVariable("id") UUID id,
@@ -87,6 +94,7 @@ public class BookingController {
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseData.success());
 	}
 
+	@BookingSwaggerDocs.ReadBooking
 	@GetMapping("/api/v1/bookings/{id}")
 	public ResponseEntity<ApiResponseData<BookingReadResponse>> readBooking(AuthenticatedUser authenticatedUser,
 		@PathVariable("id") UUID id) {
@@ -97,6 +105,7 @@ public class BookingController {
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
 	}
 
+	@BookingSwaggerDocs.ReadBookings
 	@GetMapping("/api/v1/bookings")
 	public ResponseEntity<ApiResponseData<BookingPageResponse>> readBookings(AuthenticatedUser authenticatedUser,
 		Pageable pageable) {
@@ -107,6 +116,7 @@ public class BookingController {
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
 	}
 
+	@BookingSwaggerDocs.GetBookingStatus
 	@GetMapping("/api/v1/bookings/{userId}/{performanceId}/status")
 	public ResponseEntity<ApiResponseData<BookingStatusDto>> getBookingStatus(@PathVariable("userId") UUID userId,
 		@PathVariable("performanceId") UUID performanceId) {
@@ -117,6 +127,7 @@ public class BookingController {
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
 	}
 
+	@BookingSwaggerDocs.AdminReadBooking
 	@RoleCheck(allowedRoles = {Role.ADMIN, Role.MANAGER})
 	@GetMapping("/api/v1/admin/bookings/{id}")
 	public ResponseEntity<ApiResponseData<AdminBookingReadResponse>> adminReadBooking(
@@ -128,6 +139,7 @@ public class BookingController {
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
 	}
 
+	@BookingSwaggerDocs.AdminReadBookings
 	@RoleCheck(allowedRoles = {Role.ADMIN, Role.MANAGER})
 	@GetMapping("/api/v1/admin/bookings")
 	public ResponseEntity<ApiResponseData<AdminBookingPageResponse>> adminReadBookings(
@@ -139,4 +151,13 @@ public class BookingController {
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponseData.success(response));
 	}
 
+	@PostMapping("/api/v1/bookings/{id}/reissue")
+	public ResponseEntity<ApiResponseData<Void>> reissueTicket(AuthenticatedUser authenticatedUser,
+		@PathVariable("id") UUID id) {
+
+		BookingSingleTargetCommand command = bookingMapper.toCommand(authenticatedUser, id);
+		bookingService.reissueTicket(command);
+
+		return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseData.success());
+	}
 }

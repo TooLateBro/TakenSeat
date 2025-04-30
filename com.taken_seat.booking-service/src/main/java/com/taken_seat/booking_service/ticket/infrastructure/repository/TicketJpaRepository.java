@@ -12,6 +12,8 @@ import com.taken_seat.booking_service.ticket.domain.Ticket;
 public interface TicketJpaRepository extends JpaRepository<Ticket, UUID> {
 	Optional<Ticket> findByIdAndUserIdAndDeletedAtIsNull(UUID id, UUID userId);
 
+	boolean existsByBookingIdAndDeletedAtIsNull(UUID bookingId);
+
 	Optional<Ticket> findByBookingIdAndDeletedAtIsNull(UUID bookingId);
 
 	Page<Ticket> findAllByUserIdAndBookingIdAndDeletedAtIsNull(Pageable pageable, UUID userId, UUID bookingId);

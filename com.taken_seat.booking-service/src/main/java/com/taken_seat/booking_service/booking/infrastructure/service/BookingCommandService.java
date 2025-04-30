@@ -410,7 +410,7 @@ public class BookingCommandService {
 					.bookingId(bookingCommand.getId())
 					.performanceId(bookingCommand.getPerformanceId())
 					.performanceScheduleId(bookingCommand.getPerformanceScheduleId())
-					.seatId(bookingCommand.getScheduleSeatId())
+					.scheduleSeatId(bookingCommand.getScheduleSeatId())
 					.build()
 			);
 
@@ -570,7 +570,7 @@ public class BookingCommandService {
 		);
 
 		SeatLayoutResponseDto layout = bookingClientService.getSeatLayout(message.getPerformanceScheduleId());
-		List<UUID> seatIds = layout.seats().stream()
+		List<UUID> seatIds = layout.scheduleSeats().stream()
 			.filter(e -> e.seatStatus().equals(SeatLayoutResponseDto.ScheduleSeatResponseDto.SeatStatus.AVAILABLE))
 			.map(SeatLayoutResponseDto.ScheduleSeatResponseDto::scheduleSeatId)
 			.toList();
@@ -589,6 +589,24 @@ public class BookingCommandService {
 		);
 
 		createBooking(command);
+	}
+
+	public void reissueTicket(BookingSingleTargetCommand command) {
+
+		log.info("[BookingCommand] 티켓 재발행 - 시도: | userId={}, bookingId={}", command.userId(), command.bookingId());
+
+		BookingCommand bookingCommand = findBookingByIdAndUserId(command.bookingId(), command.userId());
+
+		TicketRequestMessage message = TicketRequestMessage.builder()
+			.userId(bookingCommand.getUserId())
+			.bookingId(bookingCommand.getId())
+			.performanceId(bookingCommand.getPerformanceId())
+			.performanceScheduleId(bookingCommand.getPerformanceScheduleId())
+			.scheduleSeatId(bookingCommand.getScheduleSeatId())
+			.build();
+		bookingProducer.sendTicketRequest(message);
+
+		log.info("[BookingCommand] 티켓 재발행 - 성공: | userId={}, bookingId={}", command.userId(), command.bookingId());
 	}
 
 	private BookingCommand findBookingByIdAndUserId(UUID id, UUID userId) {

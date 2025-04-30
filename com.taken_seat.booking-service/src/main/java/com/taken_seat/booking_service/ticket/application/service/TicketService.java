@@ -17,6 +17,4 @@ public interface TicketService {
 	void createTicket(TicketRequestMessage message);
 
 	void deleteTicket(AuthenticatedUser authenticatedUser, UUID id);
-
-	void reissueTicket(TicketRequestMessage message);
 }

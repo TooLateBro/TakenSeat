@@ -21,11 +21,4 @@ public class TicketKafkaConsumer implements TicketConsumer {
 
 		ticketService.createTicket(message);
 	}
-
-	@Override
-	@KafkaListener(topics = "${kafka.topic.ticket-reissue-request}", groupId = "${kafka.consumer.group-id.ticket-service}")
-	public void reissueTicket(TicketRequestMessage message) {
-
-		ticketService.reissueTicket(message);
-	}
 }
