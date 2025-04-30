@@ -29,8 +29,8 @@ public class TicketRepositoryImpl implements TicketRepository {
 	}
 
 	@Override
-	public Optional<Ticket> findByBookingId(UUID bookingId) {
-		return ticketJpaRepository.findByBookingIdAndDeletedAtIsNull(bookingId);
+	public boolean existsByBookingId(UUID bookingId) {
+		return ticketJpaRepository.existsByBookingIdAndDeletedAtIsNull(bookingId);
 	}
 
 	@Override

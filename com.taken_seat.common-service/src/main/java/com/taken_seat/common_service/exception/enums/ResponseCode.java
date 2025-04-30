@@ -96,6 +96,7 @@ public enum ResponseCode {
 	BOOKING_SEAT_LOCKED_EXCEPTION(HttpStatus.OK, HttpStatus.OK.value(), "이미 예약중인 좌석입니다."),
 	BOOKING_SEAT_RESERVED_EXCEPTION(HttpStatus.OK, HttpStatus.OK.value(), "이미 선점된 좌석입니다."),
 	TICKET_NOT_FOUND_EXCEPTION(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "해당 티켓은 존재하지 않습니다."),
+	TICKET_DUPLICATED_EXCEPTION(HttpStatus.CONFLICT, HttpStatus.CONFLICT.value(), "이미 티켓이 존재합니다."),
 
 	// Performance
 	PERFORMANCE_NOT_FOUND_EXCEPTION(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value(), "해당 공연은 존재하지 않습니다."),

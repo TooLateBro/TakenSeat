@@ -16,5 +16,5 @@ public class TicketRequestMessage {
 	private UUID bookingId;
 	private UUID performanceId;
 	private UUID performanceScheduleId;
-	private UUID seatId;
+	private UUID scheduleSeatId;
 }

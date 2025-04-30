@@ -1,6 +1,5 @@
 package com.taken_seat.booking_service.ticket.infrastructure.service;
 
-import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.cache.annotation.CacheEvict;
@@ -45,10 +44,14 @@ public class TicketServiceImpl implements TicketService {
 			message.getBookingId()
 		);
 
+		if (ticketRepository.existsByBookingId(message.getBookingId())) {
+			throw new TicketException(ResponseCode.TICKET_DUPLICATED_EXCEPTION);
+		}
+
 		TicketPerformanceClientResponse info = ticketClientService.getPerformanceInfo(
 			message.getPerformanceId(),
 			message.getPerformanceScheduleId(),
-			message.getSeatId()
+			message.getScheduleSeatId()
 		);
 
 		Ticket ticket = Ticket.builder()
@@ -66,6 +69,8 @@ public class TicketServiceImpl implements TicketService {
 		ticket.prePersist(message.getUserId());
 
 		ticketRepository.save(ticket);
+
+		redisService.evictAllCaches("readTickets", message.getBookingId().toString());
 
 		log.info(
 			"[Ticket] 티켓 생성 - 성공 | userId={}, bookingId={}",
@@ -118,25 +123,5 @@ public class TicketServiceImpl implements TicketService {
 		redisService.evictAllCaches("readTickets", ticket.getBookingId().toString());
 
 		log.info("[Ticket] 티켓 삭제 - 성공 | userId={}, ticketId={}", authenticatedUser.getUserId(), id);
-	}
-
-	@Override
-	@Transactional
-	public void reissueTicket(TicketRequestMessage message) {
-
-		log.info("[Ticket] 티켓 재발급 - 시도 | userId={}, bookingId={}", message.getUserId(), message.getBookingId());
-
-		Optional<Ticket> optional = ticketRepository.findByBookingId(message.getBookingId());
-
-		if (optional.isPresent()) {
-			Ticket ticket = optional.get();
-			ticket.delete(message.getUserId());
-			redisService.evictCache("readTicket", ticket.getId().toString());
-		}
-
-		createTicket(message);
-		redisService.evictAllCaches("readTickets", message.getBookingId().toString());
-
-		log.info("[Ticket] 티켓 재발급 - 성공 | userId={}, bookingId={}", message.getUserId(), message.getBookingId());
 	}
 }

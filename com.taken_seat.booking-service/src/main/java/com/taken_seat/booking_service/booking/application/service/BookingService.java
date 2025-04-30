@@ -55,4 +55,6 @@ public interface BookingService {
 	void receiveBookingCreatedEvent(BookingEntityEvent event);
 
 	void receiveBookingUpdatedEvent(BookingEntityEvent event);
+
+	void reissueTicket(BookingSingleTargetCommand command);
 }

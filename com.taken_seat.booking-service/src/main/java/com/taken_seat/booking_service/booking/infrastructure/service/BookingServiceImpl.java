@@ -117,4 +117,9 @@ public class BookingServiceImpl implements BookingService {
 	public void receiveBookingUpdatedEvent(BookingEntityEvent event) {
 		bookingQueryService.receiveBookingUpdatedEvent(event);
 	}
+
+	@Override
+	public void reissueTicket(BookingSingleTargetCommand command) {
+		bookingCommandService.reissueTicket(command);
+	}
 }
