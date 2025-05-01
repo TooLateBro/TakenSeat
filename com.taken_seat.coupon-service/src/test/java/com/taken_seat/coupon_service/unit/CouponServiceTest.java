@@ -12,6 +12,8 @@ import com.taken_seat.coupon_service.domain.repository.CouponQueryRepository;
 import com.taken_seat.coupon_service.domain.repository.CouponRepository;
 import com.taken_seat.coupon_service.presentation.dto.CreateCouponRequestDto;
 import com.taken_seat.coupon_service.presentation.dto.UpdateCouponRequestDto;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -43,6 +45,13 @@ public class CouponServiceTest {
     @Mock
     private CouponMapper couponMapper;
 
+    @Mock
+    private MeterRegistry meterRegistry;
+
+    @Mock
+    private Counter counter;
+
+
     @InjectMocks
     private CouponServiceImpl couponService;
 
@@ -73,6 +82,7 @@ public class CouponServiceTest {
                 30, expiredAt);
 
         when(couponRepository.findByCode(requestDto.code())).thenReturn(Optional.empty());
+        when(meterRegistry.counter(any(String.class), any(String[].class))).thenReturn(counter);
         CouponResponseDto mappedDto = new CouponResponseDto(
                 couponId, "testCoupon", "testCode", 20L,
                 30, expiredAt
@@ -84,6 +94,7 @@ public class CouponServiceTest {
         assertNotNull(responseDto);
     }
 
+
     @Test
     @DisplayName("쿠폰 생성 실패 테스트 - 존재하는 코드")
     public void createCouponFail_CouponCodeExists() {
@@ -93,7 +104,7 @@ public class CouponServiceTest {
                 30, expiredAt);
 
         when(couponRepository.findByCode(coupon.getCode())).thenReturn(Optional.of(coupon));
-
+        when(meterRegistry.counter(any(String.class), any(String[].class))).thenReturn(counter);
         CouponException exception = assertThrows(CouponException.class, () ->
                 couponService.createCoupon(requestDto.toDto(), authenticatedUser));
 
