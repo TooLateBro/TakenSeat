@@ -4,20 +4,17 @@ server:
 spring:
   application:
     name: booking-service
-
   data:
     redis:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
       username: ${REDIS_USERNAME}
       password: ${REDIS_PASSWORD}
-
   datasource:
     url: ${SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME}
-
   jpa:
     hibernate:
       ddl-auto: create
@@ -26,6 +23,13 @@ spring:
         format_sql: true
 
 management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
   metrics:
     tags:
       application: booking-service
@@ -69,7 +73,7 @@ kafka:
 variable:
   lock-wait-time: 3 # 초
   lock-lease-time: 5 # 초
-  booking-expiration-time: 600 # 초
+  booking-expiration-time: 180 # 초
   cache-duration: 600 # 초
 
 common:
