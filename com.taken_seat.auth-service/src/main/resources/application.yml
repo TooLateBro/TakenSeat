@@ -49,8 +49,8 @@ common:
 
 service:
   jwt:
-    access-expiration: 600000       # 10분
-    refresh-expiration: 3600000     # 1시간
+    access-expiration: ${ACCESS_TOKEN_EXPIRED}
+    refresh-expiration: ${REFRESH_TOKEN_EXPIRED}
     secret:
       key: ${JWT_SECRET}
 
