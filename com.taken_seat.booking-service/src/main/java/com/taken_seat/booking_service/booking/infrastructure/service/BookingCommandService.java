@@ -11,10 +11,11 @@ import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.taken_seat.booking_service.booking.application.dto.command.BookingCancelCommand;
 import com.taken_seat.booking_service.booking.application.dto.command.BookingCreateCommand;
 import com.taken_seat.booking_service.booking.application.dto.command.BookingPaymentCommand;
 import com.taken_seat.booking_service.booking.application.dto.command.BookingSingleTargetCommand;
-import com.taken_seat.booking_service.booking.application.dto.mapper.BookingMapper;
+import com.taken_seat.booking_service.booking.application.dto.event.BookingEntityEvent;
 import com.taken_seat.booking_service.booking.application.service.BookingClientService;
 import com.taken_seat.booking_service.booking.application.service.BookingProducer;
 import com.taken_seat.booking_service.booking.application.service.RedissonService;
@@ -27,6 +28,7 @@ import com.taken_seat.booking_service.booking.presentation.dto.response.BookingC
 import com.taken_seat.booking_service.booking.presentation.dto.response.SeatLayoutResponseDto;
 import com.taken_seat.booking_service.common.message.TicketRequestMessage;
 import com.taken_seat.booking_service.common.service.RedisService;
+import com.taken_seat.common_service.aop.TrackLatency;
 import com.taken_seat.common_service.dto.request.BookingSeatClientRequestDto;
 import com.taken_seat.common_service.dto.response.BookingSeatClientResponseDto;
 import com.taken_seat.common_service.exception.customException.BookingException;
@@ -37,6 +39,7 @@ import com.taken_seat.common_service.message.PaymentRefundMessage;
 import com.taken_seat.common_service.message.QueueEnterMessage;
 import com.taken_seat.common_service.message.UserBenefitMessage;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -45,65 +48,75 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class BookingCommandService {
 
-	private final BookingClientService bookingClientService;
-	private final BookingProducer bookingProducer;
-	private final BookingCommandRepository bookingCommandRepository;
 	private final BenefitUsageHistoryRepository benefitUsageHistoryRepository;
-	private final BookingMapper bookingMapper;
+	private final BookingClientService bookingClientService;
+	private final BookingCommandRepository bookingCommandRepository;
+	private final BookingProducer bookingProducer;
+	private final MeterRegistry meterRegistry;
 	private final RedisService redisService;
 	private final RedissonService redissonService;
 
+	@TrackLatency(
+		value = "coupon_create_seconds",
+		description = "쿠폰 생성 처리 시간(초)"
+	)
+	@Transactional
 	public BookingCreateResponse createBooking(BookingCreateCommand command) {
 
 		log.info("[BookingCommand] 예약 생성 - 시도: | userId={}", command.userId());
 
-		// 중복 체크
-		if (bookingCommandRepository.isUniqueBooking(command.userId(), command.performanceId(),
-			command.performanceScheduleId(), command.scheduleSeatId())) {
+		try {
+			// 중복 체크
+			if (bookingCommandRepository.isUniqueBooking(command.userId(), command.performanceId(),
+				command.performanceScheduleId(), command.scheduleSeatId())) {
 
-			log.warn(
-				"[BookingCommand] 예약 생성 - 실패: {} | userId={}",
-				ResponseCode.BOOKING_DUPLICATED_EXCEPTION.getMessage(),
-				command.userId()
+				log.warn(
+					"[BookingCommand] 예약 생성 - 실패: {} | userId={}",
+					ResponseCode.BOOKING_DUPLICATED_EXCEPTION.getMessage(),
+					command.userId()
+				);
+				throw new BookingException(ResponseCode.BOOKING_DUPLICATED_EXCEPTION);
+			}
+
+			// 좌석 선점
+			BookingSeatClientResponseDto responseDto = redissonService.tryHoldSeat(
+				command.performanceId(),
+				command.performanceScheduleId(),
+				command.scheduleSeatId()
 			);
-			throw new BookingException(ResponseCode.BOOKING_DUPLICATED_EXCEPTION);
+
+			BookingCommand bookingCommand = BookingCommand.builder()
+				.userId(command.userId())
+				.performanceId(command.performanceId())
+				.performanceScheduleId(command.performanceScheduleId())
+				.scheduleSeatId(command.scheduleSeatId())
+				.price(responseDto.price())
+				.discountedPrice(responseDto.price())
+				.build();
+			bookingCommand.prePersist(command.userId());
+
+			BookingCommand saved = bookingCommandRepository.save(bookingCommand);
+
+			// Query 전송
+			bookingProducer.sendBookingCreatedEvent(toEvent(bookingCommand));
+
+			// 예매 만료 대기시간 설정
+			redisService.setBookingExpire(saved.getId());
+
+			// 대기열 입장 메시지 전송
+			QueueEnterMessage queueEnterMessage = QueueEnterMessage.builder()
+				.performanceId(command.performanceId())
+				.performanceScheduleId(command.performanceScheduleId())
+				.build();
+			bookingProducer.sendQueueEnterResponse(queueEnterMessage);
+
+			log.info("[BookingCommand] 예약 생성 - 성공: | userId={}", command.userId());
+
+			return BookingCreateResponse.toDto(saved);
+		} catch (Exception e) {
+			meterRegistry.counter("booking_create_total", "result", "fail").increment();
+			throw e;
 		}
-
-		// 좌석 선점
-		BookingSeatClientResponseDto responseDto = redissonService.tryHoldSeat(
-			command.performanceId(),
-			command.performanceScheduleId(),
-			command.scheduleSeatId()
-		);
-
-		BookingCommand bookingCommand = BookingCommand.builder()
-			.userId(command.userId())
-			.performanceId(command.performanceId())
-			.performanceScheduleId(command.performanceScheduleId())
-			.scheduleSeatId(command.scheduleSeatId())
-			.price(responseDto.price())
-			.discountedPrice(responseDto.price())
-			.build();
-		bookingCommand.prePersist(command.userId());
-
-		BookingCommand saved = bookingCommandRepository.save(bookingCommand);
-
-		// Query 전송
-		bookingProducer.sendBookingCreatedEvent(bookingMapper.toEvent(bookingCommand));
-
-		// 예매 만료 대기시간 설정
-		redisService.setBookingExpire(saved.getId());
-
-		// 대기열 입장 메시지 전송
-		QueueEnterMessage queueEnterMessage = QueueEnterMessage.builder()
-			.performanceId(command.performanceId())
-			.performanceScheduleId(command.performanceScheduleId())
-			.build();
-		bookingProducer.sendQueueEnterResponse(queueEnterMessage);
-
-		log.info("[BookingCommand] 예약 생성 - 성공: | userId={}", command.userId());
-
-		return BookingCreateResponse.toDto(saved);
 	}
 
 	@Transactional
@@ -111,7 +124,7 @@ public class BookingCommandService {
 		@CacheEvict(value = "readBooking", key = "#command.bookingId()"),
 		@CacheEvict(value = "adminReadBooking", key = "#command.bookingId()")
 	})
-	public void cancelBooking(BookingSingleTargetCommand command) {
+	public void cancelBooking(BookingCancelCommand command) {
 
 		log.info("[BookingCommand] 예약 취소 - 시도: | userId={}", command.userId());
 
@@ -120,10 +133,9 @@ public class BookingCommandService {
 
 		LocalDateTime startAt = bookingClientService.getPerformanceStartTime(bookingCommand.getPerformanceId(),
 			bookingCommand.getPerformanceScheduleId()).startAt();
-		LocalDateTime now = LocalDateTime.now();
 
 		// 현재 시각이 공연 시작 하루 전 앞인지 확인
-		if (now.isAfter(startAt.minusDays(1))) {
+		if (LocalDateTime.now().isAfter(startAt.minusDays(1))) {
 			log.warn(
 				"[BookingCommand] 예약 취소 - 실패: {} | userId={}",
 				ResponseCode.BOOKING_CANCEL_NOT_ALLOWED_EXCEPTION.getMessage(),
@@ -145,7 +157,8 @@ public class BookingCommandService {
 				.bookingId(bookingCommand.getId())
 				.paymentId(bookingCommand.getPaymentId())
 				.userId(bookingCommand.getUserId())
-				.price(bookingCommand.getDiscountedPrice())
+				.amount(bookingCommand.getDiscountedPrice())
+				.cancelReason(command.cancelReason())
 				.type(PaymentRefundMessage.MessageType.REQUEST)
 				.build();
 
@@ -174,7 +187,7 @@ public class BookingCommandService {
 		bookingCommand.cancel(command.userId());
 
 		// Query 전송
-		bookingProducer.sendBookingUpdatedEvent(bookingMapper.toEvent(bookingCommand));
+		bookingProducer.sendBookingUpdatedEvent(toEvent(bookingCommand));
 
 		log.info("[BookingCommand] 예약 취소 - 성공: | userId={}", command.userId());
 	}
@@ -203,7 +216,7 @@ public class BookingCommandService {
 		bookingCommand.delete(command.userId());
 
 		// Query 전송
-		bookingProducer.sendBookingUpdatedEvent(bookingMapper.toEvent(bookingCommand));
+		bookingProducer.sendBookingUpdatedEvent(toEvent(bookingCommand));
 
 		log.info("[BookingCommand] 예약 삭제 - 성공: | userId={}", command.userId());
 	}
@@ -240,7 +253,7 @@ public class BookingCommandService {
 		PaymentMessage message = PaymentMessage.builder()
 			.bookingId(command.bookingId())
 			.userId(command.userId())
-			.price(bookingCommand.getPrice())
+			.amount(bookingCommand.getPrice())
 			.type(PaymentMessage.MessageType.REQUEST)
 			.build();
 
@@ -268,7 +281,7 @@ public class BookingCommandService {
 			bookingCommand.delete(system);
 
 			// Query 수정
-			bookingProducer.sendBookingUpdatedEvent(bookingMapper.toEvent(bookingCommand));
+			bookingProducer.sendBookingUpdatedEvent(toEvent(bookingCommand));
 
 			BookingSeatClientRequestDto dto = new BookingSeatClientRequestDto(
 				bookingCommand.getPerformanceId(),
@@ -348,7 +361,7 @@ public class BookingCommandService {
 			PaymentMessage paymentMessage = PaymentMessage.builder()
 				.bookingId(bookingCommand.getId())
 				.userId(message.getUserId())
-				.price(bookingCommand.getDiscountedPrice())
+				.amount(bookingCommand.getDiscountedPrice())
 				.type(PaymentMessage.MessageType.REQUEST)
 				.build();
 			bookingProducer.sendPaymentRequest(paymentMessage);
@@ -362,7 +375,7 @@ public class BookingCommandService {
 			bookingCommand.discount(price); // 할인가 업데이트
 
 			// Query 전송
-			bookingProducer.sendBookingUpdatedEvent(bookingMapper.toEvent(bookingCommand));
+			bookingProducer.sendBookingUpdatedEvent(toEvent(bookingCommand));
 
 			log.info(
 				"[BookingCommand] 예매 쿠폰, 마일리지 적용 메시지 수신 - 성공: | userId={}, bookingId={}",
@@ -401,7 +414,7 @@ public class BookingCommandService {
 			bookingCommand.preUpdate(message.getUserId());
 
 			// Query 전송
-			bookingProducer.sendBookingUpdatedEvent(bookingMapper.toEvent(bookingCommand));
+			bookingProducer.sendBookingUpdatedEvent(toEvent(bookingCommand));
 
 			// 티켓 생성 요청
 			bookingProducer.sendTicketRequest(
@@ -442,7 +455,6 @@ public class BookingCommandService {
 
 		} else {
 			// 실패시 사용한 쿠폰, 마일리지 원복처리
-
 			if (optional.isPresent()) {
 				BenefitUsageHistory benefitUsageHistory = optional.get();
 				benefitUsageHistory.refunded(message.getUserId());
@@ -473,7 +485,7 @@ public class BookingCommandService {
 			bookingCommand.cancel(message.getUserId());
 
 			// Query 전송
-			bookingProducer.sendBookingUpdatedEvent(bookingMapper.toEvent(bookingCommand));
+			bookingProducer.sendBookingUpdatedEvent(toEvent(bookingCommand));
 
 			Optional<BenefitUsageHistory> optional = benefitUsageHistoryRepository.findByBookingIdAndRefundedIsFalse(
 				bookingCommand.getId());
@@ -559,7 +571,6 @@ public class BookingCommandService {
 		}
 	}
 
-	@Transactional
 	public void receiveWaitingQueueMessage(BookingRequestMessage message) {
 
 		log.info(
@@ -618,4 +629,25 @@ public class BookingCommandService {
 		return price > 0;
 	}
 
+	private BookingEntityEvent toEvent(BookingCommand command) {
+		return new BookingEntityEvent(
+			command.getId(),
+			command.getUserId(),
+			command.getPerformanceId(),
+			command.getPerformanceScheduleId(),
+			command.getScheduleSeatId(),
+			command.getPaymentId(),
+			command.getPrice(),
+			command.getDiscountedPrice(),
+			command.getBookingStatus().name(),
+			command.getBookedAt(),
+			command.getCanceledAt(),
+			command.getCreatedAt(),
+			command.getCreatedBy(),
+			command.getUpdatedAt(),
+			command.getUpdatedBy(),
+			command.getDeletedAt(),
+			command.getDeletedBy()
+		);
+	}
 }

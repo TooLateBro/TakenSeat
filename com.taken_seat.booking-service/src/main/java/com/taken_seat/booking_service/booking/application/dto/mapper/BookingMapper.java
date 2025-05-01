@@ -6,6 +6,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 import org.springframework.data.domain.Pageable;
 
+import com.taken_seat.booking_service.booking.application.dto.command.BookingCancelCommand;
 import com.taken_seat.booking_service.booking.application.dto.command.BookingCreateCommand;
 import com.taken_seat.booking_service.booking.application.dto.command.BookingPaymentCommand;
 import com.taken_seat.booking_service.booking.application.dto.command.BookingSingleTargetCommand;
@@ -15,6 +16,7 @@ import com.taken_seat.booking_service.booking.application.dto.query.BookingListQ
 import com.taken_seat.booking_service.booking.application.dto.query.BookingReadQuery;
 import com.taken_seat.booking_service.booking.application.dto.query.BookingStatusQuery;
 import com.taken_seat.booking_service.booking.domain.BookingCommand;
+import com.taken_seat.booking_service.booking.presentation.dto.request.BookingCancelRequest;
 import com.taken_seat.booking_service.booking.presentation.dto.request.BookingCreateRequest;
 import com.taken_seat.booking_service.booking.presentation.dto.request.BookingPayRequest;
 import com.taken_seat.common_service.dto.AuthenticatedUser;
@@ -27,6 +29,8 @@ public interface BookingMapper {
 	BookingSingleTargetCommand toCommand(AuthenticatedUser user, UUID bookingId);
 
 	BookingPaymentCommand toCommand(AuthenticatedUser user, UUID bookingId, BookingPayRequest request);
+
+	BookingCancelCommand toCommand(AuthenticatedUser user, UUID bookingId, BookingCancelRequest request);
 
 	BookingReadQuery toQuery(AuthenticatedUser user, UUID bookingId);
 

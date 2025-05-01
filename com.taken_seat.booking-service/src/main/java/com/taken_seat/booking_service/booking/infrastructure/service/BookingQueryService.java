@@ -109,25 +109,7 @@ public class BookingQueryService {
 		TicketPerformanceClientResponse response = bookingClientService.getPerformanceInfo(event.performanceId(),
 			event.performanceScheduleId(), event.scheduleSeatId());
 
-		BookingQuery bookingQuery = BookingQuery.builder()
-			.id(event.id())
-			.userId(event.userId())
-			.performanceId(event.performanceId())
-			.performanceScheduleId(event.performanceScheduleId())
-			.scheduleSeatId(event.scheduleSeatId())
-			.paymentId(event.paymentId())
-			.price(event.price())
-			.discountedPrice(event.discountedPrice())
-			.bookingStatus(BookingStatus.valueOf(event.bookingStatus()))
-			.bookedAt(event.bookedAt())
-			.canceledAt(event.canceledAt())
-			.title(response.title())
-			.name(response.name())
-			.address(response.address())
-			.rowNumber(response.rowNumber())
-			.seatNumber(response.seatNumber())
-			.seatType(response.seatType())
-			.build();
+		BookingQuery bookingQuery = toQuery(event, response);
 		bookingQuery.create(event);
 
 		bookingQueryRepository.save(bookingQuery);
@@ -161,5 +143,27 @@ public class BookingQueryService {
 	private BookingQuery findBookingByIdAndUserId(UUID id, UUID userId) {
 		return bookingQueryRepository.findByIdAndUserId(id, userId)
 			.orElseThrow(() -> new BookingException(ResponseCode.BOOKING_NOT_FOUND_EXCEPTION));
+	}
+
+	private BookingQuery toQuery(BookingEntityEvent event, TicketPerformanceClientResponse response) {
+		return BookingQuery.builder()
+			.id(event.id())
+			.userId(event.userId())
+			.performanceId(event.performanceId())
+			.performanceScheduleId(event.performanceScheduleId())
+			.scheduleSeatId(event.scheduleSeatId())
+			.paymentId(event.paymentId())
+			.price(event.price())
+			.discountedPrice(event.discountedPrice())
+			.bookingStatus(BookingStatus.valueOf(event.bookingStatus()))
+			.bookedAt(event.bookedAt())
+			.canceledAt(event.canceledAt())
+			.title(response.title())
+			.name(response.name())
+			.address(response.address())
+			.rowNumber(response.rowNumber())
+			.seatNumber(response.seatNumber())
+			.seatType(response.seatType())
+			.build();
 	}
 }

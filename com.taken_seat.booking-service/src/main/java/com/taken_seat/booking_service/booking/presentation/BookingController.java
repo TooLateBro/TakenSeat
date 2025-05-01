@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.taken_seat.booking_service.booking.application.dto.command.BookingCancelCommand;
 import com.taken_seat.booking_service.booking.application.dto.command.BookingCreateCommand;
 import com.taken_seat.booking_service.booking.application.dto.command.BookingPaymentCommand;
 import com.taken_seat.booking_service.booking.application.dto.command.BookingSingleTargetCommand;
@@ -23,6 +24,7 @@ import com.taken_seat.booking_service.booking.application.dto.query.BookingListQ
 import com.taken_seat.booking_service.booking.application.dto.query.BookingReadQuery;
 import com.taken_seat.booking_service.booking.application.dto.query.BookingStatusQuery;
 import com.taken_seat.booking_service.booking.application.service.BookingService;
+import com.taken_seat.booking_service.booking.presentation.dto.request.BookingCancelRequest;
 import com.taken_seat.booking_service.booking.presentation.dto.request.BookingCreateRequest;
 import com.taken_seat.booking_service.booking.presentation.dto.request.BookingPayRequest;
 import com.taken_seat.booking_service.booking.presentation.dto.response.AdminBookingPageResponse;
@@ -63,9 +65,9 @@ public class BookingController {
 	@BookingSwaggerDocs.CancelBooking
 	@PatchMapping("/api/v1/bookings/{id}")
 	public ResponseEntity<ApiResponseData<Void>> cancelBooking(AuthenticatedUser authenticatedUser,
-		@PathVariable("id") UUID id) {
+		@PathVariable("id") UUID id, @RequestBody @Valid BookingCancelRequest request) {
 
-		BookingSingleTargetCommand command = bookingMapper.toCommand(authenticatedUser, id);
+		BookingCancelCommand command = bookingMapper.toCommand(authenticatedUser, id, request);
 		bookingService.cancelBooking(command);
 
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponseData.success());

@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
+import com.taken_seat.booking_service.booking.application.dto.command.BookingCancelCommand;
 import com.taken_seat.booking_service.booking.application.dto.command.BookingCreateCommand;
 import com.taken_seat.booking_service.booking.application.dto.command.BookingPaymentCommand;
 import com.taken_seat.booking_service.booking.application.dto.command.BookingSingleTargetCommand;
@@ -39,7 +40,7 @@ public class BookingServiceImpl implements BookingService {
 	}
 
 	@Override
-	public void cancelBooking(BookingSingleTargetCommand command) {
+	public void cancelBooking(BookingCancelCommand command) {
 		bookingCommandService.cancelBooking(command);
 	}
 

@@ -25,18 +25,22 @@ import com.taken_seat.coupon_service.domain.entity.Coupon;
 import com.taken_seat.coupon_service.domain.repository.CouponQueryRepository;
 import com.taken_seat.coupon_service.domain.repository.CouponRepository;
 
+import io.micrometer.core.instrument.MeterRegistry;
+
 @Service
 public class CouponServiceImpl implements CouponService {
 
 	private final CouponMapper couponMapper;
 	private final CouponRepository couponRepository;
 	private final CouponQueryRepository couponQueryRepository;
+	private final MeterRegistry meterRegistry;
 
 	public CouponServiceImpl(CouponMapper couponMapper, CouponRepository couponRepository,
-		CouponQueryRepository couponQueryRepository) {
+		CouponQueryRepository couponQueryRepository, MeterRegistry meterRegistry) {
 		this.couponMapper = couponMapper;
 		this.couponRepository = couponRepository;
 		this.couponQueryRepository = couponQueryRepository;
+		this.meterRegistry = meterRegistry;
 	}
 
 	@TrackLatency(
@@ -47,16 +51,25 @@ public class CouponServiceImpl implements CouponService {
 	@Override
 	@CachePut(cacheNames = "couponCache", key = "#result.id")
 	public CouponResponseDto createCoupon(CouponDto dto, AuthenticatedUser authenticatedUser) {
-		if (couponRepository.findByCode(dto.code()).isPresent()) {
-			throw new CouponException(ResponseCode.COUPON_EXISTS);
-		}
-		Coupon coupon = Coupon.create(
-			dto.name(), dto.code(), dto.quantity(),
-			dto.discount(), dto.expiredAt(), authenticatedUser.getUserId()
-		);
-		couponRepository.save(coupon);
+		try {
+			if (couponRepository.findByCode(dto.code()).isPresent()) {
+				meterRegistry.counter("coupon_create_total", "result", "fail").increment();
+				throw new CouponException(ResponseCode.COUPON_EXISTS);
+			}
 
-		return couponMapper.couponToCouponResponseDto(coupon);
+			Coupon coupon = Coupon.create(
+				dto.name(), dto.code(), dto.quantity(),
+				dto.discount(), dto.expiredAt(), authenticatedUser.getUserId()
+			);
+			couponRepository.save(coupon);
+
+			meterRegistry.counter("coupon_create_total", "result", "success").increment();
+
+			return couponMapper.couponToCouponResponseDto(coupon);
+		} catch (Exception e) {
+			meterRegistry.counter("coupon_create_total", "result", "fail").increment();
+			throw e;
+		}
 	}
 
 	@TrackLatency(
