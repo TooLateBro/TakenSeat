@@ -263,7 +263,9 @@ TakenSeat                                                  # 루트 프로젝트
 <br><br>
 
 ## 📖 서비스 아키텍처
-<img src="https://github.com/user-attachments/assets/5a12e9fb-5e0b-4f55-b2e4-1b51aba806fe" >
+<img src="https://github.com/user-attachments/assets/870923ff-9446-4dfb-a2ed-026761128858" >
+
+
 
 <br><br>
 
