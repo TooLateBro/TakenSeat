@@ -2,6 +2,7 @@ package com.taken_seat.booking_service.booking.application.service;
 
 import java.util.UUID;
 
+import com.taken_seat.booking_service.booking.application.dto.command.BookingCancelCommand;
 import com.taken_seat.booking_service.booking.application.dto.command.BookingCreateCommand;
 import com.taken_seat.booking_service.booking.application.dto.command.BookingPaymentCommand;
 import com.taken_seat.booking_service.booking.application.dto.command.BookingSingleTargetCommand;
@@ -24,7 +25,7 @@ import com.taken_seat.common_service.message.UserBenefitMessage;
 public interface BookingService {
 	BookingCreateResponse createBooking(BookingCreateCommand command);
 
-	void cancelBooking(BookingSingleTargetCommand command);
+	void cancelBooking(BookingCancelCommand command);
 
 	void deleteBooking(BookingSingleTargetCommand command);
 
