@@ -49,6 +49,9 @@ dependencies {
     // Swagger
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0'
 
+    // 타임리프
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+
     // .env 환경변수
     implementation 'me.paulschwarz:spring-dotenv:4.0.0'
 

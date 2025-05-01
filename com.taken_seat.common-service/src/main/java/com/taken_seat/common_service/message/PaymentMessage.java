@@ -19,7 +19,9 @@ public class PaymentMessage {
 
 	private UUID paymentId; // 결제 ID (결제 결과 메시지에서 필요)
 
-	private Integer price; // 결제 금액
+	private Integer amount; // 결제 금액
+
+	private String orderName;
 
 	private PaymentResultStatus status; // 결제 상태 (결제 요청과 결과에서 모두 사용)
 

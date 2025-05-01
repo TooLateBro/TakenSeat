@@ -79,14 +79,14 @@ public class PaymentServiceTest {
 		// PaymentDto 초기화
 		testPaymentDto = PaymentDto.builder()
 			.bookingId(testBookingId)
-			.price(1000)
+			.amount(1000)
 			.userId(UUID.randomUUID())  // 실제 사용자 ID로 설정
 			.build();
 
 		testPayment = Payment.builder()
 			.id(testPaymentId)
 			.bookingId(testBookingId)
-			.price(1000)
+			.amount(1000)
 			.paymentStatus(PaymentStatus.COMPLETED)
 			.approvedAt(LocalDateTime.now())
 			.build();
@@ -96,7 +96,7 @@ public class PaymentServiceTest {
 		testPaymentHistory = PaymentHistory.builder()
 			.id(testPaymentHistoryId)
 			.payment(testPayment)
-			.price(testPayment.getPrice())
+			.amount(testPayment.getAmount())
 			.paymentStatus(testPayment.getPaymentStatus())
 			.approvedAt(LocalDateTime.now())
 			.build();
@@ -116,7 +116,7 @@ public class PaymentServiceTest {
 		PaymentDetailResDto paymentDetailResDto = PaymentDetailResDto.builder()
 			.id(testPaymentDto.getPaymentId())
 			.bookingId(testPaymentDto.getBookingId())
-			.price(testPaymentDto.getPrice())
+			.price(testPaymentDto.getAmount())
 			.paymentStatus(testPaymentDto.getPaymentStatus())
 			.build();
 
@@ -137,7 +137,7 @@ public class PaymentServiceTest {
 		// Given
 		testPaymentDto = PaymentDto.builder()
 			.bookingId(testBookingId)
-			.price(0)
+			.amount(0)
 			.userId(UUID.randomUUID())  // 실제 사용자 ID로 설정
 			.build();
 
@@ -158,7 +158,7 @@ public class PaymentServiceTest {
 		PaymentDetailResDto paymentDetailResDto = PaymentDetailResDto.builder()
 			.id(testPayment.getId())
 			.bookingId(testPayment.getBookingId())
-			.price(testPayment.getPrice())
+			.price(testPayment.getAmount())
 			.paymentStatus(testPayment.getPaymentStatus())
 			.approvedAt(null)
 			.refundAmount(null)
@@ -172,7 +172,7 @@ public class PaymentServiceTest {
 
 		// Then
 		assertNotNull(result);
-		assertEquals(testPayment.getPrice(), result.getPrice());
+		assertEquals(testPayment.getAmount(), result.getPrice());
 		assertEquals(testPayment.getPaymentStatus(), result.getPaymentStatus());
 	}
 
@@ -209,7 +209,7 @@ public class PaymentServiceTest {
 		PaymentDetailResDto paymentDetailResDto = PaymentDetailResDto.builder()
 			.id(testPayment.getId())
 			.bookingId(testPayment.getBookingId())
-			.price(testPayment.getPrice())
+			.price(testPayment.getAmount())
 			.paymentStatus(testPayment.getPaymentStatus())
 			.approvedAt(null)
 			.refundAmount(null)
@@ -228,7 +228,7 @@ public class PaymentServiceTest {
 		assertEquals(1, result.getContent().size());
 
 		PaymentDetailResDto detail = result.getContent().get(0);
-		assertEquals(testPayment.getPrice(), detail.getPrice());
+		assertEquals(testPayment.getAmount(), detail.getPrice());
 		assertEquals(testPayment.getPaymentStatus(), detail.getPaymentStatus());
 	}
 
@@ -264,7 +264,7 @@ public class PaymentServiceTest {
 		testPaymentDto = PaymentDto.builder()
 			.bookingId(testBookingId)
 			.paymentId(testPaymentId)
-			.price(3000)
+			.amount(3000)
 			.userId(UUID.randomUUID())  // 실제 사용자 ID로 설정
 			.paymentStatus(PaymentStatus.FAILED)
 			.build();
@@ -272,7 +272,7 @@ public class PaymentServiceTest {
 		PaymentDetailResDto paymentDetailResDto = PaymentDetailResDto.builder()
 			.id(testPayment.getId())
 			.bookingId(testPaymentDto.getBookingId())
-			.price(testPaymentDto.getPrice())
+			.price(testPaymentDto.getAmount())
 			.paymentStatus(testPaymentDto.getPaymentStatus())
 			.approvedAt(null)
 			.refundAmount(null)
@@ -302,7 +302,7 @@ public class PaymentServiceTest {
 		testPaymentDto = PaymentDto.builder()
 			.bookingId(testBookingId)
 			.paymentId(testPaymentId)
-			.price(0)
+			.amount(0)
 			.userId(UUID.randomUUID())  // 실제 사용자 ID로 설정
 			.paymentStatus(PaymentStatus.FAILED)
 			.build();
@@ -324,7 +324,7 @@ public class PaymentServiceTest {
 		testPaymentDto = PaymentDto.builder()
 			.bookingId(testBookingId)
 			.paymentId(notExistId)
-			.price(1000)
+			.amount(1000)
 			.userId(UUID.randomUUID())  // 실제 사용자 ID로 설정
 			.paymentStatus(PaymentStatus.FAILED)
 			.build();
@@ -346,7 +346,7 @@ public class PaymentServiceTest {
 		testPaymentDto = PaymentDto.builder()
 			.bookingId(testBookingId)
 			.paymentId(testPaymentId)
-			.price(1000)
+			.amount(1000)
 			.userId(UUID.randomUUID())  // 실제 사용자 ID로 설정
 			.paymentStatus(PaymentStatus.FAILED)
 			.build();

@@ -8,6 +8,7 @@ import com.taken_seat.common_service.exception.customException.PaymentException;
 import com.taken_seat.common_service.exception.customException.PaymentHistoryException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.common_service.message.PaymentRefundMessage;
+import com.taken_seat.payment_service.application.client.TossPaymentClient;
 import com.taken_seat.payment_service.application.kafka.producer.PaymentRefundResponseProducer;
 import com.taken_seat.payment_service.domain.model.Payment;
 import com.taken_seat.payment_service.domain.model.PaymentHistory;
@@ -25,6 +26,7 @@ public class PaymentRefundEventHandlerServiceImpl implements PaymentRefundEventH
 
 	private final PaymentRepository paymentRepository;
 	private final PaymentHistoryRepository paymentHistoryRepository;
+	private final TossPaymentClient tossPaymentClient;
 
 	private final PaymentRefundResponseProducer paymentRefundResponseProducer;
 
@@ -38,7 +40,7 @@ public class PaymentRefundEventHandlerServiceImpl implements PaymentRefundEventH
 		// 1. 결제 금액 검사
 		if (isInvalidPrice(message)) {
 			log.warn("[Payment] 환불 금액 유효성 검사 - 실패 - bookingId={}, price={}", message.getBookingId(),
-				message.getPrice());
+				message.getAmount());
 
 			PaymentRefundMessage paymentRefundMessage = PaymentRefundMessage.builder()
 				.userId(message.getUserId())
@@ -59,8 +61,10 @@ public class PaymentRefundEventHandlerServiceImpl implements PaymentRefundEventH
 		PaymentHistory paymentHistory = paymentHistoryRepository.findByPayment(payment)
 			.orElseThrow(() -> new PaymentHistoryException(ResponseCode.PAYMENT_HISTORY_NOT_FOUND_EXCEPTION));
 
+		tossPaymentClient.refund(payment.getPaymentKey(), payment.getAmount(), message.getCancelReason());
+
 		payment.refund(message);
-		log.debug("[Payment] 환불 처리 - 성공 - paymentId={}, price={}", payment.getId(), payment.getPrice());
+		log.debug("[Payment] 환불 처리 - 성공 - paymentId={}, price={}", payment.getId(), payment.getAmount());
 
 		paymentHistory.refund(payment);
 		log.debug("[Payment] 환불 히스토리 저장 완료 - paymentHistoryId: {}", paymentHistory.getId());
@@ -77,6 +81,6 @@ public class PaymentRefundEventHandlerServiceImpl implements PaymentRefundEventH
 	}
 
 	private boolean isInvalidPrice(PaymentRefundMessage message) {
-		return message.getPrice() == null || message.getPrice() <= 0;
+		return message.getAmount() == null || message.getAmount() <= 0;
 	}
 }

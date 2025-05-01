@@ -44,7 +44,13 @@ public class Payment extends BaseTimeEntity {
 	private UUID userId;
 
 	@Column(nullable = false)
-	private Integer price;
+	private Integer amount;
+
+	@Column(nullable = false)
+	private String orderName;
+
+	@Column(unique = true)
+	private String paymentKey;
 
 	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
@@ -60,8 +66,9 @@ public class Payment extends BaseTimeEntity {
 		Payment payment = Payment.builder()
 			.bookingId(dto.getBookingId())
 			.userId(dto.getUserId())
-			.price(dto.getPrice())
-			.paymentStatus(PaymentStatus.COMPLETED)
+			.amount(dto.getAmount())
+			.orderName(dto.getOrderName())
+			.paymentStatus(PaymentStatus.PENDING)
 			.build();
 
 		payment.prePersist(dto.getUserId());
@@ -73,8 +80,9 @@ public class Payment extends BaseTimeEntity {
 		Payment payment = Payment.builder()
 			.bookingId(message.getBookingId())
 			.userId(message.getUserId())
-			.price(message.getPrice())
-			.paymentStatus(PaymentStatus.CREATED)
+			.amount(message.getAmount())
+			.orderName(message.getOrderName())
+			.paymentStatus(PaymentStatus.PENDING)
 			.build();
 
 		payment.prePersist(message.getUserId());
@@ -83,7 +91,7 @@ public class Payment extends BaseTimeEntity {
 	}
 
 	public void update(PaymentDto dto) {
-		this.price = dto.getPrice();
+		this.amount = dto.getAmount();
 		this.paymentStatus = dto.getPaymentStatus();
 		this.preUpdate(dto.getUserId());
 	}
@@ -105,9 +113,18 @@ public class Payment extends BaseTimeEntity {
 			throw new PaymentException(ResponseCode.CANNOT_REFUND);
 		}
 
-		this.refundAmount = message.getPrice();
+		this.refundAmount = message.getAmount();
 		this.refundRequestedAt = LocalDateTime.now();
 		this.paymentStatus = PaymentStatus.REFUNDED;
 		this.preUpdate(message.getUserId());
+	}
+
+	public void updateSuccessInfo(String paymentKey, int totalAmount) {
+
+		this.paymentStatus = PaymentStatus.COMPLETED;
+		this.paymentKey = paymentKey;
+		this.amount = totalAmount;
+		this.approvedAt = LocalDateTime.now();
+		this.updatedAt = LocalDateTime.now();
 	}
 }

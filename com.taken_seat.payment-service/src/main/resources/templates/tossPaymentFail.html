@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>결제 실패</title>
+    <link rel="stylesheet" type="text/css" href="/style.css"/>
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #fff5f5;
+        }
+
+        .box_section {
+            border: 1px solid #ff6b6b;
+            border-radius: 10px;
+            padding: 40px;
+            background-color: #ffffff;
+            width: 500px;
+            text-align: center;
+        }
+
+        .box_section h2 {
+            color: #ff3b30;
+        }
+
+        .error-message {
+            margin-top: 20px;
+            color: #333;
+            font-size: 16px;
+            white-space: pre-wrap;
+        }
+
+        .button {
+            margin-top: 30px;
+            padding: 10px 20px;
+            background-color: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .button:hover {
+            background-color: #ff3b30;
+        }
+    </style>
+</head>
+<body>
+<div class="box_section">
+    <h2>결제에 실패했어요 😢</h2>
+    <div class="error-message">
+        <p><strong>에러 메시지:</strong> <span id="message"></span></p>
+        <p><strong>에러 코드:</strong> <span id="code"></span></p>
+    </div>
+    <button class="button" onclick="window.location.href='/'">홈으로 가기</button>
+</div>
+
+<script>
+    // URL 쿼리 파라미터에서 실패 메시지와 코드 추출
+    const params = new URLSearchParams(window.location.search);
+    const message = params.get("message");
+    const code = params.get("code");
+
+    document.getElementById("message").textContent = message || "알 수 없는 오류입니다.";
+    document.getElementById("code").textContent = code || "-";
+</script>
+</body>
+</html>
