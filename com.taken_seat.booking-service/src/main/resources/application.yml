@@ -73,7 +73,7 @@ kafka:
 variable:
   lock-wait-time: 3 # 초
   lock-lease-time: 5 # 초
-  booking-expiration-time: 600 # 초
+  booking-expiration-time: 180 # 초
   cache-duration: 600 # 초
 
 common:
