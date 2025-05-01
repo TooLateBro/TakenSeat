@@ -586,6 +586,10 @@ public class BookingCommandService {
 			.map(SeatLayoutResponseDto.ScheduleSeatResponseDto::scheduleSeatId)
 			.toList();
 
+		if (seatIds.isEmpty()) {
+			throw new BookingException(ResponseCode.BOOKING_SEAT_NONE_AVAILABLE_EXCEPTION);
+		}
+
 		Random random = new Random();
 		int i = random.nextInt(seatIds.size());
 		UUID seatId = seatIds.get(i);
