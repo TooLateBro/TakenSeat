@@ -27,9 +27,9 @@ public class GenerateTokens {
 		BufferedWriter writer = new BufferedWriter(new FileWriter("tokens.csv"));
 		writer.write("email,token\n");
 
-		for (int i = 1; i <= 1000; i++) {
-			String email = "user" + i + "@example.com";
-			String password = "password" + i + "!";
+		for (int i = 1; i <= 10000; i++) {
+			String email = "user" + (i + 1) + "@example.com";
+			String password = "password" + (i + 1) + "!";
 			String requestBody = String.format("{\"email\": \"%s\", \"password\": \"%s\"}", email,
 				password);
 
