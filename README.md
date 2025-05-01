@@ -1,4 +1,5 @@
 # 🎟️ 뮤지컬 & 콘서트 대규모 티켓팅 서비스 프로젝트
+
 <div>
   <img src="https://github.com/user-attachments/assets/ef04522a-c191-478f-815b-f0340923c6c1" style="width: 100%; height: 450px;">
 </div>
@@ -9,6 +10,7 @@
 - 콘서트, 연극, 뮤지컬 등 다양한 공연에 대해 유저가 실시간으로 예매할 수 있는 티켓팅 시스템 구축
 
 ## 🛠️ 기술 스택
+
 <table>
   <tr>
     <td><h3 style="margin: 0;">Database</h3></td>
@@ -80,6 +82,7 @@
 <br>
 
 ## 🗂️ 프로젝트 구조
+
 ```
 TakenSeat                                                  # 루트 프로젝트
 ├──com.taken_seat.eureka-service                           # 서비스 디스커버리
@@ -196,16 +199,19 @@ TakenSeat                                                  # 루트 프로젝트
 <br><br>
 
 ## 📖 서비스 아키텍처
-<img src="https://github.com/user-attachments/assets/2894d9eb-9cde-4487-9f03-92c7508c93a5" >
+
+<img src="https://github.com/user-attachments/assets/870923ff-9446-4dfb-a2ed-026761128858" >
 
 <br><br>
 
 ## ✏️ 이벤트 흐름
+
 <img src="https://github.com/user-attachments/assets/6f4059fd-f91e-47b6-9404-7e5cc9909adc">
 
 <br><br>
 
 ## 🛎️ 기술적 의사 결정
+
 - [ELK vs Grafana Prometheus Loki](https://github.com/toolatebro/TakenSeat/wiki/%5BTechnical-Decision%5D-ELK-vs-Grafana---Prometheus---Loki)
 - [Micrometer Tracing VS OpenTelemetry](https://github.com/toolatebro/TakenSeat/wiki/%5BTechnical-Decision%5D-Micrometer-Tracing-VS-OpenTelemetry)
 - [PostgreSQL VS MySQL](https://github.com/toolatebro/TakenSeat/wiki/%5BTechnical-Decision%5D-PostgreSQL-VS-MySQL)
@@ -214,6 +220,7 @@ TakenSeat                                                  # 루트 프로젝트
 <br>
 
 ## ⁉️ 트러블 슈팅
+
 - [정다예 - Grafana에서 Prometheus 메트릭이 404 뜨던 문제 해결](https://github.com/toolatebro/TakenSeat/wiki/%5BTrouble-Shooting%5D-%5B%EB%8B%A4%EC%98%88%5D-Grafana%EC%97%90%EC%84%9C-Prometheus-%EB%A9%94%ED%8A%B8%EB%A6%AD%EC%9D%B4-404-%EB%9C%A8%EB%8D%98-%EB%AC%B8%EC%A0%9C-%ED%95%B4%EA%B2%B0)
 - [정다예 - Windows 환경에서 JVM CPU 메트릭 수집 불가 이슈](https://github.com/toolatebro/TakenSeat/wiki/%5BTrouble-Shooting%5D-%5B%EB%8B%A4%EC%98%88%5D-Windows-%ED%99%98%EA%B2%BD%EC%97%90%EC%84%9C-JVM-CPU-%EB%A9%94%ED%8A%B8%EB%A6%AD-%EC%88%98%EC%A7%91-%EB%B6%88%EA%B0%80-%EC%9D%B4%EC%8A%88)
 - [전승현 - Spring Redis hashOps.keys()로 패턴 조회 안 되는 이유와 SCAN을 사용한 해결법](https://github.com/toolatebro/TakenSeat/wiki/%5BTrouble-Shooting%5D-%5B%EC%8A%B9%ED%98%84%5D--Spring-Redis-hashOps.keys()%EB%A1%9C-%ED%8C%A8%ED%84%B4-%EC%A1%B0%ED%9A%8C-%EC%95%88-%EB%90%98%EB%8A%94-%EC%9D%B4%EC%9C%A0%EC%99%80-SCAN%EC%9D%84-%EC%82%AC%EC%9A%A9%ED%95%9C-%ED%95%B4%EA%B2%B0%EB%B2%95)
@@ -224,10 +231,11 @@ TakenSeat                                                  # 루트 프로젝트
 <br><br>
 
 ## 📌 팀원 역할분담
-| 🫅 Leader | 👷 Sub-Leader | 👷 Member | 👷 Member | 👷 Member |   
-| :---: | :---: | :---: | :---: | :---: |
+
+|                                        🫅 Leader                                         |                                      👷 Sub-Leader                                      |                                        👷 Member                                         |                                        👷 Member                                         |                                        👷 Member                                         |   
+|:----------------------------------------------------------------------------------------:|:---------------------------------------------------------------------------------------:|:----------------------------------------------------------------------------------------:|:----------------------------------------------------------------------------------------:|:----------------------------------------------------------------------------------------:|
 | <img src="https://avatars.githubusercontent.com/u/128787964?v=4" width="120px;" alt=""/> | <img src="https://avatars.githubusercontent.com/u/81623522?v=4" width="120px;" alt=""/> | <img src="https://avatars.githubusercontent.com/u/140582940?v=4" width="120px;" alt=""/> | <img src="https://avatars.githubusercontent.com/u/155501200?v=4" width="120px;" alt=""/> | <img src="https://avatars.githubusercontent.com/u/100333239?v=4" width="120px;" alt=""/> |
-| [전승현](https://github.com/jjsh0208) | [이채연](https://github.com/dkki4887) | [백승규](https://github.com/seungg8361) | [정다예](https://github.com/Jungdaye89) | [강성준](https://github.com/Goldbar97)
-| Payment / Review / DevOps | Queue | Auth / Coupon / Mileage | Performance / Mornitoring | Booking / Ticket |
+|                            [전승현](https://github.com/jjsh0208)                            |                           [이채연](https://github.com/dkki4887)                            |                           [백승규](https://github.com/seungg8361)                           |                           [정다예](https://github.com/Jungdaye89)                           |                           [강성준](https://github.com/Goldbar97)                            
+|                                Payment / Review / DevOps                                 |                                          Queue                                          |                                 Auth / Coupon / Mileage                                  |                                Performance / Mornitoring                                 |                                     Booking / Ticket                                     |
 
 <br>
