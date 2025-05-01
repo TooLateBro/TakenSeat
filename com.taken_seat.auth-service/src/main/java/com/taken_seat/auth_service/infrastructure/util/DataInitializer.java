@@ -24,7 +24,7 @@ public class DataInitializer implements CommandLineRunner {
         String[] roles = {"MANAGER", "CUSTOMER", "PRODUCER", "ADMIN"};
 
         // 100개의 사용자 데이터를 동적으로 삽입 (하지만 예측 가능한 값으로)
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 10000; i++) {
             // 예측 가능한 ID 생성 (인덱스 기반)
             String uuidString = String.format("abcdef01-2345-6789-abcd-%012d", i);
             UUID id = UUID.fromString(uuidString);
