@@ -1,4 +1,4 @@
-package com.taken_seat.payment_service.application.client.dto;
+package com.taken_seat.payment_service.application.tossclient.dto;
 
 public record TossConfirmResponse(
 	String orderId,
