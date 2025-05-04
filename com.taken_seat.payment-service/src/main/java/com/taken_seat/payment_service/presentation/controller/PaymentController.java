@@ -18,6 +18,8 @@ import com.taken_seat.common_service.aop.annotation.RoleCheck;
 import com.taken_seat.common_service.aop.vo.Role;
 import com.taken_seat.common_service.dto.ApiResponseData;
 import com.taken_seat.common_service.dto.AuthenticatedUser;
+import com.taken_seat.payment_service.application.command.GetPaymentDetailCommand;
+import com.taken_seat.payment_service.application.command.RegisterPaymentCommand;
 import com.taken_seat.payment_service.application.dto.controller.request.PaymentRegisterReqDto;
 import com.taken_seat.payment_service.application.dto.controller.request.PaymentUpdateReqDto;
 import com.taken_seat.payment_service.application.dto.controller.response.PagePaymentResponseDto;
@@ -52,16 +54,17 @@ public class PaymentController {
 
 		return ResponseEntity.status(HttpStatus.OK)
 			.body(
-				ApiResponseData.success(paymentService.registerPayment(dto)));
+				ApiResponseData.success(new RegisterPaymentCommand(paymentService, dto).execute()));
 	}
 
 	@GetMapping("/{paymentId}")
 	@PaymentSwaggerDocs.GetPaymentDetail
 	public ResponseEntity<ApiResponseData<PaymentDetailResDto>> getPaymentDetail(
 		@PathVariable("paymentId") UUID paymentId) {
+
 		return ResponseEntity.status(HttpStatus.OK)
 			.body(
-				ApiResponseData.success(paymentService.getPaymentDetail(paymentId)));
+				ApiResponseData.success(new GetPaymentDetailCommand(paymentService, paymentId).execute()));
 	}
 
 	@GetMapping("/search")
