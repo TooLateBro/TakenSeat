@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.taken_seat.payment_service.application.client.dto.TossConfirmResponse;
 import com.taken_seat.payment_service.application.client.dto.TossPaymentRequest;
 import com.taken_seat.payment_service.application.dto.controller.response.PaymentCheckoutResponse;
-import com.taken_seat.payment_service.application.service.PaymentService;
+import com.taken_seat.payment_service.application.service.api.PaymentService;
 
 import lombok.RequiredArgsConstructor;
 

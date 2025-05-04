@@ -1,4 +1,4 @@
-package com.taken_seat.payment_service.application.service;
+package com.taken_seat.payment_service.application.service.api;
 
 import java.util.UUID;
 

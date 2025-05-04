@@ -1,8 +1,9 @@
-package com.taken_seat.payment_service.application.command;
+package com.taken_seat.payment_service.application.command.api;
 
+import com.taken_seat.payment_service.application.command.PaymentCommand;
 import com.taken_seat.payment_service.application.dto.controller.response.PagePaymentResponseDto;
 import com.taken_seat.payment_service.application.dto.service.PaymentSearchDto;
-import com.taken_seat.payment_service.application.service.PaymentService;
+import com.taken_seat.payment_service.application.service.api.PaymentService;
 
 public class SearchPaymentCommand implements PaymentCommand<PagePaymentResponseDto> {
 

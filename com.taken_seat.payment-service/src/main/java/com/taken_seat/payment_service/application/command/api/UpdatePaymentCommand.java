@@ -1,8 +1,9 @@
-package com.taken_seat.payment_service.application.command;
+package com.taken_seat.payment_service.application.command.api;
 
+import com.taken_seat.payment_service.application.command.PaymentCommand;
 import com.taken_seat.payment_service.application.dto.controller.response.PaymentDetailResDto;
 import com.taken_seat.payment_service.application.dto.service.PaymentDto;
-import com.taken_seat.payment_service.application.service.PaymentService;
+import com.taken_seat.payment_service.application.service.api.PaymentService;
 
 public class UpdatePaymentCommand implements PaymentCommand<PaymentDetailResDto> {
 
