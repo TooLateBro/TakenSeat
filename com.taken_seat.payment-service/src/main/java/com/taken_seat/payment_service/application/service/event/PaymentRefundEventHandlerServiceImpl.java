@@ -1,4 +1,4 @@
-package com.taken_seat.payment_service.application.service;
+package com.taken_seat.payment_service.application.service.event;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

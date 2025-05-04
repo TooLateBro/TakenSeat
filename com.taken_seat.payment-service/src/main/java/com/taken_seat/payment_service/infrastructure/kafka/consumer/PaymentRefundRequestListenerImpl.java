@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 
 import com.taken_seat.common_service.message.PaymentRefundMessage;
 import com.taken_seat.payment_service.application.kafka.consumer.PaymentRefundRequestListener;
-import com.taken_seat.payment_service.application.service.PaymentRefundEventHandlerService;
+import com.taken_seat.payment_service.application.service.event.PaymentRefundEventHandlerService;
 
 import lombok.RequiredArgsConstructor;
 
