@@ -18,6 +18,7 @@ import com.taken_seat.common_service.aop.annotation.RoleCheck;
 import com.taken_seat.common_service.aop.vo.Role;
 import com.taken_seat.common_service.dto.ApiResponseData;
 import com.taken_seat.common_service.dto.AuthenticatedUser;
+import com.taken_seat.payment_service.application.command.DeletePaymentCommand;
 import com.taken_seat.payment_service.application.command.GetPaymentDetailCommand;
 import com.taken_seat.payment_service.application.command.RegisterPaymentCommand;
 import com.taken_seat.payment_service.application.command.SearchPaymentCommand;
@@ -106,7 +107,11 @@ public class PaymentController {
 	@PaymentSwaggerDocs.DeletePayment
 	public ResponseEntity<ApiResponseData<String>> deletePayment(@PathVariable("paymentId") UUID paymentId,
 		AuthenticatedUser authenticatedUser) {
-		paymentService.deletePayment(paymentId, authenticatedUser);
+
+		DeletePaymentCommand command = new DeletePaymentCommand(paymentService, paymentId, authenticatedUser);
+
+		command.execute();
+
 		return ResponseEntity.status(HttpStatus.OK)
 			.body(
 				ApiResponseData.success("Delete Success"));
