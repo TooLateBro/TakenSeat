@@ -74,12 +74,6 @@ public class PaymentHistory extends BaseTimeEntity {
 		this.preUpdate(payment.getUpdatedBy());
 	}
 
-	public void markAsCompleted(UUID userId) {
-		this.paymentStatus = PaymentStatus.COMPLETED;
-		this.approvedAt = LocalDateTime.now();
-		this.preUpdate(userId);
-	}
-
 	@Override
 	public void delete(UUID deleteBy) {
 		super.delete(deleteBy);

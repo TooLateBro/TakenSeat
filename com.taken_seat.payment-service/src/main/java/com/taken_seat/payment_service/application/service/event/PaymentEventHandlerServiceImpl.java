@@ -55,9 +55,6 @@ public class PaymentEventHandlerServiceImpl implements PaymentEventHandlerServic
 		paymentHistoryRepository.save(paymentHistory);
 		log.debug("[Payment] 결제 히스토리 생성 - 성공 - paymentHistoryId={}", paymentHistory.getId());
 
-		payment.markAsCompleted(message.getUserId());
-		paymentHistory.markAsCompleted(message.getUserId());
-
 		// 4. 성공 메시지 전달
 		PaymentMessage paymentResultMessage = PaymentMessage.builder()
 			.userId(message.getUserId())
