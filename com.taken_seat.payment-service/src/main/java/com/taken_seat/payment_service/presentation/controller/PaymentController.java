@@ -20,6 +20,7 @@ import com.taken_seat.common_service.dto.ApiResponseData;
 import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.payment_service.application.command.GetPaymentDetailCommand;
 import com.taken_seat.payment_service.application.command.RegisterPaymentCommand;
+import com.taken_seat.payment_service.application.command.SearchPaymentCommand;
 import com.taken_seat.payment_service.application.dto.controller.request.PaymentRegisterReqDto;
 import com.taken_seat.payment_service.application.dto.controller.request.PaymentUpdateReqDto;
 import com.taken_seat.payment_service.application.dto.controller.response.PagePaymentResponseDto;
@@ -81,7 +82,7 @@ public class PaymentController {
 
 		return ResponseEntity.status(HttpStatus.OK)
 			.body(
-				ApiResponseData.success(paymentService.searchPayment(dto)));
+				ApiResponseData.success(new SearchPaymentCommand(paymentService, dto).execute()));
 	}
 
 	@PatchMapping("/{paymentId}")
