@@ -9,7 +9,7 @@ public class GetPaymentDetailCommand implements PaymentCommand<PaymentDetailResD
 
 	private final PaymentService paymentService;
 
-	private UUID paymentId;
+	private final UUID paymentId;
 
 	public GetPaymentDetailCommand(PaymentService paymentService, UUID paymentId) {
 		this.paymentService = paymentService;
