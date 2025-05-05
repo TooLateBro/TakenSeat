@@ -22,6 +22,7 @@ import com.taken_seat.review_service.application.command.api.DeleteReviewCommand
 import com.taken_seat.review_service.application.command.api.GetReviewDetailCommand;
 import com.taken_seat.review_service.application.command.api.RegisterReviewCommand;
 import com.taken_seat.review_service.application.command.api.SearchReviewCommand;
+import com.taken_seat.review_service.application.command.api.ToggleReviewLikeCommand;
 import com.taken_seat.review_service.application.command.api.UpdateReviewCommand;
 import com.taken_seat.review_service.application.dto.controller.request.ReviewRegisterReqDto;
 import com.taken_seat.review_service.application.dto.controller.request.ReviewUpdateReqDto;
@@ -130,7 +131,11 @@ public class ReviewController {
 	@ReviewSwaggerDocs.ToggleReviewLike
 	public ResponseEntity<ApiResponseData<Void>> toggleReviewLike(@PathVariable("reviewId") UUID reviewId,
 		AuthenticatedUser authenticatedUser) {
-		reviewLikeService.toggleReviewLike(reviewId, authenticatedUser);
+
+		ReviewDto dto = reviewMapper.toDto(reviewId, authenticatedUser);
+
+		ToggleReviewLikeCommand command = new ToggleReviewLikeCommand(reviewLikeService, dto);
+		command.execute();
 
 		return ResponseEntity.status(HttpStatus.OK)
 			.body(ApiResponseData.success());

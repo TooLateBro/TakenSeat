@@ -14,9 +14,9 @@ import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.common_service.exception.customException.ReviewException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
+import com.taken_seat.review_service.application.dto.service.ReviewDto;
 import com.taken_seat.review_service.domain.model.Review;
 import com.taken_seat.review_service.domain.model.ReviewLike;
 import com.taken_seat.review_service.domain.repository.ReviewLikeRepository;
@@ -41,13 +41,16 @@ public class ReviewLikeServiceImpl implements ReviewLikeService {
 	private HashOperations<String, String, Object> hashOps;
 
 	@Override
-	public void toggleReviewLike(UUID reviewId, AuthenticatedUser authenticatedUser) {
+	public void toggleReviewLike(ReviewDto reviewDto) {
+		UUID reviewId = reviewDto.getReviewId();
+		UUID userId = reviewDto.getUserId();
+
 		hashOps = likeCountRedisTemplate.opsForHash();
 		String key = getRedisKey(reviewId);
-		String userField = getUserField(authenticatedUser.getUserId());
+		String userField = getUserField(userId);
 
 		Optional<ReviewLike> reviewLikeOpt = reviewLikeRepository.findByAuthorIdAndReviewId(
-			authenticatedUser.getUserId(), reviewId);
+			userId, reviewId);
 
 		if (reviewLikeOpt.isPresent() && !reviewLikeOpt.get().isDeleted()) {
 			// 이미 좋아요를 누른 경우
@@ -55,10 +58,10 @@ public class ReviewLikeServiceImpl implements ReviewLikeService {
 			decreaseLikeCount(key);
 
 			ReviewLike reviewLike = reviewLikeOpt.get();
-			reviewLike.cancelReviewLike(authenticatedUser.getUserId());
+			reviewLike.cancelReviewLike(userId);
 			reviewLikeRepository.save(reviewLike);
 
-			log.info("[Review] 좋아요 취소 시도 - 성공 userId={}, reviewId={}", authenticatedUser.getUserId(), reviewId);
+			log.info("[Review] 좋아요 취소 시도 - 성공 userId={}, reviewId={}", userId, reviewId);
 		} else {
 			// 좋아요를 안한 상태 -> 추가
 			hashOps.put(key, userField, true);
@@ -66,13 +69,13 @@ public class ReviewLikeServiceImpl implements ReviewLikeService {
 
 			ReviewLike like = reviewLikeOpt
 				.map(l -> {
-					l.addReviewLike(authenticatedUser.getUserId()); // soft delete 되어 있던 것 복구
-					log.info("[Review] 좋아요 복구 시도 - 성공 userId={}, reviewId={}", authenticatedUser.getUserId(), reviewId);
+					l.addReviewLike(userId); // soft delete 되어 있던 것 복구
+					log.info("[Review] 좋아요 복구 시도 - 성공 userId={}, reviewId={}", userId, reviewId);
 					return l;
 				})
 				.orElseGet(() -> {
-					log.info("[Review] 좋아요 생성 시도 - 성공 userId={}, reviewId={}", authenticatedUser.getUserId(), reviewId);
-					return ReviewLike.create(findReview(reviewId), authenticatedUser.getUserId());
+					log.info("[Review] 좋아요 생성 시도 - 성공 userId={}, reviewId={}", userId, reviewId);
+					return ReviewLike.create(findReview(reviewId), userId);
 				});
 
 			reviewLikeRepository.save(like);
