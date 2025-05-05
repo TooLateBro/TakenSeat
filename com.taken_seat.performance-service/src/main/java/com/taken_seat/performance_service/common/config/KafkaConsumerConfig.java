@@ -22,6 +22,7 @@ import org.springframework.util.backoff.FixedBackOff;
 import com.taken_seat.performance_service.performance.infrastructure.kafka.producer.SeatStatusChangedEvent;
 import com.taken_seat.performance_service.recommend.infrastructure.kafka.dto.BookingCompletedMessage;
 import com.taken_seat.performance_service.recommend.infrastructure.kafka.dto.RecommendRequestMessage;
+import com.taken_seat.performance_service.recommend.infrastructure.kafka.dto.UserSnapshotEvent;
 
 @Configuration
 @EnableKafka
@@ -120,5 +121,23 @@ public class KafkaConsumerConfig {
 	public ConsumerFactory<String, RecommendRequestMessage> recommendRequestConsumerFactory() {
 		String type = RecommendRequestMessage.class.getName();
 		return new DefaultKafkaConsumerFactory<>(buildCommonConsumerProps(GROUP_RECOMMEND_REQUEST, type));
+	}
+
+	@Bean
+	public ConsumerFactory<String, UserSnapshotEvent> userSnapshotConsumerFactory() {
+		String type = UserSnapshotEvent.class.getName();
+		return new DefaultKafkaConsumerFactory<>(
+			buildCommonConsumerProps("user-snapshot-group", type)
+		);
+	}
+	
+	@Bean
+	public ConcurrentKafkaListenerContainerFactory<String, UserSnapshotEvent>
+	userSnapshotListenerContainerFactory(
+		ConsumerFactory<String, UserSnapshotEvent> userSnapshotConsumerFactory
+	) {
+		var factory = new ConcurrentKafkaListenerContainerFactory<String, UserSnapshotEvent>();
+		factory.setConsumerFactory(userSnapshotConsumerFactory);
+		return factory;
 	}
 }
