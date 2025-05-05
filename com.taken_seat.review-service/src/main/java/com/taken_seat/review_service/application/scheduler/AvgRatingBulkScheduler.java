@@ -20,15 +20,13 @@ public class AvgRatingBulkScheduler {
 	private final ReviewRepository reviewRepository;
 
 	// 한시간 마다 리뷰 평점을 업데이트
-	// @Scheduled(cron = "0 0 * * * ?")
-	@Scheduled(cron = "0 * * * * ?")
+	@Scheduled(cron = "0 0 * * * ?")
 	@Caching(evict = {
 		@CacheEvict(cacheNames = "reviewCache", allEntries = true),
 		@CacheEvict(cacheNames = "reviewSearchCache", allEntries = true)
 	})
 	public void fetchPerformanceRatingStatsBulk() {
 		log.info("[Review][Scheduler] 공연 별 평균 평점 계산 및 캐시 반영 시작");
-
 		try {
 			redisRatingRepository.setAvgRatingBulk();
 			log.info("[Review][Scheduler] 평균 평점 계산 및 캐시 반영 완료");
