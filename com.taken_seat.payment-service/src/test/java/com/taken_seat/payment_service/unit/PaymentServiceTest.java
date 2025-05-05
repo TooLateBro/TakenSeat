@@ -30,8 +30,8 @@ import com.taken_seat.payment_service.application.service.api.PaymentServiceImpl
 import com.taken_seat.payment_service.domain.enums.PaymentStatus;
 import com.taken_seat.payment_service.domain.model.Payment;
 import com.taken_seat.payment_service.domain.model.PaymentHistory;
+import com.taken_seat.payment_service.domain.repository.CustomPaymentQuerydslRepository;
 import com.taken_seat.payment_service.domain.repository.PaymentHistoryRepository;
-import com.taken_seat.payment_service.domain.repository.PaymentQuerydslRepository;
 import com.taken_seat.payment_service.domain.repository.PaymentRepository;
 import com.taken_seat.payment_service.infrastructure.mapper.PaymentMapper;
 
@@ -45,7 +45,7 @@ public class PaymentServiceTest {
 	private PaymentHistoryRepository paymentHistoryRepository;
 
 	@Mock
-	private PaymentQuerydslRepository paymentQuerydslRepository;
+	private CustomPaymentQuerydslRepository customPaymentQuerydslRepository;
 
 	@Mock
 	private PaymentMapper paymentMapper;
@@ -216,7 +216,7 @@ public class PaymentServiceTest {
 			.refundRequestedAt(null)
 			.build();
 
-		when(paymentQuerydslRepository.search(searchReqDto)).thenReturn(mockPage);
+		when(customPaymentQuerydslRepository.search(searchReqDto)).thenReturn(mockPage);
 		when(paymentMapper.toResponse(testPayment)).thenReturn(paymentDetailResDto);
 
 		// When
@@ -245,7 +245,7 @@ public class PaymentServiceTest {
 			.order("desc")
 			.build();
 
-		when(paymentQuerydslRepository.search(searchReqDto)).thenReturn(Page.empty());
+		when(customPaymentQuerydslRepository.search(searchReqDto)).thenReturn(Page.empty());
 
 		// When
 		PagePaymentResponseDto result = paymentService.searchPayment(searchReqDto);

@@ -27,13 +27,13 @@ import com.taken_seat.payment_service.application.dto.service.PaymentSearchDto;
 import com.taken_seat.payment_service.domain.enums.PaymentStatus;
 import com.taken_seat.payment_service.domain.model.Payment;
 import com.taken_seat.payment_service.domain.model.QPayment;
-import com.taken_seat.payment_service.domain.repository.PaymentQuerydslRepository;
+import com.taken_seat.payment_service.domain.repository.CustomPaymentQuerydslRepository;
 
 import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-public class PaymentQuerydslRepositoryImpl implements PaymentQuerydslRepository {
+public class CustomPaymentQuerydslRepositoryImpl implements CustomPaymentQuerydslRepository {
 
 	private final JPAQueryFactory queryFactory;
 
