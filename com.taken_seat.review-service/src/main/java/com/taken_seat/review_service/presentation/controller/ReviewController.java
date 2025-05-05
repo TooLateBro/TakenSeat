@@ -18,6 +18,7 @@ import com.taken_seat.common_service.aop.annotation.RoleCheck;
 import com.taken_seat.common_service.aop.vo.Role;
 import com.taken_seat.common_service.dto.ApiResponseData;
 import com.taken_seat.common_service.dto.AuthenticatedUser;
+import com.taken_seat.review_service.application.command.api.GetReviewDetailCommand;
 import com.taken_seat.review_service.application.command.api.RegisterReviewCommand;
 import com.taken_seat.review_service.application.dto.controller.request.ReviewRegisterReqDto;
 import com.taken_seat.review_service.application.dto.controller.request.ReviewUpdateReqDto;
@@ -64,8 +65,11 @@ public class ReviewController {
 	@ReviewSwaggerDocs.GetPaymentDetail
 	public ResponseEntity<ApiResponseData<ReviewDetailResDto>> getReviewDetail(
 		@PathVariable("reviewId") UUID reviewId) {
+
+		GetReviewDetailCommand command = new GetReviewDetailCommand(reviewServices, reviewId);
+
 		return ResponseEntity.status(HttpStatus.OK)
-			.body(ApiResponseData.success(reviewServices.getReviewDetail(reviewId)));
+			.body(ApiResponseData.success(command.execute()));
 	}
 
 	@GetMapping("/search")

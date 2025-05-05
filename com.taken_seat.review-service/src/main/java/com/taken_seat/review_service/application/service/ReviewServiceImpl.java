@@ -80,7 +80,7 @@ public class ReviewServiceImpl implements ReviewService {
 
 	@Override
 	@Transactional(readOnly = true)
-	@CachePut(cacheNames = "reviewCache", key = "#id")
+	@CachePut(cacheNames = "reviewCache", key = "#reviewId")
 	public ReviewDetailResDto getReviewDetail(UUID reviewId) {
 
 		Review review = reviewRepository.findByIdAndDeletedAtIsNull(reviewId)
@@ -91,15 +91,16 @@ public class ReviewServiceImpl implements ReviewService {
 
 	@Override
 	@Transactional(readOnly = true)
-	@Cacheable(cacheNames = "reviewSearchCache", key = "#performance_id + '-' + #q + '-' + #category + '-' + #page + '-' + #size")
-	public PageReviewResponseDto searchReview(ReviewSearchDto dto) {
+	@Cacheable(cacheNames = "reviewSearchCache",
+		key = "#searchDto.performance_id + '-' + #searchDto.q + '-' + #searchDto.category + '-' + #searchDto.page + '-' + #searchDto.size")
+	public PageReviewResponseDto searchReview(ReviewSearchDto searchDto) {
 
-		Page<Review> reviewPages = reviewQuerydslRepository.search(dto);
+		Page<Review> reviewPages = reviewQuerydslRepository.search(searchDto);
 
 		Page<ReviewDetailResDto> reviewDetailResDtoPages = reviewPages.map(reviewMapper::toResponse);
 
 		return PageReviewResponseDto.toResponse(reviewDetailResDtoPages,
-			redisRatingRepository.getAvgRating(dto.getPerformance_id()));
+			redisRatingRepository.getAvgRating(searchDto.getPerformance_id()));
 	}
 
 	@Override
