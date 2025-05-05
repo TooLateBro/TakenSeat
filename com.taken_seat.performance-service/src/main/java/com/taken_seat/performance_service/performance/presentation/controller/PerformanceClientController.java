@@ -1,5 +1,6 @@
 package com.taken_seat.performance_service.performance.presentation.controller;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,8 @@ import com.taken_seat.common_service.dto.response.PerformanceStartTimeDto;
 import com.taken_seat.performance_service.performance.application.service.PerformanceClientService;
 import com.taken_seat.performance_service.performance.presentation.docs.PerformanceClientControllerDocs;
 import com.taken_seat.performance_service.performance.presentation.dto.response.SeatLayoutResponseDto;
+import com.taken_seat.performance_service.recommend.domain.facade.RecommendFacade;
+import com.taken_seat.performance_service.recommend.presentation.dto.response.RecommendedPerformanceResponseDto;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +31,7 @@ import lombok.RequiredArgsConstructor;
 public class PerformanceClientController implements PerformanceClientControllerDocs {
 
 	private final PerformanceClientService performanceClientService;
+	private final RecommendFacade recommendFacade;
 
 	@PutMapping("/seat/status")
 	public ResponseEntity<ApiResponseData<BookingSeatClientResponseDto>> updateSeatStatus(
@@ -70,6 +74,16 @@ public class PerformanceClientController implements PerformanceClientControllerD
 
 		PerformanceStartTimeDto response = performanceClientService.getPerformanceStartTime(performanceId,
 			performanceScheduleId);
+		return ResponseEntity.ok(ApiResponseData.success(response));
+	}
+
+	@GetMapping("/recommended/{userId}")
+	public ResponseEntity<ApiResponseData<List<RecommendedPerformanceResponseDto>>> getRecommend(
+		@PathVariable("userId") UUID userId) {
+
+		List<RecommendedPerformanceResponseDto> response
+			= recommendFacade.getRecommendedPerformances(userId);
+
 		return ResponseEntity.ok(ApiResponseData.success(response));
 	}
 }
