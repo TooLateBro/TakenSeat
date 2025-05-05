@@ -18,13 +18,18 @@ import com.taken_seat.common_service.aop.annotation.RoleCheck;
 import com.taken_seat.common_service.aop.vo.Role;
 import com.taken_seat.common_service.dto.ApiResponseData;
 import com.taken_seat.common_service.dto.AuthenticatedUser;
+import com.taken_seat.payment_service.application.command.api.DeletePaymentCommand;
+import com.taken_seat.payment_service.application.command.api.GetPaymentDetailCommand;
+import com.taken_seat.payment_service.application.command.api.RegisterPaymentCommand;
+import com.taken_seat.payment_service.application.command.api.SearchPaymentCommand;
+import com.taken_seat.payment_service.application.command.api.UpdatePaymentCommand;
 import com.taken_seat.payment_service.application.dto.controller.request.PaymentRegisterReqDto;
 import com.taken_seat.payment_service.application.dto.controller.request.PaymentUpdateReqDto;
 import com.taken_seat.payment_service.application.dto.controller.response.PagePaymentResponseDto;
 import com.taken_seat.payment_service.application.dto.controller.response.PaymentDetailResDto;
 import com.taken_seat.payment_service.application.dto.service.PaymentDto;
 import com.taken_seat.payment_service.application.dto.service.PaymentSearchDto;
-import com.taken_seat.payment_service.application.service.PaymentService;
+import com.taken_seat.payment_service.application.service.api.PaymentService;
 import com.taken_seat.payment_service.infrastructure.mapper.PaymentMapper;
 import com.taken_seat.payment_service.infrastructure.swagger.PaymentSwaggerDocs;
 
@@ -52,16 +57,17 @@ public class PaymentController {
 
 		return ResponseEntity.status(HttpStatus.OK)
 			.body(
-				ApiResponseData.success(paymentService.registerPayment(dto)));
+				ApiResponseData.success(new RegisterPaymentCommand(paymentService, dto).execute()));
 	}
 
 	@GetMapping("/{paymentId}")
 	@PaymentSwaggerDocs.GetPaymentDetail
 	public ResponseEntity<ApiResponseData<PaymentDetailResDto>> getPaymentDetail(
 		@PathVariable("paymentId") UUID paymentId) {
+
 		return ResponseEntity.status(HttpStatus.OK)
 			.body(
-				ApiResponseData.success(paymentService.getPaymentDetail(paymentId)));
+				ApiResponseData.success(new GetPaymentDetailCommand(paymentService, paymentId).execute()));
 	}
 
 	@GetMapping("/search")
@@ -78,7 +84,7 @@ public class PaymentController {
 
 		return ResponseEntity.status(HttpStatus.OK)
 			.body(
-				ApiResponseData.success(paymentService.searchPayment(dto)));
+				ApiResponseData.success(new SearchPaymentCommand(paymentService, dto).execute()));
 	}
 
 	@PatchMapping("/{paymentId}")
@@ -92,18 +98,21 @@ public class PaymentController {
 
 		return ResponseEntity.status(HttpStatus.OK)
 			.body(
-				ApiResponseData.success(paymentService.updatePayment(dto)));
+				ApiResponseData.success(new UpdatePaymentCommand(paymentService, dto).execute()));
 
 	}
 
 	@DeleteMapping("/{paymentId}")
 	@RoleCheck(allowedRoles = Role.ADMIN)
 	@PaymentSwaggerDocs.DeletePayment
-	public ResponseEntity<ApiResponseData<String>> deletePayment(@PathVariable("paymentId") UUID paymentId,
+	public ResponseEntity<ApiResponseData<Void>> deletePayment(@PathVariable("paymentId") UUID paymentId,
 		AuthenticatedUser authenticatedUser) {
-		paymentService.deletePayment(paymentId, authenticatedUser);
+
+		DeletePaymentCommand command = new DeletePaymentCommand(paymentService, paymentId, authenticatedUser);
+		command.execute();
+
 		return ResponseEntity.status(HttpStatus.OK)
 			.body(
-				ApiResponseData.success("Delete Success"));
+				ApiResponseData.success());
 	}
 }

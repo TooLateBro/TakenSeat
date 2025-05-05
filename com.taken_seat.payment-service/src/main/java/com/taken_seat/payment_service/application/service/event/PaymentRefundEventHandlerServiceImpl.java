@@ -1,4 +1,4 @@
-package com.taken_seat.payment_service.application.service;
+package com.taken_seat.payment_service.application.service.event;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -8,8 +8,8 @@ import com.taken_seat.common_service.exception.customException.PaymentException;
 import com.taken_seat.common_service.exception.customException.PaymentHistoryException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.common_service.message.PaymentRefundMessage;
-import com.taken_seat.payment_service.application.client.TossPaymentClient;
 import com.taken_seat.payment_service.application.kafka.producer.PaymentRefundResponseProducer;
+import com.taken_seat.payment_service.application.tossclient.TossPaymentClient;
 import com.taken_seat.payment_service.domain.model.Payment;
 import com.taken_seat.payment_service.domain.model.PaymentHistory;
 import com.taken_seat.payment_service.domain.repository.PaymentHistoryRepository;

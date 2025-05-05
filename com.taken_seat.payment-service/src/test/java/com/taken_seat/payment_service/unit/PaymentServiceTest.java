@@ -26,12 +26,12 @@ import com.taken_seat.payment_service.application.dto.controller.response.PagePa
 import com.taken_seat.payment_service.application.dto.controller.response.PaymentDetailResDto;
 import com.taken_seat.payment_service.application.dto.service.PaymentDto;
 import com.taken_seat.payment_service.application.dto.service.PaymentSearchDto;
-import com.taken_seat.payment_service.application.service.PaymentServiceImpl;
+import com.taken_seat.payment_service.application.service.api.PaymentServiceImpl;
 import com.taken_seat.payment_service.domain.enums.PaymentStatus;
 import com.taken_seat.payment_service.domain.model.Payment;
 import com.taken_seat.payment_service.domain.model.PaymentHistory;
+import com.taken_seat.payment_service.domain.repository.CustomPaymentQuerydslRepository;
 import com.taken_seat.payment_service.domain.repository.PaymentHistoryRepository;
-import com.taken_seat.payment_service.domain.repository.PaymentQuerydslRepository;
 import com.taken_seat.payment_service.domain.repository.PaymentRepository;
 import com.taken_seat.payment_service.infrastructure.mapper.PaymentMapper;
 
@@ -45,7 +45,7 @@ public class PaymentServiceTest {
 	private PaymentHistoryRepository paymentHistoryRepository;
 
 	@Mock
-	private PaymentQuerydslRepository paymentQuerydslRepository;
+	private CustomPaymentQuerydslRepository customPaymentQuerydslRepository;
 
 	@Mock
 	private PaymentMapper paymentMapper;
@@ -116,7 +116,7 @@ public class PaymentServiceTest {
 		PaymentDetailResDto paymentDetailResDto = PaymentDetailResDto.builder()
 			.id(testPaymentDto.getPaymentId())
 			.bookingId(testPaymentDto.getBookingId())
-			.price(testPaymentDto.getAmount())
+			.amount(testPaymentDto.getAmount())
 			.paymentStatus(testPaymentDto.getPaymentStatus())
 			.build();
 
@@ -127,7 +127,7 @@ public class PaymentServiceTest {
 
 		// Then
 		assertNotNull(result);
-		assertEquals(1000, result.getPrice());
+		assertEquals(1000, result.getAmount());
 		assertEquals(testBookingId, result.getBookingId());
 	}
 
@@ -158,7 +158,7 @@ public class PaymentServiceTest {
 		PaymentDetailResDto paymentDetailResDto = PaymentDetailResDto.builder()
 			.id(testPayment.getId())
 			.bookingId(testPayment.getBookingId())
-			.price(testPayment.getAmount())
+			.amount(testPayment.getAmount())
 			.paymentStatus(testPayment.getPaymentStatus())
 			.approvedAt(null)
 			.refundAmount(null)
@@ -172,7 +172,7 @@ public class PaymentServiceTest {
 
 		// Then
 		assertNotNull(result);
-		assertEquals(testPayment.getAmount(), result.getPrice());
+		assertEquals(testPayment.getAmount(), result.getAmount());
 		assertEquals(testPayment.getPaymentStatus(), result.getPaymentStatus());
 	}
 
@@ -209,14 +209,14 @@ public class PaymentServiceTest {
 		PaymentDetailResDto paymentDetailResDto = PaymentDetailResDto.builder()
 			.id(testPayment.getId())
 			.bookingId(testPayment.getBookingId())
-			.price(testPayment.getAmount())
+			.amount(testPayment.getAmount())
 			.paymentStatus(testPayment.getPaymentStatus())
 			.approvedAt(null)
 			.refundAmount(null)
 			.refundRequestedAt(null)
 			.build();
 
-		when(paymentQuerydslRepository.search(searchReqDto)).thenReturn(mockPage);
+		when(customPaymentQuerydslRepository.search(searchReqDto)).thenReturn(mockPage);
 		when(paymentMapper.toResponse(testPayment)).thenReturn(paymentDetailResDto);
 
 		// When
@@ -228,7 +228,7 @@ public class PaymentServiceTest {
 		assertEquals(1, result.getContent().size());
 
 		PaymentDetailResDto detail = result.getContent().get(0);
-		assertEquals(testPayment.getAmount(), detail.getPrice());
+		assertEquals(testPayment.getAmount(), detail.getAmount());
 		assertEquals(testPayment.getPaymentStatus(), detail.getPaymentStatus());
 	}
 
@@ -245,7 +245,7 @@ public class PaymentServiceTest {
 			.order("desc")
 			.build();
 
-		when(paymentQuerydslRepository.search(searchReqDto)).thenReturn(Page.empty());
+		when(customPaymentQuerydslRepository.search(searchReqDto)).thenReturn(Page.empty());
 
 		// When
 		PagePaymentResponseDto result = paymentService.searchPayment(searchReqDto);
@@ -272,7 +272,7 @@ public class PaymentServiceTest {
 		PaymentDetailResDto paymentDetailResDto = PaymentDetailResDto.builder()
 			.id(testPayment.getId())
 			.bookingId(testPaymentDto.getBookingId())
-			.price(testPaymentDto.getAmount())
+			.amount(testPaymentDto.getAmount())
 			.paymentStatus(testPaymentDto.getPaymentStatus())
 			.approvedAt(null)
 			.refundAmount(null)
@@ -290,7 +290,7 @@ public class PaymentServiceTest {
 
 		// Then
 		assertNotNull(result);
-		assertEquals(3000, result.getPrice());
+		assertEquals(3000, result.getAmount());
 		assertEquals(PaymentStatus.FAILED, result.getPaymentStatus());
 
 	}

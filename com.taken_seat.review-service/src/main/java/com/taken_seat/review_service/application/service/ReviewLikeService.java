@@ -1,13 +1,12 @@
 package com.taken_seat.review_service.application.service;
 
 import java.util.Map;
-import java.util.UUID;
 
-import com.taken_seat.common_service.dto.AuthenticatedUser;
+import com.taken_seat.review_service.application.dto.service.ReviewDto;
 
 public interface ReviewLikeService {
 
-	void toggleReviewLike(UUID id, AuthenticatedUser authenticatedUser);
+	void toggleReviewLike(ReviewDto reviewDto);
 
 	void increaseLikeCount(String key);
 

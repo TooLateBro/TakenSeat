@@ -1,4 +1,4 @@
-package com.taken_seat.payment_service.infrastructure.client;
+package com.taken_seat.payment_service.infrastructure.tossclient;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -13,10 +13,10 @@ import org.springframework.web.client.RestClientException;
 
 import com.taken_seat.common_service.exception.customException.PaymentException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
-import com.taken_seat.payment_service.application.client.TossPaymentClient;
-import com.taken_seat.payment_service.application.client.dto.TossCancelRequest;
-import com.taken_seat.payment_service.application.client.dto.TossConfirmResponse;
-import com.taken_seat.payment_service.application.client.dto.TossPaymentRequest;
+import com.taken_seat.payment_service.application.tossclient.TossPaymentClient;
+import com.taken_seat.payment_service.application.tossclient.dto.TossCancelRequest;
+import com.taken_seat.payment_service.application.tossclient.dto.TossConfirmResponse;
+import com.taken_seat.payment_service.application.tossclient.dto.TossPaymentRequest;
 
 import lombok.extern.slf4j.Slf4j;
 

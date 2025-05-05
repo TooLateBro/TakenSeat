@@ -4,8 +4,9 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
 import com.taken_seat.common_service.message.PaymentMessage;
+import com.taken_seat.payment_service.application.command.event.ProcessPaymentCommand;
 import com.taken_seat.payment_service.application.kafka.consumer.PaymentRequestListener;
-import com.taken_seat.payment_service.application.service.PaymentEventHandlerService;
+import com.taken_seat.payment_service.application.service.event.PaymentEventHandlerService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -18,6 +19,7 @@ public class PaymentRequestListenerImpl implements PaymentRequestListener {
 	@Override
 	@KafkaListener(topics = "${kafka.topic.payment-request}", groupId = "${kafka.consumer.group-id}")
 	public void handlePaymentRequest(PaymentMessage message) {
-		paymentEventHandlerService.processPayment(message);
+		ProcessPaymentCommand command = new ProcessPaymentCommand(paymentEventHandlerService, message);
+		command.execute();
 	}
 }
