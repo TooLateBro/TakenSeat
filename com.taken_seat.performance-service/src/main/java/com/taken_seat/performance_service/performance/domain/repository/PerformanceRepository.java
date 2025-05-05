@@ -1,5 +1,6 @@
 package com.taken_seat.performance_service.performance.domain.repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -19,4 +20,6 @@ public interface PerformanceRepository {
 	Page<SearchResponseDto> findAll(SearchFilterParam filterParam, Pageable pageable);
 
 	Optional<Performance> findByPerformanceScheduleId(UUID performanceScheduleId);
+
+	List<Performance> findAllById(List<UUID> ids);
 }
