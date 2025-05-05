@@ -18,6 +18,7 @@ import com.taken_seat.common_service.aop.annotation.RoleCheck;
 import com.taken_seat.common_service.aop.vo.Role;
 import com.taken_seat.common_service.dto.ApiResponseData;
 import com.taken_seat.common_service.dto.AuthenticatedUser;
+import com.taken_seat.review_service.application.command.api.RegisterReviewCommand;
 import com.taken_seat.review_service.application.dto.controller.request.ReviewRegisterReqDto;
 import com.taken_seat.review_service.application.dto.controller.request.ReviewUpdateReqDto;
 import com.taken_seat.review_service.application.dto.controller.response.PageReviewResponseDto;
@@ -52,8 +53,10 @@ public class ReviewController {
 
 		ReviewDto dto = reviewMapper.toDto(reviewRegisterReqDto, authenticatedUser);
 
+		RegisterReviewCommand command = new RegisterReviewCommand(reviewServices, dto);
+
 		return ResponseEntity.status(HttpStatus.OK)
-			.body(ApiResponseData.success(reviewServices.registerReview(dto)));
+			.body(ApiResponseData.success(command.execute()));
 
 	}
 
