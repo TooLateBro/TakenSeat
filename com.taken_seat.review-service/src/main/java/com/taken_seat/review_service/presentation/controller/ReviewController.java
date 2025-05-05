@@ -18,6 +18,7 @@ import com.taken_seat.common_service.aop.annotation.RoleCheck;
 import com.taken_seat.common_service.aop.vo.Role;
 import com.taken_seat.common_service.dto.ApiResponseData;
 import com.taken_seat.common_service.dto.AuthenticatedUser;
+import com.taken_seat.review_service.application.command.api.DeleteReviewCommand;
 import com.taken_seat.review_service.application.command.api.GetReviewDetailCommand;
 import com.taken_seat.review_service.application.command.api.RegisterReviewCommand;
 import com.taken_seat.review_service.application.command.api.SearchReviewCommand;
@@ -118,7 +119,9 @@ public class ReviewController {
 
 		ReviewDto dto = reviewMapper.toDto(reviewId, authenticatedUser);
 
-		reviewServices.deleteReview(dto);
+		DeleteReviewCommand command = new DeleteReviewCommand(reviewServices, dto);
+		command.execute();
+
 		return ResponseEntity.status(HttpStatus.OK)
 			.body(ApiResponseData.success());
 	}
