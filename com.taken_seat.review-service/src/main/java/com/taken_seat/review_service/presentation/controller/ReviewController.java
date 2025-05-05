@@ -20,6 +20,7 @@ import com.taken_seat.common_service.dto.ApiResponseData;
 import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.review_service.application.command.api.GetReviewDetailCommand;
 import com.taken_seat.review_service.application.command.api.RegisterReviewCommand;
+import com.taken_seat.review_service.application.command.api.SearchReviewCommand;
 import com.taken_seat.review_service.application.dto.controller.request.ReviewRegisterReqDto;
 import com.taken_seat.review_service.application.dto.controller.request.ReviewUpdateReqDto;
 import com.taken_seat.review_service.application.dto.controller.response.PageReviewResponseDto;
@@ -85,10 +86,11 @@ public class ReviewController {
 
 		ReviewSearchDto dto = reviewMapper.toDto(performance_id, q, category, page, size, sort, order);
 
+		SearchReviewCommand command = new SearchReviewCommand(reviewServices, dto);
+
 		return ResponseEntity.status(HttpStatus.OK)
 			.body(
-				ApiResponseData.success(
-					reviewServices.searchReview(dto)));
+				ApiResponseData.success(command.execute()));
 	}
 
 	@PatchMapping("/{reviewId}")
