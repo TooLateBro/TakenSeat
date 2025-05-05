@@ -18,6 +18,12 @@ import com.taken_seat.common_service.aop.annotation.RoleCheck;
 import com.taken_seat.common_service.aop.vo.Role;
 import com.taken_seat.common_service.dto.ApiResponseData;
 import com.taken_seat.common_service.dto.AuthenticatedUser;
+import com.taken_seat.review_service.application.command.api.DeleteReviewCommand;
+import com.taken_seat.review_service.application.command.api.GetReviewDetailCommand;
+import com.taken_seat.review_service.application.command.api.RegisterReviewCommand;
+import com.taken_seat.review_service.application.command.api.SearchReviewCommand;
+import com.taken_seat.review_service.application.command.api.ToggleReviewLikeCommand;
+import com.taken_seat.review_service.application.command.api.UpdateReviewCommand;
 import com.taken_seat.review_service.application.dto.controller.request.ReviewRegisterReqDto;
 import com.taken_seat.review_service.application.dto.controller.request.ReviewUpdateReqDto;
 import com.taken_seat.review_service.application.dto.controller.response.PageReviewResponseDto;
@@ -52,8 +58,10 @@ public class ReviewController {
 
 		ReviewDto dto = reviewMapper.toDto(reviewRegisterReqDto, authenticatedUser);
 
+		RegisterReviewCommand command = new RegisterReviewCommand(reviewServices, dto);
+
 		return ResponseEntity.status(HttpStatus.OK)
-			.body(ApiResponseData.success(reviewServices.registerReview(dto)));
+			.body(ApiResponseData.success(command.execute()));
 
 	}
 
@@ -61,8 +69,11 @@ public class ReviewController {
 	@ReviewSwaggerDocs.GetPaymentDetail
 	public ResponseEntity<ApiResponseData<ReviewDetailResDto>> getReviewDetail(
 		@PathVariable("reviewId") UUID reviewId) {
+
+		GetReviewDetailCommand command = new GetReviewDetailCommand(reviewServices, reviewId);
+
 		return ResponseEntity.status(HttpStatus.OK)
-			.body(ApiResponseData.success(reviewServices.getReviewDetail(reviewId)));
+			.body(ApiResponseData.success(command.execute()));
 	}
 
 	@GetMapping("/search")
@@ -78,10 +89,11 @@ public class ReviewController {
 
 		ReviewSearchDto dto = reviewMapper.toDto(performance_id, q, category, page, size, sort, order);
 
+		SearchReviewCommand command = new SearchReviewCommand(reviewServices, dto);
+
 		return ResponseEntity.status(HttpStatus.OK)
 			.body(
-				ApiResponseData.success(
-					reviewServices.searchReview(dto)));
+				ApiResponseData.success(command.execute()));
 	}
 
 	@PatchMapping("/{reviewId}")
@@ -93,9 +105,11 @@ public class ReviewController {
 
 		ReviewDto dto = reviewMapper.toDto(reviewId, reviewUpdateReqDto, authenticatedUser);
 
+		UpdateReviewCommand command = new UpdateReviewCommand(reviewServices, dto);
+
 		return ResponseEntity.status(HttpStatus.OK)
 			.body(
-				ApiResponseData.success(reviewServices.updateReview(dto)));
+				ApiResponseData.success(command.execute()));
 	}
 
 	@DeleteMapping("/{reviewId}")
@@ -106,7 +120,9 @@ public class ReviewController {
 
 		ReviewDto dto = reviewMapper.toDto(reviewId, authenticatedUser);
 
-		reviewServices.deleteReview(dto);
+		DeleteReviewCommand command = new DeleteReviewCommand(reviewServices, dto);
+		command.execute();
+
 		return ResponseEntity.status(HttpStatus.OK)
 			.body(ApiResponseData.success());
 	}
@@ -115,7 +131,11 @@ public class ReviewController {
 	@ReviewSwaggerDocs.ToggleReviewLike
 	public ResponseEntity<ApiResponseData<Void>> toggleReviewLike(@PathVariable("reviewId") UUID reviewId,
 		AuthenticatedUser authenticatedUser) {
-		reviewLikeService.toggleReviewLike(reviewId, authenticatedUser);
+
+		ReviewDto dto = reviewMapper.toDto(reviewId, authenticatedUser);
+
+		ToggleReviewLikeCommand command = new ToggleReviewLikeCommand(reviewLikeService, dto);
+		command.execute();
 
 		return ResponseEntity.status(HttpStatus.OK)
 			.body(ApiResponseData.success());

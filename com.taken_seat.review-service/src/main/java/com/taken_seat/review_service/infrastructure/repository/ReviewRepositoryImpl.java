@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-public class PaymentRepositoryImpl implements ReviewRepository {
+public class ReviewRepositoryImpl implements ReviewRepository {
 
 	private final ReviewJpaRepository reviewJpaRepository;
 

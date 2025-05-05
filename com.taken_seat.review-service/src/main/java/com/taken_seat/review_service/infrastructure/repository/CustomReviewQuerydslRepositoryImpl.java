@@ -20,13 +20,13 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.taken_seat.review_service.application.dto.service.ReviewSearchDto;
 import com.taken_seat.review_service.domain.model.QReview;
 import com.taken_seat.review_service.domain.model.Review;
-import com.taken_seat.review_service.domain.repository.ReviewQuerydslRepository;
+import com.taken_seat.review_service.domain.repository.CustomReviewQuerydslRepository;
 
 import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-public class ReviewQuerydslRepositoryImpl implements ReviewQuerydslRepository {
+public class CustomReviewQuerydslRepositoryImpl implements CustomReviewQuerydslRepository {
 
 	private final JPAQueryFactory queryFactory;
 

@@ -25,8 +25,8 @@ import com.taken_seat.payment_service.application.tossclient.dto.TossConfirmResp
 import com.taken_seat.payment_service.application.tossclient.dto.TossPaymentRequest;
 import com.taken_seat.payment_service.domain.model.Payment;
 import com.taken_seat.payment_service.domain.model.PaymentHistory;
+import com.taken_seat.payment_service.domain.repository.CustomPaymentQuerydslRepository;
 import com.taken_seat.payment_service.domain.repository.PaymentHistoryRepository;
-import com.taken_seat.payment_service.domain.repository.PaymentQuerydslRepository;
 import com.taken_seat.payment_service.domain.repository.PaymentRepository;
 import com.taken_seat.payment_service.infrastructure.mapper.PaymentMapper;
 
@@ -40,7 +40,7 @@ import lombok.extern.slf4j.Slf4j;
 public class PaymentServiceImpl implements PaymentService {
 
 	private final PaymentRepository paymentRepository;
-	private final PaymentQuerydslRepository paymentQuerydslRepository;
+	private final CustomPaymentQuerydslRepository customPaymentQuerydslRepository;
 	private final PaymentHistoryRepository paymentHistoryRepository;
 	private final TossPaymentClient tossPaymentClient;
 	private final PaymentMapper paymentMapper;
@@ -128,7 +128,7 @@ public class PaymentServiceImpl implements PaymentService {
 	@Cacheable(cacheNames = "paymentSearchCache", key = "#searchReqDto.q + '-' + #searchReqDto.category + '-' + #searchReqDto.page + '-' + #searchReqDto.size")
 	public PagePaymentResponseDto searchPayment(PaymentSearchDto searchReqDto) {
 
-		Page<Payment> paymentPages = paymentQuerydslRepository.search(searchReqDto);
+		Page<Payment> paymentPages = customPaymentQuerydslRepository.search(searchReqDto);
 
 		Page<PaymentDetailResDto> paymentDetailResDtoPages = paymentPages.map(paymentMapper::toResponse);
 

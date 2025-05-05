@@ -29,8 +29,8 @@ import com.taken_seat.review_service.application.dto.service.ReviewDto;
 import com.taken_seat.review_service.application.dto.service.ReviewSearchDto;
 import com.taken_seat.review_service.application.service.ReviewServiceImpl;
 import com.taken_seat.review_service.domain.model.Review;
+import com.taken_seat.review_service.domain.repository.CustomReviewQuerydslRepository;
 import com.taken_seat.review_service.domain.repository.RedisRatingRepository;
-import com.taken_seat.review_service.domain.repository.ReviewQuerydslRepository;
 import com.taken_seat.review_service.domain.repository.ReviewRepository;
 import com.taken_seat.review_service.infrastructure.client.dto.BookingStatusDto;
 import com.taken_seat.review_service.infrastructure.client.dto.PerformanceEndTimeDto;
@@ -43,7 +43,7 @@ public class ReviewServicesTest {
 	private ReviewRepository reviewRepository;
 
 	@Mock
-	private ReviewQuerydslRepository reviewQuerydslRepository;
+	private CustomReviewQuerydslRepository customReviewQuerydslRepository;
 
 	@Mock
 	private ReviewClient reviewClient;
@@ -306,7 +306,7 @@ public class ReviewServicesTest {
 		Page<Review> mockPage = new PageImpl<>(Collections.singletonList(testReview),
 			PageRequest.of(testReviewSearchDto.getPage(), testReviewSearchDto.getSize()), 1);
 
-		when(reviewQuerydslRepository.search(testReviewSearchDto)).thenReturn(
+		when(customReviewQuerydslRepository.search(testReviewSearchDto)).thenReturn(
 			mockPage);
 
 		// When
@@ -323,7 +323,7 @@ public class ReviewServicesTest {
 	@DisplayName("리뷰 리스트 검색 - 비어있는 결과 - SUCCESS")
 	void testSearchReview_success_emptyResult() {
 		// Given
-		when(reviewQuerydslRepository.search(any()))
+		when(customReviewQuerydslRepository.search(any()))
 			.thenReturn(Page.empty());
 
 		// When

@@ -105,15 +105,14 @@ public class PaymentController {
 	@DeleteMapping("/{paymentId}")
 	@RoleCheck(allowedRoles = Role.ADMIN)
 	@PaymentSwaggerDocs.DeletePayment
-	public ResponseEntity<ApiResponseData<String>> deletePayment(@PathVariable("paymentId") UUID paymentId,
+	public ResponseEntity<ApiResponseData<Void>> deletePayment(@PathVariable("paymentId") UUID paymentId,
 		AuthenticatedUser authenticatedUser) {
 
 		DeletePaymentCommand command = new DeletePaymentCommand(paymentService, paymentId, authenticatedUser);
-
 		command.execute();
 
 		return ResponseEntity.status(HttpStatus.OK)
 			.body(
-				ApiResponseData.success("Delete Success"));
+				ApiResponseData.success());
 	}
 }
