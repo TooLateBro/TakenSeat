@@ -19,8 +19,8 @@ import com.taken_seat.review_service.application.dto.controller.response.ReviewD
 import com.taken_seat.review_service.application.dto.service.ReviewDto;
 import com.taken_seat.review_service.application.dto.service.ReviewSearchDto;
 import com.taken_seat.review_service.domain.model.Review;
+import com.taken_seat.review_service.domain.repository.CustomReviewQuerydslRepository;
 import com.taken_seat.review_service.domain.repository.RedisRatingRepository;
-import com.taken_seat.review_service.domain.repository.ReviewQuerydslRepository;
 import com.taken_seat.review_service.domain.repository.ReviewRepository;
 import com.taken_seat.review_service.infrastructure.client.dto.PerformanceEndTimeDto;
 import com.taken_seat.review_service.infrastructure.mapper.ReviewMapper;
@@ -34,7 +34,7 @@ import lombok.RequiredArgsConstructor;
 public class ReviewServiceImpl implements ReviewService {
 
 	private final ReviewRepository reviewRepository;
-	private final ReviewQuerydslRepository reviewQuerydslRepository;
+	private final CustomReviewQuerydslRepository customReviewQuerydslRepository;
 	private final RedisRatingRepository redisRatingRepository;
 	private final ReviewClient reviewClient;
 	private final ReviewMapper reviewMapper;
@@ -95,7 +95,7 @@ public class ReviewServiceImpl implements ReviewService {
 		key = "#searchDto.performance_id + '-' + #searchDto.q + '-' + #searchDto.category + '-' + #searchDto.page + '-' + #searchDto.size")
 	public PageReviewResponseDto searchReview(ReviewSearchDto searchDto) {
 
-		Page<Review> reviewPages = reviewQuerydslRepository.search(searchDto);
+		Page<Review> reviewPages = customReviewQuerydslRepository.search(searchDto);
 
 		Page<ReviewDetailResDto> reviewDetailResDtoPages = reviewPages.map(reviewMapper::toResponse);
 
