@@ -106,8 +106,6 @@ dependencies {
     testImplementation 'org.springframework.kafka:spring-kafka-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
-    testImplementation "org.testcontainers:kafka"
-    testImplementation "org.testcontainers:redis"
 }
 
 dependencyManagement {
