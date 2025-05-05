@@ -75,9 +75,10 @@ class CouponToUserConsumerServiceTest {
                 Math.max(0, atomicQuantity.get())
         );
 
-        when(redisOperationService.evalScript(anyString(), anyString(), anyString(), anyString())).thenAnswer(invocation -> {
+        when(redisOperationService.evalScript(anyString(), anyString(), anyString()))
+                .thenAnswer(invocation -> {
             long current = atomicQuantity.get();
-            String userId = invocation.getArgument(3);
+            String userId = invocation.getArgument(2);
             if (current <= 0) {
                 return -1L;
             }
