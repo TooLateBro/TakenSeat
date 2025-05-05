@@ -21,6 +21,7 @@ import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.review_service.application.command.api.GetReviewDetailCommand;
 import com.taken_seat.review_service.application.command.api.RegisterReviewCommand;
 import com.taken_seat.review_service.application.command.api.SearchReviewCommand;
+import com.taken_seat.review_service.application.command.api.UpdateReviewCommand;
 import com.taken_seat.review_service.application.dto.controller.request.ReviewRegisterReqDto;
 import com.taken_seat.review_service.application.dto.controller.request.ReviewUpdateReqDto;
 import com.taken_seat.review_service.application.dto.controller.response.PageReviewResponseDto;
@@ -102,9 +103,11 @@ public class ReviewController {
 
 		ReviewDto dto = reviewMapper.toDto(reviewId, reviewUpdateReqDto, authenticatedUser);
 
+		UpdateReviewCommand command = new UpdateReviewCommand(reviewServices, dto);
+
 		return ResponseEntity.status(HttpStatus.OK)
 			.body(
-				ApiResponseData.success(reviewServices.updateReview(dto)));
+				ApiResponseData.success(command.execute()));
 	}
 
 	@DeleteMapping("/{reviewId}")
