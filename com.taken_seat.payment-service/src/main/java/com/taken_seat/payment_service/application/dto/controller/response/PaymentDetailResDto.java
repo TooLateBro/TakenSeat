@@ -21,7 +21,9 @@ public class PaymentDetailResDto implements Serializable {
 
 	private UUID bookingId;
 
-	private Integer price;
+	private Integer amount;
+
+	private String orderName;
 
 	private PaymentStatus paymentStatus;
 

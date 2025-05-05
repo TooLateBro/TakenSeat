@@ -1,4 +1,4 @@
-package com.taken_seat.payment_service.application.service;
+package com.taken_seat.payment_service.application.service.event;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,9 +54,6 @@ public class PaymentEventHandlerServiceImpl implements PaymentEventHandlerServic
 		PaymentHistory paymentHistory = PaymentHistory.register(payment);
 		paymentHistoryRepository.save(paymentHistory);
 		log.debug("[Payment] 결제 히스토리 생성 - 성공 - paymentHistoryId={}", paymentHistory.getId());
-
-		payment.markAsCompleted(message.getUserId());
-		paymentHistory.markAsCompleted(message.getUserId());
 
 		// 4. 성공 메시지 전달
 		PaymentMessage paymentResultMessage = PaymentMessage.builder()
