@@ -16,6 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 @Slf4j
 @Service
 public class UserToBookingConsumerServiceImpl implements UserToBookingConsumerService {
@@ -44,7 +46,10 @@ public class UserToBookingConsumerServiceImpl implements UserToBookingConsumerSe
             if (message.getCouponId() != null) {
                 UserCoupon userCoupon = userCouponRepository.findByCouponIdAndIsActiveTrue(message.getCouponId())
                         .orElseThrow(() -> new CouponException(ResponseCode.COUPON_NOT_FOUND));
-
+                if (userCoupon.getExpiredAt().isBefore(LocalDateTime.now())){
+                    log.error("[Auth] 쿠폰을 사용할 수 없습니다. couponId={}, expiredAt={}", message.getCouponId(), userCoupon.getExpiredAt());
+                    throw new CouponException(ResponseCode.COUPON_EXPIRED);
+                }
                 couponDiscount = userCoupon.getDiscount();
             }
             if (message.getMileage() != null) {
