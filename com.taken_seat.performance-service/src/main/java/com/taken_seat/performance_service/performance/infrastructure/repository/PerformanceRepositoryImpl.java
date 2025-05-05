@@ -1,5 +1,6 @@
 package com.taken_seat.performance_service.performance.infrastructure.repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -44,5 +45,10 @@ public class PerformanceRepositoryImpl implements PerformanceRepository {
 			.filter(performance -> performance.getSchedules().stream()
 				.anyMatch(performanceSchedule -> performanceSchedule.getId().equals(performanceScheduleId)))
 			.findFirst();
+	}
+
+	@Override
+	public List<Performance> findAllById(List<UUID> ids) {
+		return performanceJpaRepository.findAllById(ids);
 	}
 }
