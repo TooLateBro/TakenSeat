@@ -41,6 +41,7 @@ public class KafkaConsumerConfig {
 	private static final String GROUP_PERFORMANCE_SERVICE = "performance-service-group";
 	private static final String GROUP_PERFORMANCE_RECOMMEND = "performance-recommend";
 	private static final String GROUP_RECOMMEND_REQUEST = "recommend-request";
+	private static final String GROUP_USER_SNAPSHOT = "user-snapshot-group";
 
 	/**
 	 * 공통 ConsumerProps 생성 메서드
@@ -125,9 +126,19 @@ public class KafkaConsumerConfig {
 
 	@Bean
 	public ConsumerFactory<String, UserSnapshotEvent> userSnapshotConsumerFactory() {
-		String type = UserSnapshotEvent.class.getName();
+		Map<String, Object> props = new HashMap<>();
+		props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+		props.put(ConsumerConfig.GROUP_ID_CONFIG, GROUP_USER_SNAPSHOT);
+		props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+
+		JsonDeserializer<UserSnapshotEvent> deserializer =
+			new JsonDeserializer<>(UserSnapshotEvent.class, false);
+		deserializer.addTrustedPackages("*");
+
 		return new DefaultKafkaConsumerFactory<>(
-			buildCommonConsumerProps("user-snapshot-group", type)
+			props,
+			new StringDeserializer(),
+			deserializer
 		);
 	}
 
@@ -136,7 +147,8 @@ public class KafkaConsumerConfig {
 	userSnapshotListenerContainerFactory(
 		ConsumerFactory<String, UserSnapshotEvent> userSnapshotConsumerFactory
 	) {
-		var factory = new ConcurrentKafkaListenerContainerFactory<String, UserSnapshotEvent>();
+		ConcurrentKafkaListenerContainerFactory<String, UserSnapshotEvent> factory =
+			new ConcurrentKafkaListenerContainerFactory<>();
 		factory.setConsumerFactory(userSnapshotConsumerFactory);
 		return factory;
 	}
