@@ -17,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 @EnableScheduling
 @Component
 public class UserSnapshotScheduler {
-  
+
 	private final UserRepository userRepository;
 	private final KafkaTemplate<String, Object> kafkaTemplate;
 
