@@ -9,7 +9,6 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.hibernate.validator.internal.constraintvalidators.bv.NotNullValidator;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -57,7 +56,6 @@ public class PerformanceService {
 	private final PerformanceUpdateCommandMapper performanceUpdateCommandMapper;
 	private final PerformanceCreateHelper performanceCreateHelper;
 	private final PerformanceRankingRedisRepository performanceRankingRedisRepository;
-	private final NotNullValidator notNullValidator;
 
 	@Transactional
 	public CreateResponseDto create(CreateRequestDto request, AuthenticatedUser authenticatedUser) {
