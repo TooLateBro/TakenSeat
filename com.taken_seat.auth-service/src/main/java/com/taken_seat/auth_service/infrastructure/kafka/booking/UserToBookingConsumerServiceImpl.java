@@ -48,9 +48,9 @@ public class UserToBookingConsumerServiceImpl implements UserToBookingConsumerSe
                         .orElseThrow(() -> new CouponException(ResponseCode.COUPON_NOT_FOUND));
                 if (userCoupon.getExpiredAt().isBefore(LocalDateTime.now())){
                     log.error("[Auth] 쿠폰을 사용할 수 없습니다. couponId={}, expiredAt={}", message.getCouponId(), userCoupon.getExpiredAt());
-                    throw new CouponException(ResponseCode.COUPON_EXPIRED);
+                }else {
+                    couponDiscount = userCoupon.getDiscount();
                 }
-                couponDiscount = userCoupon.getDiscount();
             }
             if (message.getMileage() != null) {
                 mileageRepository.findTopByUserIdOrderByUpdatedAtDesc(message.getUserId())
@@ -94,8 +94,8 @@ public class UserToBookingConsumerServiceImpl implements UserToBookingConsumerSe
                 UserCoupon userCoupon = userCouponRepository.findByCouponIdAndIsActiveTrue(message.getCouponId())
                         .orElseThrow(() -> new CouponException(ResponseCode.COUPON_NOT_FOUND));
 
-                log.info("[Auth] 현재 보유중인 마일리지 및 쿠폰의 상태 : {}, {}, {}",
-                        message.getMileage(), userCoupon, userCoupon.isActive());
+                log.info("[Auth] 현재 보유중인 마일리지 및 쿠폰의 상태 : {}, {}",
+                        message.getMileage(), userCoupon.isActive());
 
                 userCoupon.updateActive(false, user.getId());
                 log.info("[Auth] {} 쿠폰 사용에 성공했습니다!!!", message.getCouponId());
