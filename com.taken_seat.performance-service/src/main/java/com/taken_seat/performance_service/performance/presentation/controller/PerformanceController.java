@@ -1,6 +1,7 @@
 package com.taken_seat.performance_service.performance.presentation.controller;
 
 import java.net.URI;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.Pageable;
@@ -30,6 +31,7 @@ import com.taken_seat.performance_service.performance.presentation.dto.request.U
 import com.taken_seat.performance_service.performance.presentation.dto.response.CreateResponseDto;
 import com.taken_seat.performance_service.performance.presentation.dto.response.DetailResponseDto;
 import com.taken_seat.performance_service.performance.presentation.dto.response.PageResponseDto;
+import com.taken_seat.performance_service.performance.presentation.dto.response.PerformanceRankingResponseDto;
 import com.taken_seat.performance_service.performance.presentation.dto.response.UpdateResponseDto;
 
 import jakarta.validation.Valid;
@@ -107,5 +109,12 @@ public class PerformanceController implements PerformanceControllerDocs {
 
 		performanceService.deletePerformanceSchedule(performanceId, performanceScheduleId, authenticatedUser);
 		return ResponseEntity.noContent().build();
+	}
+
+	@GetMapping("/ranking")
+	public ResponseEntity<ApiResponseData<List<PerformanceRankingResponseDto>>> getWeeklyRanking() {
+
+		List<PerformanceRankingResponseDto> response = performanceService.getTopRankedPerformances(5);
+		return ResponseEntity.ok(ApiResponseData.success(response));
 	}
 }
