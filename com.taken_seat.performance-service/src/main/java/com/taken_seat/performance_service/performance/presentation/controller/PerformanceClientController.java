@@ -20,11 +20,14 @@ import com.taken_seat.performance_service.performance.application.service.Perfor
 import com.taken_seat.performance_service.performance.presentation.docs.PerformanceClientControllerDocs;
 import com.taken_seat.performance_service.performance.presentation.dto.response.SeatLayoutResponseDto;
 import com.taken_seat.performance_service.recommend.domain.facade.RecommendFacade;
+import com.taken_seat.performance_service.recommend.infrastructure.scheduler.RecommendRequestScheduler;
 import com.taken_seat.performance_service.recommend.presentation.dto.response.RecommendedPerformanceResponseDto;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/performances")
@@ -32,6 +35,7 @@ public class PerformanceClientController implements PerformanceClientControllerD
 
 	private final PerformanceClientService performanceClientService;
 	private final RecommendFacade recommendFacade;
+	private final RecommendRequestScheduler recommendRequestScheduler;
 
 	@PutMapping("/seat/status")
 	public ResponseEntity<ApiResponseData<BookingSeatClientResponseDto>> updateSeatStatus(
@@ -85,5 +89,11 @@ public class PerformanceClientController implements PerformanceClientControllerD
 			= recommendFacade.getRecommendedPerformances(userId);
 
 		return ResponseEntity.ok(ApiResponseData.success(response));
+	}
+
+	@GetMapping("/test/recommend-requests")
+	public ResponseEntity<Void> triggerRecommendRequests() {
+		recommendRequestScheduler.scheduleDailyRecommendRequests();
+		return ResponseEntity.ok().build();
 	}
 }
