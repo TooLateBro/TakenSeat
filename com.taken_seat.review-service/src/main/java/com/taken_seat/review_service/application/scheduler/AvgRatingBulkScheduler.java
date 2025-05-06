@@ -6,7 +6,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.taken_seat.review_service.domain.repository.RedisRatingRepository;
-import com.taken_seat.review_service.domain.repository.ReviewRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,10 +16,10 @@ import lombok.extern.slf4j.Slf4j;
 public class AvgRatingBulkScheduler {
 
 	private final RedisRatingRepository redisRatingRepository;
-	private final ReviewRepository reviewRepository;
 
 	// 한시간 마다 리뷰 평점을 업데이트
-	@Scheduled(cron = "0 0 * * * ?")
+	// @Scheduled(cron = "0 0 * * * ?")
+	@Scheduled(cron = "0 */2 * * * ?")
 	@Caching(evict = {
 		@CacheEvict(cacheNames = "reviewCache", allEntries = true),
 		@CacheEvict(cacheNames = "reviewSearchCache", allEntries = true)
