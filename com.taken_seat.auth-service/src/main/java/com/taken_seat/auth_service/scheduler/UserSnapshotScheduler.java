@@ -19,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 public class UserSnapshotScheduler {
 
     private final UserRepository userRepository;
-    private final KafkaTemplate<String, UserSnapshotEvent> kafkaTemplate;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
     
     private static final String TOPIC_USER_SNAPSHOT = "user.snapshot.v1";
     private static final String CRON_DAILY_6AM = "0 0 6 * * *";
