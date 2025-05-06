@@ -54,16 +54,17 @@ kafka:
     benefit-refund-response: benefit.refund.response
     benefit-usage-request: benefit.usage.request
     benefit-usage-response: benefit.usage.response
+    booking-completed: booking.completed.v1
+    booking-created: booking.created
+    booking-expire: booking.expire
+    booking-updated: booking.updated
     payment-refund-request: payment.refund.request
     payment-refund-response: payment.refund.response
     payment-request: payment.request
     payment-response: payment.response
-    ticket-request: ticket.request
     queue-request: waitingQueue.exit.request
     queue-response: waitingQueue.enter.request
-    booking-expire: booking.expire
-    booking-created: booking.created
-    booking-updated: booking.updated
+    ticket-request: ticket.request
   consumer:
     group-id:
       booking-command: booking-command
