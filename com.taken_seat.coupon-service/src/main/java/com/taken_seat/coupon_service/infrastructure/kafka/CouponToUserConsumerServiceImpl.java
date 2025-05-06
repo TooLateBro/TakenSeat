@@ -67,6 +67,11 @@ public class CouponToUserConsumerServiceImpl implements CouponToUserConsumerServ
                         log.error("이미 발급에 성공한 유저입니다. userId: {}", userId);
                         throw new IllegalArgumentException("중복된 userId 입니다.");
                     }
+                    if (updatedQuantity == 0) {
+                        coupon.updateQuantity(updatedQuantity, userId, coupon);
+                        coupon.delete(UUID.fromString("00000000-0000-0000-0000-000000000000"));
+                        return createSuccessMessage(message, coupon);
+                    }
 
                     coupon.updateQuantity(updatedQuantity, userId, coupon);
                     return createSuccessMessage(message, coupon);
