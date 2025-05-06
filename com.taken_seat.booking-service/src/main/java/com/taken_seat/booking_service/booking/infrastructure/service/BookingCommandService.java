@@ -33,6 +33,7 @@ import com.taken_seat.common_service.dto.request.BookingSeatClientRequestDto;
 import com.taken_seat.common_service.dto.response.BookingSeatClientResponseDto;
 import com.taken_seat.common_service.exception.customException.BookingException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
+import com.taken_seat.common_service.message.BookingCompletedMessage;
 import com.taken_seat.common_service.message.BookingRequestMessage;
 import com.taken_seat.common_service.message.PaymentMessage;
 import com.taken_seat.common_service.message.PaymentRefundMessage;
@@ -108,7 +109,7 @@ public class BookingCommandService {
 				.performanceId(command.performanceId())
 				.performanceScheduleId(command.performanceScheduleId())
 				.build();
-			bookingProducer.sendQueueEnterResponse(queueEnterMessage);
+			bookingProducer.sendQueueEnterMessage(queueEnterMessage);
 
 			log.info("[BookingCommand] 예약 생성 - 성공: | userId={}", command.userId());
 
@@ -162,7 +163,7 @@ public class BookingCommandService {
 				.type(PaymentRefundMessage.MessageType.REQUEST)
 				.build();
 
-			bookingProducer.sendPaymentRefundRequest(message);
+			bookingProducer.sendPaymentRefundMessage(message);
 
 			log.info("[BookingCommand] 예약 취소 - 환불 요청 전송: | userId={}", command.userId());
 		}
@@ -240,7 +241,7 @@ public class BookingCommandService {
 				.price(bookingCommand.getPrice())
 				.build();
 
-			bookingProducer.sendBenefitUsageRequest(benefitUsageRequestMessage);
+			bookingProducer.sendBenefitUsageMessage(benefitUsageRequestMessage);
 			log.info(
 				"[BookingCommand] 예매 결제 - 쿠폰, 마일리지 사용 요청 전송: | userId={}, bookingId={}",
 				command.userId(),
@@ -257,7 +258,7 @@ public class BookingCommandService {
 			.type(PaymentMessage.MessageType.REQUEST)
 			.build();
 
-		bookingProducer.sendPaymentRequest(message);
+		bookingProducer.sendPaymentMessage(message);
 
 		log.info(
 			"[BookingCommand] 예매 결제 - 쿠폰, 마일리지 사용 없이 결제 요청 전송: | userId={}, bookingId={}",
@@ -364,7 +365,7 @@ public class BookingCommandService {
 				.amount(bookingCommand.getDiscountedPrice())
 				.type(PaymentMessage.MessageType.REQUEST)
 				.build();
-			bookingProducer.sendPaymentRequest(paymentMessage);
+			bookingProducer.sendPaymentMessage(paymentMessage);
 
 			log.info(
 				"[BookingCommand] 예매 쿠폰, 마일리지 적용 메시지 수신 - 결제 요청 전송: | userId={}, bookingId={}",
@@ -417,7 +418,7 @@ public class BookingCommandService {
 			bookingProducer.sendBookingUpdatedEvent(toEvent(bookingCommand));
 
 			// 티켓 생성 요청
-			bookingProducer.sendTicketRequest(
+			bookingProducer.sendTicketRequestMessage(
 				TicketRequestMessage.builder()
 					.userId(bookingCommand.getUserId())
 					.bookingId(bookingCommand.getId())
@@ -426,6 +427,14 @@ public class BookingCommandService {
 					.scheduleSeatId(bookingCommand.getScheduleSeatId())
 					.build()
 			);
+
+			int ticketCount = bookingCommandRepository.countByUserIdAndPerformanceIdAndBookingStatus(
+				bookingCommand.getUserId(),
+				bookingCommand.getPerformanceId(), BookingStatus.COMPLETED);
+			BookingCompletedMessage completedMessage = new BookingCompletedMessage(bookingCommand.getUserId(),
+				bookingCommand.getPerformanceId(), ticketCount);
+
+			bookingProducer.sendBookingCompletedMessage(completedMessage);
 
 			// 쿠폰, 마일리지 사용 내역 전달
 			if (optional.isPresent()) {
@@ -439,7 +448,7 @@ public class BookingCommandService {
 					.status(UserBenefitMessage.UserBenefitStatus.SUCCESS)
 					.build();
 
-				bookingProducer.sendBenefitRefundRequest(benefitMessage);
+				bookingProducer.sendBenefitRefundMessage(benefitMessage);
 				log.info(
 					"[BookingCommand] 예매 결제 메시지 수신 - 성공: 쿠폰, 마일리지 사용내역 전송 | userId={}, bookingId={}",
 					message.getUserId(),
@@ -502,7 +511,7 @@ public class BookingCommandService {
 					.price(bookingCommand.getPrice())
 					.status(UserBenefitMessage.UserBenefitStatus.REFUND)
 					.build();
-				bookingProducer.sendBenefitRefundRequest(benefitMessage);
+				bookingProducer.sendBenefitRefundMessage(benefitMessage);
 
 				log.info(
 					"[BookingCommand] 예매 환불 메시지 수신 - 쿠폰, 마일리지 원복 요청 전송: | userId={}, bookingId={}",
@@ -619,7 +628,7 @@ public class BookingCommandService {
 			.performanceScheduleId(bookingCommand.getPerformanceScheduleId())
 			.scheduleSeatId(bookingCommand.getScheduleSeatId())
 			.build();
-		bookingProducer.sendTicketRequest(message);
+		bookingProducer.sendTicketRequestMessage(message);
 
 		log.info("[BookingCommand] 티켓 재발행 - 성공: | userId={}, bookingId={}", command.userId(), command.bookingId());
 	}
