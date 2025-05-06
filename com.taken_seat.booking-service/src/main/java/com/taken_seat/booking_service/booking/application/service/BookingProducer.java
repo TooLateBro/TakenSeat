@@ -4,23 +4,26 @@ import java.util.UUID;
 
 import com.taken_seat.booking_service.booking.application.dto.event.BookingEntityEvent;
 import com.taken_seat.booking_service.common.message.TicketRequestMessage;
+import com.taken_seat.common_service.message.BookingCompletedMessage;
 import com.taken_seat.common_service.message.PaymentMessage;
 import com.taken_seat.common_service.message.PaymentRefundMessage;
 import com.taken_seat.common_service.message.QueueEnterMessage;
 import com.taken_seat.common_service.message.UserBenefitMessage;
 
 public interface BookingProducer {
-	void sendPaymentRequest(PaymentMessage message);
+	void sendPaymentMessage(PaymentMessage message);
 
-	void sendTicketRequest(TicketRequestMessage message);
+	void sendTicketRequestMessage(TicketRequestMessage message);
 
-	void sendBenefitUsageRequest(UserBenefitMessage message);
+	void sendBenefitUsageMessage(UserBenefitMessage message);
 
-	void sendBenefitRefundRequest(UserBenefitMessage message);
+	void sendBenefitRefundMessage(UserBenefitMessage message);
 
-	void sendPaymentRefundRequest(PaymentRefundMessage message);
+	void sendPaymentRefundMessage(PaymentRefundMessage message);
 
-	void sendQueueEnterResponse(QueueEnterMessage message);
+	void sendQueueEnterMessage(QueueEnterMessage message);
+
+	void sendBookingCompletedMessage(BookingCompletedMessage message);
 
 	void sendBookingExpireEvent(UUID bookingId);
 

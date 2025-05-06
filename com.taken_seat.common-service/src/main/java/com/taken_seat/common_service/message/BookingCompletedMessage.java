@@ -1,4 +1,4 @@
-package com.taken_seat.performance_service.recommend.infrastructure.kafka.dto;
+package com.taken_seat.common_service.message;
 
 import java.util.UUID;
 

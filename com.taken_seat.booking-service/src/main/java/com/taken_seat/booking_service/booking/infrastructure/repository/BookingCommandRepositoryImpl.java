@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Repository;
 
 import com.taken_seat.booking_service.booking.domain.BookingCommand;
+import com.taken_seat.booking_service.booking.domain.BookingStatus;
 import com.taken_seat.booking_service.booking.domain.repository.BookingCommandRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -35,5 +36,12 @@ public class BookingCommandRepositoryImpl implements BookingCommandRepository {
 	@Override
 	public Optional<BookingCommand> findById(UUID id) {
 		return bookingCommandJpaRepository.findByIdAndDeletedAtIsNull(id);
+	}
+
+	@Override
+	public int countByUserIdAndPerformanceIdAndBookingStatus(UUID userId, UUID performanceId,
+		BookingStatus bookingStatus) {
+		return bookingCommandJpaRepository.countByUserIdAndPerformanceIdAndBookingStatus(userId, performanceId,
+			bookingStatus);
 	}
 }

@@ -19,8 +19,8 @@ import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.util.backoff.FixedBackOff;
 
+import com.taken_seat.common_service.message.BookingCompletedMessage;
 import com.taken_seat.performance_service.performance.infrastructure.kafka.producer.SeatStatusChangedEvent;
-import com.taken_seat.performance_service.recommend.infrastructure.kafka.dto.BookingCompletedMessage;
 import com.taken_seat.performance_service.recommend.infrastructure.kafka.dto.RecommendRequestMessage;
 import com.taken_seat.performance_service.recommend.infrastructure.kafka.dto.UserSnapshotEvent;
 
@@ -130,7 +130,7 @@ public class KafkaConsumerConfig {
 			buildCommonConsumerProps("user-snapshot-group", type)
 		);
 	}
-	
+
 	@Bean
 	public ConcurrentKafkaListenerContainerFactory<String, UserSnapshotEvent>
 	userSnapshotListenerContainerFactory(
