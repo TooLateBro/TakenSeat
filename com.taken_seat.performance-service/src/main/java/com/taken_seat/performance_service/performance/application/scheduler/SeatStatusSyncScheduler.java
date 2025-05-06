@@ -36,6 +36,9 @@ public class SeatStatusSyncScheduler {
 				SeatStatus redisStatus = entry.getValue();
 				SeatStatus dbStatus = dbSeatStatuses.get(seatId);
 
+				if (dbStatus == SeatStatus.DISABLED)
+					continue;
+
 				if (dbStatus == null || !dbStatus.equals(redisStatus)) {
 					log.warn("[Performance] Scheduler - 상태 불일치 감지 - scheduleId={}, seatId={}, Redis={}, DB={}",
 						scheduleId, seatId, redisStatus, dbStatus);
