@@ -2,14 +2,13 @@ package com.taken_seat.common_service.message;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Getter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class KafkaUserInfoMessage {
