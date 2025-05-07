@@ -5,6 +5,8 @@ import com.taken_seat.coupon_service.domain.entity.Coupon;
 import com.taken_seat.coupon_service.domain.repository.CouponRepository;
 import com.taken_seat.coupon_service.infrastructure.config.redis.RedisOperationService;
 import com.taken_seat.coupon_service.infrastructure.kafka.CouponToUserConsumerServiceImpl;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,7 +17,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -44,6 +45,12 @@ class CouponToUserConsumerServiceTest {
     @Mock
     private RLock rLock;
 
+    @Mock
+    private MeterRegistry meterRegistry;
+
+    @Mock
+    private Counter counter;
+
     private static final int TOTAL_REQUESTS = 10000;
     private static final int COUPON_QUANTITY = 1000;
     private static final UUID COUPON_ID = UUID.fromString("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11");
@@ -60,8 +67,6 @@ class CouponToUserConsumerServiceTest {
     @DisplayName("동시에 10000명이 1000개 쿠폰 발급받는 시나리오 테스트 개선버전")
     void testConcurrentCouponIssue() throws InterruptedException {
         Coupon coupon = mock(Coupon.class);
-        when(coupon.getDiscount()).thenReturn(20);
-        when(coupon.getExpiredAt()).thenReturn(LocalDateTime.now().plusDays(1));
 
         AtomicLong atomicQuantity = new AtomicLong(COUPON_QUANTITY);
         AtomicInteger issuedCount = new AtomicInteger(0);
@@ -70,6 +75,7 @@ class CouponToUserConsumerServiceTest {
 
         when(couponRepository.findByIdAndDeletedAtIsNull(eq(COUPON_ID))).thenReturn(Optional.of(coupon));
         when(redisOperationService.hasKey(anyString())).thenReturn(true);
+        when(meterRegistry.counter(any(String.class), any(String[].class))).thenReturn(counter);
 
         when(redisOperationService.getCurrentQuantity(anyString())).thenAnswer(invocation ->
                 Math.max(0, atomicQuantity.get())

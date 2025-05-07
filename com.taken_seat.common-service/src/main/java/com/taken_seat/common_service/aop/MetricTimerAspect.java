@@ -1,12 +1,13 @@
 package com.taken_seat.common_service.aop;
 
-import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.Around;
-import org.springframework.beans.factory.annotation.Value;
-
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
+import org.springframework.beans.factory.annotation.Value;
 
+@Aspect
 public class MetricTimerAspect {
 
 	private final MeterRegistry meterRegistry;
@@ -23,7 +24,7 @@ public class MetricTimerAspect {
 		Timer.Sample sample = Timer.start(meterRegistry);
 		try {
 			return pjp.proceed();
-		} finally {
+		}finally{
 			sample.stop(
 				Timer.builder(track.value())
 					.description(track.description())
