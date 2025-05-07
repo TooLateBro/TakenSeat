@@ -12,6 +12,7 @@ import com.taken_seat.performance_service.performance.domain.model.ScheduleSeat;
 import com.taken_seat.performance_service.performance.presentation.dto.response.CreateResponseDto;
 import com.taken_seat.performance_service.performance.presentation.dto.response.DetailResponseDto;
 import com.taken_seat.performance_service.performance.presentation.dto.response.PageResponseDto;
+import com.taken_seat.performance_service.performance.presentation.dto.response.PerformanceRankingResponseDto;
 import com.taken_seat.performance_service.performance.presentation.dto.response.PerformanceScheduleResponseDto;
 import com.taken_seat.performance_service.performance.presentation.dto.response.ScheduleSeatResponseDto;
 import com.taken_seat.performance_service.performance.presentation.dto.response.SearchResponseDto;
@@ -142,5 +143,15 @@ public class PerformanceResponseMapper {
 				seat.getPrice()
 			))
 			.collect(Collectors.toList());
+	}
+
+	public static PerformanceRankingResponseDto toRankingResponse(Performance performance) {
+		return new PerformanceRankingResponseDto(
+			performance.getId(),
+			performance.getTitle(),
+			performance.getPosterUrl(),
+			performance.getStartAt(),
+			performance.getEndAt()
+		);
 	}
 }

@@ -4,7 +4,10 @@ import static com.taken_seat.performance_service.common.config.RedisCacheConfig.
 import static com.taken_seat.performance_service.performance.application.dto.mapper.PerformanceResponseMapper.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -25,6 +28,7 @@ import com.taken_seat.performance_service.performance.domain.helper.PerformanceU
 import com.taken_seat.performance_service.performance.domain.model.Performance;
 import com.taken_seat.performance_service.performance.domain.model.PerformanceSchedule;
 import com.taken_seat.performance_service.performance.domain.repository.PerformanceRepository;
+import com.taken_seat.performance_service.performance.domain.repository.redis.PerformanceRankingRedisRepository;
 import com.taken_seat.performance_service.performance.domain.validator.PerformanceExistenceValidator;
 import com.taken_seat.performance_service.performance.domain.validator.PerformanceValidator;
 import com.taken_seat.performance_service.performance.presentation.dto.request.CreateRequestDto;
@@ -33,6 +37,7 @@ import com.taken_seat.performance_service.performance.presentation.dto.request.U
 import com.taken_seat.performance_service.performance.presentation.dto.response.CreateResponseDto;
 import com.taken_seat.performance_service.performance.presentation.dto.response.DetailResponseDto;
 import com.taken_seat.performance_service.performance.presentation.dto.response.PageResponseDto;
+import com.taken_seat.performance_service.performance.presentation.dto.response.PerformanceRankingResponseDto;
 import com.taken_seat.performance_service.performance.presentation.dto.response.SearchResponseDto;
 import com.taken_seat.performance_service.performance.presentation.dto.response.UpdateResponseDto;
 
@@ -50,6 +55,7 @@ public class PerformanceService {
 	private final PerformanceCreateCommandMapper performanceCreateCommandMapper;
 	private final PerformanceUpdateCommandMapper performanceUpdateCommandMapper;
 	private final PerformanceCreateHelper performanceCreateHelper;
+	private final PerformanceRankingRedisRepository performanceRankingRedisRepository;
 
 	@Transactional
 	public CreateResponseDto create(CreateRequestDto request, AuthenticatedUser authenticatedUser) {
@@ -101,6 +107,8 @@ public class PerformanceService {
 	public DetailResponseDto getDetail(UUID id) {
 
 		Performance performance = performanceExistenceValidator.validateByPerformanceId(id);
+
+		performanceRankingRedisRepository.incrementScore(id, 1.0);
 
 		return detailToDto(performance);
 	}
@@ -158,5 +166,29 @@ public class PerformanceService {
 		schedule.delete(authenticatedUser.getUserId());
 
 		performanceRepository.save(performance);
+	}
+
+	@Transactional
+	public List<PerformanceRankingResponseDto> getTopRankedPerformances(int limit) {
+
+		List<UUID> topPerformanceIds
+			= performanceRankingRedisRepository.getTopPerformanceIds(limit);
+
+		if (topPerformanceIds.isEmpty()) {
+			return List.of();
+		}
+
+		List<Performance> performances =
+			performanceRepository.findAllById(topPerformanceIds);
+
+		Map<UUID, Performance> performanceMap =
+			performances.stream()
+				.collect(Collectors.toMap(Performance::getId, performance -> performance));
+
+		return topPerformanceIds.stream()
+			.map(performanceMap::get)
+			.filter(Objects::nonNull)
+			.map(PerformanceResponseMapper::toRankingResponse)
+			.toList();
 	}
 }

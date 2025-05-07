@@ -3,9 +3,9 @@ package com.taken_seat.performance_service.recommend.infrastructure.kafka.consum
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
+import com.taken_seat.common_service.message.BookingCompletedMessage;
 import com.taken_seat.performance_service.recommend.application.command.RecommendRegisterCommand;
 import com.taken_seat.performance_service.recommend.application.service.RecommendMatrixService;
-import com.taken_seat.performance_service.recommend.infrastructure.kafka.dto.BookingCompletedMessage;
 import com.taken_seat.performance_service.recommend.infrastructure.redis.RecommendationCacheService;
 
 import lombok.RequiredArgsConstructor;
