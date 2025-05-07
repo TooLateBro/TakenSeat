@@ -29,6 +29,7 @@ import com.taken_seat.performance_service.performance.domain.model.Performance;
 import com.taken_seat.performance_service.performance.domain.model.PerformanceSchedule;
 import com.taken_seat.performance_service.performance.domain.model.ScheduleSeat;
 import com.taken_seat.performance_service.performance.domain.repository.PerformanceQueryRepository;
+import com.taken_seat.performance_service.performance.domain.repository.redis.PerformanceRankingRedisRepository;
 import com.taken_seat.performance_service.performance.domain.validator.PerformanceExistenceValidator;
 import com.taken_seat.performance_service.performance.presentation.dto.response.ScheduleSeatResponseDto;
 import com.taken_seat.performance_service.performance.presentation.dto.response.SeatLayoutResponseDto;
@@ -52,6 +53,7 @@ public class PerformanceClientService {
 	private final SeatStatusKafkaHelper seatStatusKafkaHelper;
 	private final PerformanceQueryRepository performanceQueryRepository;
 	private final MeterRegistry meterRegistry;
+	private final PerformanceRankingRedisRepository performanceRankingRedisRepository;
 
 	@TrackLatency(
 		value = "performance_seat_lock_seconds",
@@ -91,6 +93,8 @@ public class PerformanceClientService {
 			request.performanceScheduleId(),
 			scheduleSeat.getSeatType()
 		);
+
+		performanceRankingRedisRepository.incrementScore(request.performanceId(), 5.0);
 
 		log.info("[Performance] 좌석 선점 - 성공 - scheduleSeatId={}, scheduleId={}, seatType={}, price={}",
 			request.scheduleSeatId(), request.performanceScheduleId(), scheduleSeat.getSeatType(), price);
