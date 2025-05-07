@@ -38,6 +38,7 @@ public class ReviewServiceImpl implements ReviewService {
 	private final RedisRatingRepository redisRatingRepository;
 	private final ReviewClient reviewClient;
 	private final ReviewMapper reviewMapper;
+	private final ReviewChangeMaker reviewChangeMaker;
 
 	@Override
 	@CachePut(cacheNames = "reviewCache", key = "#result.id")
@@ -74,6 +75,8 @@ public class ReviewServiceImpl implements ReviewService {
 		// 4. 리뷰 생성 및 저장
 		Review review = Review.create(reviewDto);
 		reviewRepository.save(review);
+
+		reviewChangeMaker.markPerformanceChanged(review.getPerformanceId());
 
 		return reviewMapper.toResponse(review);
 	}
@@ -115,6 +118,8 @@ public class ReviewServiceImpl implements ReviewService {
 
 		review.update(reviewDto);
 
+		reviewChangeMaker.markPerformanceChanged(review.getPerformanceId());
+
 		return reviewMapper.toResponse(review);
 	}
 
@@ -131,6 +136,9 @@ public class ReviewServiceImpl implements ReviewService {
 		validateAccessAuthority(review, reviewDto);
 
 		review.delete(reviewDto.getUserId());
+
+		reviewChangeMaker.markPerformanceChanged(review.getPerformanceId());
+
 	}
 
 	private void validateAccessAuthority(Review review, ReviewDto reviewDto) {

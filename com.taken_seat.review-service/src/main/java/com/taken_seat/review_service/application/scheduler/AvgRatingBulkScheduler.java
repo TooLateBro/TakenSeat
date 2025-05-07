@@ -27,7 +27,10 @@ public class AvgRatingBulkScheduler {
 	public void fetchPerformanceRatingStatsBulk() {
 		log.info("[Review][Scheduler] 공연 별 평균 평점 계산 및 캐시 반영 시작");
 		try {
+			long start = System.currentTimeMillis();
 			redisRatingRepository.setAvgRatingBulk();
+			long end = System.currentTimeMillis();
+			System.out.println("평점 대량 저장 실행 시간: " + (end - start) + "ms");
 			log.info("[Review][Scheduler] 평균 평점 계산 및 캐시 반영 완료");
 		} catch (Exception e) {
 			log.error("[Review][Scheduler] 평균 평점 계산 중 예외 발생: {}", e.getMessage(), e);
