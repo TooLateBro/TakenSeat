@@ -1,4 +1,4 @@
-package com.taken_seat.review_service.application.service;
+package com.taken_seat.review_service.infrastructure.redis.service;
 
 import java.util.HashMap;
 import java.util.List;
@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.taken_seat.common_service.exception.customException.ReviewException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.review_service.application.dto.service.ReviewDto;
+import com.taken_seat.review_service.application.service.ReviewLikeService;
 import com.taken_seat.review_service.domain.model.Review;
 import com.taken_seat.review_service.domain.model.ReviewLike;
 import com.taken_seat.review_service.domain.repository.ReviewLikeRepository;
