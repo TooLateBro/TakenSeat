@@ -12,6 +12,8 @@ import com.taken_seat.common_service.exception.customException.CouponException;
 import com.taken_seat.common_service.exception.customException.MileageException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.common_service.message.UserBenefitMessage;
+import io.micrometer.core.annotation.Counted;
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,12 +27,15 @@ public class UserToBookingConsumerServiceImpl implements UserToBookingConsumerSe
     private final UserRepository userRepository;
     private final UserCouponRepository userCouponRepository;
     private final MileageRepository mileageRepository;
+    private final MeterRegistry meterRegistry;
 
     public UserToBookingConsumerServiceImpl(UserRepository userRepository,
-                                            UserCouponRepository userCouponRepository, MileageRepository mileageRepository) {
+                                            UserCouponRepository userCouponRepository, MileageRepository mileageRepository,
+                                            MeterRegistry meterRegistry) {
         this.userRepository = userRepository;
         this.userCouponRepository = userCouponRepository;
         this.mileageRepository = mileageRepository;
+        this.meterRegistry = meterRegistry;
     }
 
     @Override
@@ -77,15 +82,16 @@ public class UserToBookingConsumerServiceImpl implements UserToBookingConsumerSe
         }
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     @Override
+    @Counted(value = "benefit.usage.coupon", description = "쿠폰 사용량 카운트")
     public UserBenefitMessage benefitPayment(UserBenefitMessage message) {
         log.info("[Booking] -> [Auth] 마일리지 및 쿠폰의 성공 유무를 체크 중 입니다...." +
                 "{}, {}, {}, {}", message.getBookingId(), message.getUserId(), message.getCouponId(), message.getMileage());
         User user = userRepository.findByIdAndDeletedAtIsNull(message.getUserId())
                 .orElseThrow(() -> new AuthException(ResponseCode.USER_NOT_FOUND));
 
-        int mileageRate = message.getPrice() / 1000;
+        int mileageRate = message.getPrice() != null ? message.getPrice() / 1000 : 0;
 
         if (message.getStatus().equals(UserBenefitMessage.UserBenefitStatus.SUCCESS)) {
             try {
@@ -99,6 +105,7 @@ public class UserToBookingConsumerServiceImpl implements UserToBookingConsumerSe
 
                 userCoupon.updateActive(false, user.getId());
                 log.info("[Auth] {} 쿠폰 사용에 성공했습니다!!!", message.getCouponId());
+                meterRegistry.counter("benefit.usage.count", "status", "success", "reason", "쿠폰 사용에 성공했습니다!").increment();
 
                 int currentMileage = mileageExists.getMileage() - message.getMileage() + mileageRate;
                 log.info("[Auth] {} 마일리지 적립에 성공했습니다!!!!", mileageRate);
@@ -116,8 +123,10 @@ public class UserToBookingConsumerServiceImpl implements UserToBookingConsumerSe
                 mileageRepository.save(mileage);
             } catch (MileageException | CouponException e) {
                 log.error("[Auth] 마일리지 또는 쿠폰 처리 중 오류가 발생했습니다 : {}", e.getMessage());
+                meterRegistry.counter("benefit.usage.count", "status", "fail", "reason", "쿠폰 사용에 실패했습니다.").increment();
             } catch (Exception e) {
                 log.error("[Auth] 서비스에서 예기치 않은 오류가 발생했습니다 : {}", e.getMessage());
+                meterRegistry.counter("benefit.usage.count", "status", "fail", "reason", "쿠폰 사용에 실패했습니다.").increment();
             }
         } else if (message.getStatus().equals(UserBenefitMessage.UserBenefitStatus.REFUND)) {
             try {
