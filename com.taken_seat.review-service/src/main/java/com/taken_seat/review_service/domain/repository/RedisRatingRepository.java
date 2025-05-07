@@ -9,5 +9,5 @@ public interface RedisRatingRepository {
 
 	Double getAvgRating(UUID performanceId);
 
-	void setAvgRatingBulk();
+	void setAvgRatingForChangedPerformances();
 }
