@@ -44,7 +44,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
 	}
 
 	@Override
-	public List<Map<String, Object>> fetchPerformanceRatingStatsBulk() {
-		return reviewJpaRepository.fetchPerformanceRatingStatsBulk();
+	public List<Map<String, Object>> fetchAvgRatingAndReviewCountByPerformanceIds(List<UUID> performanceIds) {
+		return reviewJpaRepository.fetchAvgRatingAndReviewCountByPerformanceIds(performanceIds);
 	}
 }

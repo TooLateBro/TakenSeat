@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.taken_seat.review_service.domain.model.Review;
 
@@ -31,5 +32,17 @@ public interface ReviewJpaRepository extends JpaRepository<Review, UUID> {
 			+ "GROUP BY r.performance_id",
 		nativeQuery = true)
 	List<Map<String, Object>> fetchPerformanceRatingStatsBulk();
+
+	@Query(value = """
+		    SELECT
+		        r.performance_id,
+		        ROUND(AVG(r.rating), 2) AS avgRating,
+		        COUNT(*) AS reviewCount
+		    FROM p_review r
+		    WHERE r.performance_id IN :performanceIds
+		    GROUP BY r.performance_id
+		""", nativeQuery = true)
+	List<Map<String, Object>> fetchAvgRatingAndReviewCountByPerformanceIds(
+		@Param("performanceIds") List<UUID> performanceIds);
 
 }
