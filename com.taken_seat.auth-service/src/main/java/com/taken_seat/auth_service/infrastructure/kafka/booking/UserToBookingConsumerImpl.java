@@ -27,9 +27,7 @@ public class UserToBookingConsumerImpl implements UserToBookingConsumer {
 
     @Override
     @KafkaListener(groupId = "${kafka.consumer.group-id}", topics = "${kafka.topic.benefit-refund-request}")
-    @SendTo("benefit.refund.response")
-    public UserBenefitMessage benefitPaymentConsume(@Payload UserBenefitMessage message) {
-        UserBenefitMessage userBenefitMessage = userToBookingConsumerService.benefitPayment(message);
-        return userBenefitMessage;
+    public void benefitPaymentConsume(@Payload UserBenefitMessage message) {
+        userToBookingConsumerService.benefitPayment(message);
     }
 }
