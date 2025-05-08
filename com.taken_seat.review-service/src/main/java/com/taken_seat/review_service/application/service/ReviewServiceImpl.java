@@ -116,9 +116,13 @@ public class ReviewServiceImpl implements ReviewService {
 
 		validateAccessAuthority(review, reviewDto);
 
+		short originRating = review.getRating();
+		short newRating = reviewDto.getRating();
+
 		review.update(reviewDto);
 
-		reviewChangeMaker.markPerformanceChanged(review.getPerformanceId());
+		if (originRating != newRating)
+			reviewChangeMaker.markPerformanceChanged(review.getPerformanceId());
 
 		return reviewMapper.toResponse(review);
 	}
