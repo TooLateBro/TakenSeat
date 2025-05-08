@@ -27,6 +27,7 @@ import com.taken_seat.review_service.application.dto.controller.response.PageRev
 import com.taken_seat.review_service.application.dto.controller.response.ReviewDetailResDto;
 import com.taken_seat.review_service.application.dto.service.ReviewDto;
 import com.taken_seat.review_service.application.dto.service.ReviewSearchDto;
+import com.taken_seat.review_service.application.service.ReviewChangeMaker;
 import com.taken_seat.review_service.application.service.ReviewServiceImpl;
 import com.taken_seat.review_service.domain.model.Review;
 import com.taken_seat.review_service.domain.repository.CustomReviewQuerydslRepository;
@@ -53,6 +54,9 @@ public class ReviewServicesTest {
 
 	@Mock
 	private RedisRatingRepository redisRatingRepository;
+
+	@Mock
+	private ReviewChangeMaker reviewChangeMaker;
 
 	@InjectMocks
 	private ReviewServiceImpl reviewServices;
@@ -156,6 +160,8 @@ public class ReviewServicesTest {
 		ReviewDetailResDto result = reviewServices.registerReview(testReviewDto);
 
 		// Then
+		verify(reviewChangeMaker).markPerformanceChanged(testPerformanceId);
+
 		assertNotNull(result);
 		assertEquals("testTitle", result.getTitle());
 		assertEquals("testContent", result.getContent());
@@ -369,6 +375,7 @@ public class ReviewServicesTest {
 		ReviewDetailResDto result = reviewServices.updateReview(testReviewDto);
 
 		// Then
+		verify(reviewChangeMaker).markPerformanceChanged(testPerformanceId);
 		assertNotNull(result);
 		assertEquals("updateTitle", result.getTitle());
 		assertEquals("updateContent", result.getContent());
@@ -446,6 +453,7 @@ public class ReviewServicesTest {
 		assertDoesNotThrow(() -> reviewServices.deleteReview(testReviewDto));
 
 		// Then
+		verify(reviewChangeMaker).markPerformanceChanged(testPerformanceId);
 		assertNotNull(testReview.getDeletedAt());
 	}
 
