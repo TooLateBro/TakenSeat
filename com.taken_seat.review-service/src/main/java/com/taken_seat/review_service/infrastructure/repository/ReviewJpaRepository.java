@@ -20,7 +20,7 @@ public interface ReviewJpaRepository extends JpaRepository<Review, UUID> {
 	<S extends Review> List<S> saveAllAndFlush(Iterable<S> entities);
 
 	@Query(value =
-		"SELECT r.performance_id AS performanceId, AVG(r.rating) AS avgRating, COUNT(r.id) AS reviewCount "
+		"SELECT r.performance_id AS performanceId,ROUND(AVG(r.rating), 2) AS avgRating, COUNT(r.id) AS reviewCount "
 			+ "FROM p_review r "
 			+ "WHERE r.performance_id = :performanceId AND r.deleted_at IS NULL", nativeQuery = true)
 	Map<String, Object> fetchAvgRatingAndReviewCountByPerformanceId(UUID performanceId);
