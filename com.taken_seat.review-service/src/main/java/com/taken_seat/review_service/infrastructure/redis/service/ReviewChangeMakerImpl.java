@@ -1,5 +1,6 @@
 package com.taken_seat.review_service.infrastructure.redis.service;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -27,6 +28,8 @@ public class ReviewChangeMakerImpl implements ReviewChangeMaker {
 	public void markPerformanceChanged(UUID performanceId) {
 		try {
 			redisTemplate.opsForSet().add(PERFORMANCE_ID_SET_KEY, performanceId.toString());
+
+			redisTemplate.expire(PERFORMANCE_ID_SET_KEY, Duration.ofHours(1));
 		} catch (Exception e) {
 			throw new ReviewException(ResponseCode.ILLEGAL_ARGUMENT);
 		}
