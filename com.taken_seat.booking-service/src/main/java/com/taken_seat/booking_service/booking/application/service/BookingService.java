@@ -6,7 +6,6 @@ import com.taken_seat.booking_service.booking.application.dto.command.BookingCan
 import com.taken_seat.booking_service.booking.application.dto.command.BookingCreateCommand;
 import com.taken_seat.booking_service.booking.application.dto.command.BookingPaymentCommand;
 import com.taken_seat.booking_service.booking.application.dto.command.BookingSingleTargetCommand;
-import com.taken_seat.booking_service.booking.application.dto.event.BookingEntityEvent;
 import com.taken_seat.booking_service.booking.application.dto.query.BookingAdminListQuery;
 import com.taken_seat.booking_service.booking.application.dto.query.BookingListQuery;
 import com.taken_seat.booking_service.booking.application.dto.query.BookingReadQuery;
@@ -16,6 +15,8 @@ import com.taken_seat.booking_service.booking.presentation.dto.response.AdminBoo
 import com.taken_seat.booking_service.booking.presentation.dto.response.BookingCreateResponse;
 import com.taken_seat.booking_service.booking.presentation.dto.response.BookingPageResponse;
 import com.taken_seat.booking_service.booking.presentation.dto.response.BookingReadResponse;
+import com.taken_seat.booking_service.common.message.BookingCommandMessage;
+import com.taken_seat.booking_service.common.message.BookingPaymentRequestMessage;
 import com.taken_seat.common_service.dto.response.BookingStatusDto;
 import com.taken_seat.common_service.message.BookingRequestMessage;
 import com.taken_seat.common_service.message.PaymentMessage;
@@ -53,9 +54,13 @@ public interface BookingService {
 
 	BookingStatusDto getBookingStatus(BookingStatusQuery query);
 
-	void receiveBookingCreatedEvent(BookingEntityEvent event);
+	void receiveBookingCreatedEvent(BookingCommandMessage event);
 
-	void receiveBookingUpdatedEvent(BookingEntityEvent event);
+	void receiveBookingUpdatedEvent(BookingCommandMessage event);
+
+	void receiveBookingCompletedMessage(UUID bookingId);
+
+	void receiveBookingPaymentRequestMessage(BookingPaymentRequestMessage message);
 
 	void reissueTicket(BookingSingleTargetCommand command);
 }

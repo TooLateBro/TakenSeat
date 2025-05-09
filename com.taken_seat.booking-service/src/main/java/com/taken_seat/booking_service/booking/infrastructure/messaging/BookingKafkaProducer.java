@@ -6,9 +6,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
-import com.taken_seat.booking_service.booking.application.dto.event.BookingEntityEvent;
 import com.taken_seat.booking_service.booking.application.service.BookingProducer;
-import com.taken_seat.booking_service.common.message.TicketRequestMessage;
+import com.taken_seat.booking_service.common.message.BookingCommandMessage;
+import com.taken_seat.booking_service.common.message.BookingPaymentRequestMessage;
+import com.taken_seat.booking_service.common.message.BookingQueryMessage;
 import com.taken_seat.common_service.message.BookingCompletedMessage;
 import com.taken_seat.common_service.message.PaymentMessage;
 import com.taken_seat.common_service.message.PaymentRefundMessage;
@@ -25,6 +26,9 @@ public class BookingKafkaProducer implements BookingProducer {
 
 	@Value("${kafka.topic.payment-request}")
 	private String PAYMENT_REQUEST_TOPIC;
+
+	@Value("${kafka.topic.booking-payment-request}")
+	private String BOOKING_PAYMENT_REQUEST_TOPIC;
 
 	@Value("${kafka.topic.ticket-request}")
 	private String TICKET_REQUEST_TOPIC;
@@ -53,6 +57,9 @@ public class BookingKafkaProducer implements BookingProducer {
 	@Value("${kafka.topic.booking-completed}")
 	private String BOOKING_COMPLETED_TOPIC;
 
+	@Value("${kafka.topic.booking-payment-completed}")
+	private String BOOKING_PAYMENT_COMPLETED_TOPIC;
+
 	@Override
 	public void sendPaymentMessage(PaymentMessage message) {
 
@@ -60,7 +67,13 @@ public class BookingKafkaProducer implements BookingProducer {
 	}
 
 	@Override
-	public void sendTicketRequestMessage(TicketRequestMessage message) {
+	public void sendPaymentRequestMessage(BookingPaymentRequestMessage message) {
+
+		kafkaTemplate.send(BOOKING_PAYMENT_REQUEST_TOPIC, message);
+	}
+
+	@Override
+	public void sendTicketRequestMessage(BookingQueryMessage message) {
 
 		kafkaTemplate.send(TICKET_REQUEST_TOPIC, message);
 	}
@@ -96,19 +109,25 @@ public class BookingKafkaProducer implements BookingProducer {
 	}
 
 	@Override
+	public void sendBookingCompletedMessage(UUID bookingId) {
+
+		kafkaTemplate.send(BOOKING_PAYMENT_COMPLETED_TOPIC, bookingId);
+	}
+
+	@Override
 	public void sendBookingExpireEvent(UUID bookingId) {
 
 		kafkaTemplate.send(BOOKING_EXPIRE_TOPIC, bookingId);
 	}
 
 	@Override
-	public void sendBookingCreatedEvent(BookingEntityEvent event) {
+	public void sendBookingCreatedEvent(BookingCommandMessage event) {
 
 		kafkaTemplate.send(BOOKING_CREATED_TOPIC, event);
 	}
 
 	@Override
-	public void sendBookingUpdatedEvent(BookingEntityEvent event) {
+	public void sendBookingUpdatedEvent(BookingCommandMessage event) {
 
 		kafkaTemplate.send(BOOKING_UPDATED_TOPIC, event);
 	}

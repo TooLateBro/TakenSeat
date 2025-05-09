@@ -2,8 +2,9 @@ package com.taken_seat.booking_service.booking.application.service;
 
 import java.util.UUID;
 
-import com.taken_seat.booking_service.booking.application.dto.event.BookingEntityEvent;
-import com.taken_seat.booking_service.common.message.TicketRequestMessage;
+import com.taken_seat.booking_service.common.message.BookingCommandMessage;
+import com.taken_seat.booking_service.common.message.BookingPaymentRequestMessage;
+import com.taken_seat.booking_service.common.message.BookingQueryMessage;
 import com.taken_seat.common_service.message.BookingCompletedMessage;
 import com.taken_seat.common_service.message.PaymentMessage;
 import com.taken_seat.common_service.message.PaymentRefundMessage;
@@ -13,7 +14,9 @@ import com.taken_seat.common_service.message.UserBenefitMessage;
 public interface BookingProducer {
 	void sendPaymentMessage(PaymentMessage message);
 
-	void sendTicketRequestMessage(TicketRequestMessage message);
+	void sendPaymentRequestMessage(BookingPaymentRequestMessage message);
+
+	void sendTicketRequestMessage(BookingQueryMessage message);
 
 	void sendBenefitUsageMessage(UserBenefitMessage message);
 
@@ -25,9 +28,11 @@ public interface BookingProducer {
 
 	void sendBookingCompletedMessage(BookingCompletedMessage message);
 
+	void sendBookingCompletedMessage(UUID bookingId);
+
 	void sendBookingExpireEvent(UUID bookingId);
 
-	void sendBookingCreatedEvent(BookingEntityEvent event);
+	void sendBookingCreatedEvent(BookingCommandMessage event);
 
-	void sendBookingUpdatedEvent(BookingEntityEvent event);
+	void sendBookingUpdatedEvent(BookingCommandMessage event);
 }

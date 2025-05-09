@@ -5,8 +5,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cache.Cache;
-import org.springframework.cache.CacheManager;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -17,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 public class RedisService {
 
 	private final RedisTemplate<String, Object> redisTemplate;
-	private final CacheManager cacheManager;
 
 	@Value("${variable.booking-expiration-time}")
 	private long BOOKING_EXPIRATION_TIME;
@@ -35,10 +32,14 @@ public class RedisService {
 		}
 	}
 
-	public void evictCache(String cacheValue, String key) {
-		Cache cache = cacheManager.getCache(cacheValue);
-		if (cache != null) {
-			cache.evict(key);
-		}
+	public void removeBookingExpire(UUID bookingId) {
+		redisTemplate.delete("expire:" + bookingId);
 	}
+
+	// public void evictCache(String cacheValue, String key) {
+	// 	Cache cache = cacheManager.getCache(cacheValue);
+	// 	if (cache != null) {
+	// 		cache.evict(key);
+	// 	}
+	// }
 }

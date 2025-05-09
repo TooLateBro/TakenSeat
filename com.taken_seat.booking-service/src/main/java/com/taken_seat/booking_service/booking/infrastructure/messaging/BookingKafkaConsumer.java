@@ -5,8 +5,9 @@ import java.util.UUID;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
-import com.taken_seat.booking_service.booking.application.dto.event.BookingEntityEvent;
 import com.taken_seat.booking_service.booking.application.service.BookingService;
+import com.taken_seat.booking_service.common.message.BookingCommandMessage;
+import com.taken_seat.booking_service.common.message.BookingPaymentRequestMessage;
 import com.taken_seat.common_service.message.BookingRequestMessage;
 import com.taken_seat.common_service.message.PaymentMessage;
 import com.taken_seat.common_service.message.PaymentRefundMessage;
@@ -57,14 +58,26 @@ public class BookingKafkaConsumer {
 	}
 
 	@KafkaListener(topics = "${kafka.topic.booking-created}", groupId = "${kafka.consumer.group-id.booking-query}")
-	public void receiveBookingCreatedEvent(BookingEntityEvent event) {
+	public void receiveBookingCreatedEvent(BookingCommandMessage event) {
 
 		bookingService.receiveBookingCreatedEvent(event);
 	}
 
 	@KafkaListener(topics = "${kafka.topic.booking-updated}", groupId = "${kafka.consumer.group-id.booking-query}")
-	public void receiveBookingUpdatedEvent(BookingEntityEvent event) {
+	public void receiveBookingUpdatedEvent(BookingCommandMessage event) {
 
 		bookingService.receiveBookingUpdatedEvent(event);
+	}
+
+	@KafkaListener(topics = "${kafka.topic.booking-payment-completed}", groupId = "${kafka.consumer.group-id.booking-query}")
+	public void receiveBookingPaymentCompletedMessage(UUID bookingId) {
+
+		bookingService.receiveBookingCompletedMessage(bookingId);
+	}
+
+	@KafkaListener(topics = "${kafka.topic.booking-payment-request}", groupId = "${kafka.consumer.group-id.booking-query}")
+	public void receiveBookingPaymentRequestMessage(BookingPaymentRequestMessage message) {
+
+		bookingService.receiveBookingPaymentRequestMessage(message);
 	}
 }

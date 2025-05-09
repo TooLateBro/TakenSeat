@@ -9,16 +9,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.taken_seat.booking_service.common.message.TicketRequestMessage;
+import com.taken_seat.booking_service.common.message.BookingQueryMessage;
 import com.taken_seat.booking_service.common.service.RedisService;
 import com.taken_seat.booking_service.ticket.application.dto.response.TicketPageResponse;
 import com.taken_seat.booking_service.ticket.application.dto.response.TicketReadResponse;
-import com.taken_seat.booking_service.ticket.application.service.TicketClientService;
 import com.taken_seat.booking_service.ticket.application.service.TicketService;
 import com.taken_seat.booking_service.ticket.domain.Ticket;
 import com.taken_seat.booking_service.ticket.domain.repository.TicketRepository;
 import com.taken_seat.common_service.dto.AuthenticatedUser;
-import com.taken_seat.common_service.dto.response.TicketPerformanceClientResponse;
 import com.taken_seat.common_service.exception.customException.TicketException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
 
@@ -31,51 +29,44 @@ import lombok.extern.slf4j.Slf4j;
 public class TicketServiceImpl implements TicketService {
 
 	private final TicketRepository ticketRepository;
-	private final TicketClientService ticketClientService;
 	private final RedisService redisService;
 
 	@Override
 	@Transactional
-	public void createTicket(TicketRequestMessage message) {
+	public void createTicket(BookingQueryMessage message) {
 
 		log.info(
 			"[Ticket] 티켓 생성 - 시도 | userId={}, bookingId={}",
-			message.getUserId(),
-			message.getBookingId()
+			message.userId(),
+			message.id()
 		);
 
-		if (ticketRepository.existsByBookingId(message.getBookingId())) {
+		if (ticketRepository.existsByBookingId(message.id())) {
 			throw new TicketException(ResponseCode.TICKET_DUPLICATED_EXCEPTION);
 		}
 
-		TicketPerformanceClientResponse info = ticketClientService.getPerformanceInfo(
-			message.getPerformanceId(),
-			message.getPerformanceScheduleId(),
-			message.getScheduleSeatId()
-		);
-
 		Ticket ticket = Ticket.builder()
-			.userId(message.getUserId())
-			.bookingId(message.getBookingId())
-			.title(info.title())
-			.name(info.name())
-			.address(info.address())
-			.startAt(info.startAt())
-			.endAt(info.endAt())
-			.seatRowNumber(info.rowNumber())
-			.seatNumber(info.seatNumber())
-			.seatType(info.seatType())
+			.userId(message.userId())
+			.bookingId(message.id())
+			.title(message.title())
+			.name(message.name())
+			.address(message.address())
+			.rowNumber(message.rowNumber())
+			.seatNumber(message.seatNumber())
+			.seatType(message.seatType())
+			.startAt(message.startAt())
+			.endAt(message.endAt())
 			.build();
-		ticket.prePersist(message.getUserId());
+		ticket.prePersist(message.userId());
 
 		ticketRepository.save(ticket);
 
-		redisService.evictAllCaches("readTickets", message.getBookingId().toString());
+		redisService.evictAllCaches("readTickets", message.id().toString());
 
 		log.info(
 			"[Ticket] 티켓 생성 - 성공 | userId={}, bookingId={}",
-			message.getUserId(),
-			message.getBookingId()
+			message.userId(),
+			message.id()
 		);
 	}
 

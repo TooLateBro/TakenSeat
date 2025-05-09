@@ -57,6 +57,8 @@ kafka:
     booking-completed: booking.completed.v1
     booking-created: booking.created
     booking-expire: booking.expire
+    booking-payment-completed: booking.payment.completed
+    booking-payment-request: booking.payment.request
     booking-updated: booking.updated
     payment-refund-request: payment.refund.request
     payment-refund-response: payment.refund.response
@@ -80,7 +82,7 @@ variable:
 common:
   kafka:
     bootstrap-servers: "${KAFKA_BOOTSTRAP_SERVERS}"
-  trust-package: "com.taken_seat.common_service.message,com.taken_seat.booking_service.common.message,com.taken_seat.booking_service.booking.application.dto.event"
+  trust-package: "com.taken_seat.common_service.message,com.taken_seat.booking_service.common.message"
 
 logging:
   loki:
