@@ -29,6 +29,8 @@ public class AdminBookingReadResponse {
 	private String rowNumber;
 	private String seatNumber;
 	private String seatType;
+	private LocalDateTime startAt;
+	private LocalDateTime endAt;
 	private LocalDateTime createdAt;
 	private UUID createdBy;
 	private LocalDateTime updatedAt;
@@ -49,6 +51,14 @@ public class AdminBookingReadResponse {
 			.bookingStatus(bookingQuery.getBookingStatus())
 			.bookedAt(bookingQuery.getBookedAt())
 			.canceledAt(bookingQuery.getCanceledAt())
+			.title(bookingQuery.getTitle())
+			.name(bookingQuery.getName())
+			.address(bookingQuery.getAddress())
+			.rowNumber(bookingQuery.getRowNumber())
+			.seatNumber(bookingQuery.getSeatNumber())
+			.seatType(bookingQuery.getSeatType())
+			.startAt(bookingQuery.getStartAt())
+			.endAt(bookingQuery.getEndAt())
 			.createdAt(bookingQuery.getCreatedAt())
 			.createdBy(bookingQuery.getCreatedBy())
 			.updatedAt(bookingQuery.getUpdatedAt())

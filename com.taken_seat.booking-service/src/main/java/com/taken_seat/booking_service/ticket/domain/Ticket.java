@@ -44,16 +44,16 @@ public class Ticket extends BaseTimeEntity {
 	@Column(length = 500)
 	private String address;
 
-	private LocalDateTime startAt;
-
-	private LocalDateTime endAt;
-
-	@Column(length = 10)
-	private String seatRowNumber;
+	@Column(length = 10, name = "seat_row_number")
+	private String rowNumber;
 
 	@Column(length = 10)
 	private String seatNumber;
 
 	@Column(length = 10)
 	private String seatType;
+
+	private LocalDateTime startAt;
+
+	private LocalDateTime endAt;
 }

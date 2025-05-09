@@ -57,6 +57,8 @@ kafka:
     booking-completed: booking.completed.v1
     booking-created: booking.created
     booking-expire: booking.expire
+    booking-payment-completed: booking.payment.completed
+    booking-payment-request: booking.payment.request
     booking-updated: booking.updated
     payment-refund-request: payment.refund.request
     payment-refund-response: payment.refund.response

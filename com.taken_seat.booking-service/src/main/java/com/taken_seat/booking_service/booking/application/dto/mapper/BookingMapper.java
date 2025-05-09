@@ -10,7 +10,6 @@ import com.taken_seat.booking_service.booking.application.dto.command.BookingCan
 import com.taken_seat.booking_service.booking.application.dto.command.BookingCreateCommand;
 import com.taken_seat.booking_service.booking.application.dto.command.BookingPaymentCommand;
 import com.taken_seat.booking_service.booking.application.dto.command.BookingSingleTargetCommand;
-import com.taken_seat.booking_service.booking.application.dto.event.BookingEntityEvent;
 import com.taken_seat.booking_service.booking.application.dto.query.BookingAdminListQuery;
 import com.taken_seat.booking_service.booking.application.dto.query.BookingListQuery;
 import com.taken_seat.booking_service.booking.application.dto.query.BookingReadQuery;
@@ -19,6 +18,7 @@ import com.taken_seat.booking_service.booking.domain.BookingCommand;
 import com.taken_seat.booking_service.booking.presentation.dto.request.BookingCancelRequest;
 import com.taken_seat.booking_service.booking.presentation.dto.request.BookingCreateRequest;
 import com.taken_seat.booking_service.booking.presentation.dto.request.BookingPayRequest;
+import com.taken_seat.booking_service.common.message.BookingCommandMessage;
 import com.taken_seat.common_service.dto.AuthenticatedUser;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.ERROR)
@@ -40,5 +40,5 @@ public interface BookingMapper {
 
 	BookingStatusQuery toQuery(UUID userId, UUID performanceId);
 
-	BookingEntityEvent toEvent(BookingCommand bookingCommand);
+	BookingCommandMessage toEvent(BookingCommand bookingCommand);
 }

@@ -32,6 +32,8 @@ public class BookingReadResponse {
 	private String rowNumber;
 	private String seatNumber;
 	private String seatType;
+	private LocalDateTime startAt;
+	private LocalDateTime endAt;
 
 	public static BookingReadResponse toDto(BookingQuery bookingQuery) {
 		return BookingReadResponse.builder()
@@ -51,6 +53,8 @@ public class BookingReadResponse {
 			.rowNumber(bookingQuery.getRowNumber())
 			.seatNumber(bookingQuery.getSeatNumber())
 			.seatType(bookingQuery.getSeatType())
+			.startAt(bookingQuery.getStartAt())
+			.endAt(bookingQuery.getEndAt())
 			.build();
 	}
 }

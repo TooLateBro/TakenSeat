@@ -8,7 +8,6 @@ import com.taken_seat.booking_service.booking.application.dto.command.BookingCan
 import com.taken_seat.booking_service.booking.application.dto.command.BookingCreateCommand;
 import com.taken_seat.booking_service.booking.application.dto.command.BookingPaymentCommand;
 import com.taken_seat.booking_service.booking.application.dto.command.BookingSingleTargetCommand;
-import com.taken_seat.booking_service.booking.application.dto.event.BookingEntityEvent;
 import com.taken_seat.booking_service.booking.application.dto.query.BookingAdminListQuery;
 import com.taken_seat.booking_service.booking.application.dto.query.BookingListQuery;
 import com.taken_seat.booking_service.booking.application.dto.query.BookingReadQuery;
@@ -19,6 +18,8 @@ import com.taken_seat.booking_service.booking.presentation.dto.response.AdminBoo
 import com.taken_seat.booking_service.booking.presentation.dto.response.BookingCreateResponse;
 import com.taken_seat.booking_service.booking.presentation.dto.response.BookingPageResponse;
 import com.taken_seat.booking_service.booking.presentation.dto.response.BookingReadResponse;
+import com.taken_seat.booking_service.common.message.BookingCommandMessage;
+import com.taken_seat.booking_service.common.message.BookingPaymentRequestMessage;
 import com.taken_seat.common_service.dto.response.BookingStatusDto;
 import com.taken_seat.common_service.message.BookingRequestMessage;
 import com.taken_seat.common_service.message.PaymentMessage;
@@ -110,13 +111,23 @@ public class BookingServiceImpl implements BookingService {
 	}
 
 	@Override
-	public void receiveBookingCreatedEvent(BookingEntityEvent event) {
+	public void receiveBookingCreatedEvent(BookingCommandMessage event) {
 		bookingQueryService.receiveBookingCreatedEvent(event);
 	}
 
 	@Override
-	public void receiveBookingUpdatedEvent(BookingEntityEvent event) {
+	public void receiveBookingUpdatedEvent(BookingCommandMessage event) {
 		bookingQueryService.receiveBookingUpdatedEvent(event);
+	}
+
+	@Override
+	public void receiveBookingCompletedMessage(UUID bookingId) {
+		bookingQueryService.receiveBookingCompletedMessage(bookingId);
+	}
+
+	@Override
+	public void receiveBookingPaymentRequestMessage(BookingPaymentRequestMessage message) {
+		bookingQueryService.receiveBookingPaymentRequestMessage(message);
 	}
 
 	@Override

@@ -3,7 +3,7 @@ package com.taken_seat.booking_service.booking.domain;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import com.taken_seat.booking_service.booking.application.dto.event.BookingEntityEvent;
+import com.taken_seat.booking_service.common.message.BookingCommandMessage;
 import com.taken_seat.common_service.entity.BaseTimeEntity;
 
 import jakarta.persistence.Column;
@@ -75,12 +75,16 @@ public class BookingQuery extends BaseTimeEntity {
 	@Column(length = 10)
 	private String seatType;
 
-	public void create(BookingEntityEvent event) {
+	private LocalDateTime startAt;
+
+	private LocalDateTime endAt;
+
+	public void create(BookingCommandMessage event) {
 		this.createdAt = event.createdAt();
 		this.createdBy = event.createdBy();
 	}
 
-	public void update(BookingEntityEvent event) {
+	public void update(BookingCommandMessage event) {
 		this.paymentId = event.paymentId();
 		this.price = event.price();
 		this.discountedPrice = event.discountedPrice();

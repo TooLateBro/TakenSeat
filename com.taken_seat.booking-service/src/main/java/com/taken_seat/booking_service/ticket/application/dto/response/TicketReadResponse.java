@@ -16,11 +16,11 @@ public class TicketReadResponse {
 	private String title;
 	private String name;
 	private String address;
-	private LocalDateTime startAt;
-	private LocalDateTime endAt;
-	private String seatRowNumber;
+	private String rowNumber;
 	private String seatNumber;
 	private String seatType;
+	private LocalDateTime startAt;
+	private LocalDateTime endAt;
 
 	public static TicketReadResponse toDto(Ticket ticket) {
 		return TicketReadResponse.builder()
@@ -31,7 +31,7 @@ public class TicketReadResponse {
 			.address(ticket.getAddress())
 			.startAt(ticket.getStartAt())
 			.endAt(ticket.getEndAt())
-			.seatRowNumber(ticket.getSeatRowNumber())
+			.rowNumber(ticket.getRowNumber())
 			.seatNumber(ticket.getSeatNumber())
 			.seatType(ticket.getSeatType())
 			.build();

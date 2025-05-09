@@ -1,9 +1,9 @@
-package com.taken_seat.booking_service.booking.application.dto.event;
+package com.taken_seat.booking_service.common.message;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-public record BookingEntityEvent(
+public record BookingCommandMessage(
 	UUID id,
 	UUID userId,
 	UUID performanceId,
