@@ -50,6 +50,7 @@ public class RecommendMatrixService {
 
 			if (similarity > 0.0) {
 				similarityMap.put(otherUserId, similarity);
+				log.info("user={} 와 user={} 의 유사도 = {}", targetUserId, otherUserId, similarity);
 			}
 		}
 
@@ -78,8 +79,11 @@ public class RecommendMatrixService {
 	}
 
 	private double cosineSimilarity(Set<UUID> userVectorA, Set<UUID> userVectorB) {
-		if (userVectorA.isEmpty() || userVectorB.isEmpty())
+
+		if (userVectorA.isEmpty() || userVectorB.isEmpty()) {
+			log.info("유사도 계산 실패: 한쪽 벡터가 비어있음");
 			return 0.0;
+		}
 
 		Set<UUID> commonPerformances = new HashSet<>(userVectorA);
 		commonPerformances.retainAll(userVectorB);
@@ -88,6 +92,11 @@ public class RecommendMatrixService {
 		double magnitudeOfA = Math.sqrt(userVectorA.size());
 		double magnitudeOfB = Math.sqrt(userVectorB.size());
 
-		return dotProduct / (magnitudeOfA * magnitudeOfB);
+		double similarity = dotProduct / (magnitudeOfA * magnitudeOfB);
+
+		log.info("cosineSimilarity: 공통 공연 개수 = {}, A크기 = {}, B크기 = {}, 유사도 = {}",
+			dotProduct, userVectorA.size(), userVectorB.size(), similarity);
+
+		return similarity;
 	}
 }
