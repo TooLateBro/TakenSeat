@@ -22,5 +22,5 @@ public interface ReviewRepository {
 
 	Map<String, Object> fetchAvgRatingAndReviewCountByPerformanceId(UUID performanceId);
 	
-	List<Map<String, Object>> fetchPerformanceRatingStatsBulk();
+	List<Map<String, Object>> fetchAvgRatingAndReviewCountByPerformanceIds(List<UUID> performanceIds);
 }

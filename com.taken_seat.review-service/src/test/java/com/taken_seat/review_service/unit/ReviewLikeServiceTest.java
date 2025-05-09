@@ -15,14 +15,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 
-import com.taken_seat.common_service.dto.AuthenticatedUser;
 import com.taken_seat.review_service.application.dto.service.ReviewDto;
-import com.taken_seat.review_service.application.service.ReviewLikeServiceImpl;
 import com.taken_seat.review_service.domain.model.Review;
 import com.taken_seat.review_service.domain.model.ReviewLike;
 import com.taken_seat.review_service.domain.repository.ReviewLikeRepository;
 import com.taken_seat.review_service.domain.repository.ReviewRepository;
 import com.taken_seat.review_service.infrastructure.mapper.ReviewMapper;
+import com.taken_seat.review_service.infrastructure.redis.service.ReviewLikeServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
 public class ReviewLikeServiceTest {
@@ -47,14 +46,12 @@ public class ReviewLikeServiceTest {
 
 	private UUID reviewId;
 	private UUID userId;
-	private AuthenticatedUser user;
 	private ReviewDto reviewDto;
 
 	@BeforeEach
 	void setUp() {
 		reviewId = UUID.randomUUID();
 		userId = UUID.randomUUID();
-		user = new AuthenticatedUser(userId, "user@example.com", "MASTER");
 
 		reviewDto = ReviewDto.builder()
 			.userId(userId)
