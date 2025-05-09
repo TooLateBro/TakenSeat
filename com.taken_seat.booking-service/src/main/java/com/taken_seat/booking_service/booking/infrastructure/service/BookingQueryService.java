@@ -147,13 +147,19 @@ public class BookingQueryService {
 	@Transactional(readOnly = true)
 	public void receiveBookingCompletedMessage(UUID bookingId) {
 
+		log.info("[BookingQuery] 티켓 생성 메시지 수신 - 시도: | bookingId={}", bookingId);
+
 		BookingQuery bookingQuery = findBookingById(bookingId);
 
 		bookingProducer.sendTicketRequestMessage(toMessage(bookingQuery));
+
+		log.info("[BookingQuery] 티켓 생성 메시지 수신 - 성공: | bookingId={}", bookingId);
 	}
 
 	@Transactional(readOnly = true)
 	public void receiveBookingPaymentRequestMessage(BookingPaymentRequestMessage message) {
+
+		log.info("[BookingQuery] 결제 요청 메시지 수신 - 시도: | bookingId={}", message.bookingId());
 
 		BookingQuery bookingQuery = findBookingById(message.bookingId());
 
@@ -165,6 +171,8 @@ public class BookingQueryService {
 			.type(PaymentMessage.MessageType.REQUEST)
 			.build();
 		bookingProducer.sendPaymentMessage(paymentMessage);
+
+		log.info("[BookingQuery] 결제 요청 메시지 수신 - 성공: | bookingId={}", message.bookingId());
 	}
 
 	private BookingQuery findBookingById(UUID id) {

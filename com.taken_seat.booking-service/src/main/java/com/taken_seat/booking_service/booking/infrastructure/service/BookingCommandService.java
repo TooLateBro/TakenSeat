@@ -441,6 +441,13 @@ public class BookingCommandService {
 				);
 			}
 
+			redisService.removeBookingExpire(bookingCommand.getId());
+			log.info(
+				"[BookingCommand] 예매 결제 메시지 수신 - 성공: 예매 만료키 삭제 | userId={}, bookingId={}",
+				message.getUserId(),
+				message.getBookingId()
+			);
+
 			log.info(
 				"[BookingCommand] 예매 결제 메시지 수신 - 성공: | userId={}, bookingId={}",
 				message.getUserId(),
