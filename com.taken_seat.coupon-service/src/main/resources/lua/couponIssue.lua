@@ -18,6 +18,7 @@ if redis.call('SISMEMBER', userKey, userId) == 1 then
 end
 redis.call('DECR', couponKey)
 redis.call('SADD', userKey, userId)
+redis.call('EXPIRE', userKey, 600)
 
 -- 쿠폰 발급 후, 남은 수량을 반환 (현재 수량에서 하나 감소한 값)
 return tonumber(current) - 1

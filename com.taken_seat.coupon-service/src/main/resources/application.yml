@@ -50,8 +50,6 @@ springdoc:
 kafka:
   topic:
     coupon-request-user: coupon.request.user
-  key:
-    coupon-user-key: coupon.user.key
   consumer:
     group-id: auth-service
 

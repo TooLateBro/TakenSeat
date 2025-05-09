@@ -34,9 +34,6 @@ public class Coupon extends BaseTimeEntity{
     @Column(name = "discount", nullable = false)
     private Integer discount;
 
-    @Column(name = "is_active", nullable = false)
-    private Boolean isActive = true;
-
     @Column(name = "expired_at", nullable = false)
     private LocalDateTime expiredAt;
 
@@ -46,7 +43,6 @@ public class Coupon extends BaseTimeEntity{
                 .code(code)
                 .quantity(quantity)
                 .discount(discount)
-                .isActive(true)
                 .expiredAt(expiredAt)
                 .build();
         coupon.prePersist(userId);

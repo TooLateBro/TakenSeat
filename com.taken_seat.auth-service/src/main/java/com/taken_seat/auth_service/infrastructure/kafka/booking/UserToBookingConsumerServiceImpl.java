@@ -12,7 +12,11 @@ import com.taken_seat.common_service.exception.customException.CouponException;
 import com.taken_seat.common_service.exception.customException.MileageException;
 import com.taken_seat.common_service.exception.enums.ResponseCode;
 import com.taken_seat.common_service.message.UserBenefitMessage;
+import io.micrometer.core.annotation.Counted;
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,12 +29,20 @@ public class UserToBookingConsumerServiceImpl implements UserToBookingConsumerSe
     private final UserRepository userRepository;
     private final UserCouponRepository userCouponRepository;
     private final MileageRepository mileageRepository;
+    private final MeterRegistry meterRegistry;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
+
+    @Value("${kafka.topic.benefit-refund-response}")
+    private String BENEFIT_REFUND_RESPONSE;
 
     public UserToBookingConsumerServiceImpl(UserRepository userRepository,
-                                            UserCouponRepository userCouponRepository, MileageRepository mileageRepository) {
+                                            UserCouponRepository userCouponRepository, MileageRepository mileageRepository,
+                                            MeterRegistry meterRegistry, KafkaTemplate<String, Object> kafkaTemplate) {
         this.userRepository = userRepository;
         this.userCouponRepository = userCouponRepository;
         this.mileageRepository = mileageRepository;
+        this.meterRegistry = meterRegistry;
+        this.kafkaTemplate = kafkaTemplate;
     }
 
     @Override
@@ -48,9 +60,9 @@ public class UserToBookingConsumerServiceImpl implements UserToBookingConsumerSe
                         .orElseThrow(() -> new CouponException(ResponseCode.COUPON_NOT_FOUND));
                 if (userCoupon.getExpiredAt().isBefore(LocalDateTime.now())){
                     log.error("[Auth] 쿠폰을 사용할 수 없습니다. couponId={}, expiredAt={}", message.getCouponId(), userCoupon.getExpiredAt());
-                    throw new CouponException(ResponseCode.COUPON_EXPIRED);
+                }else {
+                    couponDiscount = userCoupon.getDiscount();
                 }
-                couponDiscount = userCoupon.getDiscount();
             }
             if (message.getMileage() != null) {
                 mileageRepository.findTopByUserIdOrderByUpdatedAtDesc(message.getUserId())
@@ -77,15 +89,16 @@ public class UserToBookingConsumerServiceImpl implements UserToBookingConsumerSe
         }
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     @Override
-    public UserBenefitMessage benefitPayment(UserBenefitMessage message) {
+    @Counted(value = "benefit.usage.coupon", description = "쿠폰 사용량 카운트")
+    public void benefitPayment(UserBenefitMessage message) {
         log.info("[Booking] -> [Auth] 마일리지 및 쿠폰의 성공 유무를 체크 중 입니다...." +
                 "{}, {}, {}, {}", message.getBookingId(), message.getUserId(), message.getCouponId(), message.getMileage());
         User user = userRepository.findByIdAndDeletedAtIsNull(message.getUserId())
                 .orElseThrow(() -> new AuthException(ResponseCode.USER_NOT_FOUND));
 
-        int mileageRate = message.getPrice() / 1000;
+        int mileageRate = message.getPrice() != null ? message.getPrice() / 1000 : 0;
 
         if (message.getStatus().equals(UserBenefitMessage.UserBenefitStatus.SUCCESS)) {
             try {
@@ -94,18 +107,20 @@ public class UserToBookingConsumerServiceImpl implements UserToBookingConsumerSe
                 UserCoupon userCoupon = userCouponRepository.findByCouponIdAndIsActiveTrue(message.getCouponId())
                         .orElseThrow(() -> new CouponException(ResponseCode.COUPON_NOT_FOUND));
 
-                log.info("[Auth] 현재 보유중인 마일리지 및 쿠폰의 상태 : {}, {}, {}",
-                        message.getMileage(), userCoupon, userCoupon.isActive());
+                log.info("[Auth] 현재 보유중인 마일리지 및 쿠폰의 상태 : {}, {}",
+                        mileageExists.getMileage(), userCoupon.isActive());
 
                 userCoupon.updateActive(false, user.getId());
                 log.info("[Auth] {} 쿠폰 사용에 성공했습니다!!!", message.getCouponId());
+                meterRegistry.counter("benefit.usage.count", "status", "success", "reason", "쿠폰 사용에 성공했습니다!").increment();
+
+                log.info("[Auth] {} 마일리지 사용에 성공했습니다!!!", message.getMileage());
 
                 int currentMileage = mileageExists.getMileage() - message.getMileage() + mileageRate;
                 log.info("[Auth] {} 마일리지 적립에 성공했습니다!!!!", mileageRate);
                 if (currentMileage < 0) {
                     throw new MileageException(ResponseCode.MILEAGE_EMPTY);
                 }
-                log.info("[Auth] {} 마일리지 사용에 성공했습니다!!!", message.getMileage());
 
                 Mileage mileage = Mileage.create(
                         user, currentMileage
@@ -116,8 +131,10 @@ public class UserToBookingConsumerServiceImpl implements UserToBookingConsumerSe
                 mileageRepository.save(mileage);
             } catch (MileageException | CouponException e) {
                 log.error("[Auth] 마일리지 또는 쿠폰 처리 중 오류가 발생했습니다 : {}", e.getMessage());
+                meterRegistry.counter("benefit.usage.count", "status", "fail", "reason", "쿠폰 사용에 실패했습니다.").increment();
             } catch (Exception e) {
                 log.error("[Auth] 서비스에서 예기치 않은 오류가 발생했습니다 : {}", e.getMessage());
+                meterRegistry.counter("benefit.usage.count", "status", "fail", "reason", "쿠폰 사용에 실패했습니다.").increment();
             }
         } else if (message.getStatus().equals(UserBenefitMessage.UserBenefitStatus.REFUND)) {
             try {
@@ -147,22 +164,20 @@ public class UserToBookingConsumerServiceImpl implements UserToBookingConsumerSe
                     mileageRepository.save(mileage);
                 }
                 log.info("[Auth] -> [Booking] 환불 요청에 성공했습니다!!!");
-                return UserBenefitMessage.builder()
+
+                UserBenefitMessage benefitMessage = UserBenefitMessage.builder()
                         .bookingId(message.getBookingId())
                         .userId(user.getId())
                         .status(UserBenefitMessage.UserBenefitStatus.SUCCESS)
                         .build();
+
+                kafkaTemplate.send(BENEFIT_REFUND_RESPONSE, benefitMessage);
+
             } catch (MileageException | CouponException e) {
                 log.error("[Auth] 환불 처리 중 오류가 발생했습니다 : {}", e.getMessage());
             } catch (Exception e) {
                 log.error("[Auth] 서비스에서 예기치 오류가 발생했습니다 : {}", e.getMessage());
             }
         }
-        log.error("[Auth] -> [Booking] 환불 요청에 실패했습니다.");
-        return UserBenefitMessage.builder()
-                .bookingId(message.getBookingId())
-                .userId(user.getId())
-                .status(UserBenefitMessage.UserBenefitStatus.FAIL)
-                .build();
     }
 }
